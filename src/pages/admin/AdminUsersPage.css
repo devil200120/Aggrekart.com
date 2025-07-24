@@ -1,0 +1,70 @@
+/* Admin Users Page Styles */
+
+.admin-users-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 2rem 0;
+}
+
+.admin-page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.admin-page-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.admin-page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-page-header p {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.admin-page-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-users-page {
+    padding: 1rem 0;
+  }
+  
+  .admin-page-container {
+    padding: 0 1rem;
+  }
+  
+  .admin-page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .admin-page-header p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-page-header h1 {
+    font-size: 1.75rem;
+  }
+}

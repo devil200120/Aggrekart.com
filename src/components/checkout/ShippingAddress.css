@@ -1,0 +1,259 @@
+.shipping-address {
+  padding: 2rem;
+}
+
+/* Saved Addresses */
+.saved-addresses {
+  margin-bottom: 2rem;
+}
+
+.saved-addresses h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1.5rem;
+}
+
+.addresses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.address-card {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.address-card:hover {
+  border-color: var(--primary-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.address-card.selected {
+  border-color: var(--primary-600);
+  background: var(--primary-50);
+}
+
+.address-header {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.address-type-badge {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.default-badge {
+  background: var(--green-100);
+  color: var(--green-700);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.address-content h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.address-content p {
+  color: var(--gray-600);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.address-actions {
+  margin-top: 1rem;
+}
+
+.address-actions .btn.selected {
+  background: var(--primary-600);
+  color: white;
+  border-color: var(--primary-600);
+}
+
+.add-new-address {
+  width: 100%;
+  justify-content: center;
+}
+
+/* New Address Form */
+.new-address-form h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1.5rem;
+}
+
+.address-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+  border-color: var(--red-500);
+  box-shadow: 0 0 0 3px var(--red-100);
+}
+
+.error-message {
+  color: var(--red-600);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Address Type Selector */
+.address-type-selector {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.radio-option:hover {
+  border-color: var(--primary-300);
+  background: var(--primary-50);
+}
+
+.radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-600);
+}
+
+.radio-option input[type="radio"]:checked + .radio-icon + span {
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+  border-color: var(--primary-600);
+  background: var(--primary-50);
+}
+
+.radio-icon {
+  font-size: 1.25rem;
+}
+
+/* Continue Section */
+.continue-section {
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .shipping-address {
+    padding: 1.5rem;
+  }
+
+  .addresses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .address-type-selector {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .radio-option {
+    padding: 1rem;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .shipping-address {
+    padding: 1rem;
+  }
+
+  .address-card {
+    padding: 1rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 1rem; /* Prevent zoom on iOS */
+  }
+}

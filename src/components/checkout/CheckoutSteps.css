@@ -1,0 +1,165 @@
+.checkout-steps {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.step.active .step-number {
+  background: var(--primary-600);
+  color: white;
+}
+
+.step.completed .step-number {
+  background: var(--green-600);
+  color: white;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--gray-200);
+  margin-left: 1rem;
+  transition: all 0.3s ease;
+}
+
+.step-line.completed {
+  background: var(--green-600);
+}
+
+.step:last-child .step-line {
+  display: none;
+}
+
+.step-content {
+  text-align: center;
+  max-width: 150px;
+}
+
+.step-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
+}
+
+.step.active .step-title {
+  color: var(--primary-600);
+}
+
+.step.completed .step-title {
+  color: var(--green-600);
+}
+
+.step-description {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .checkout-steps {
+    padding: 1.5rem;
+  }
+
+  .steps-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .step {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+  }
+
+  .step-indicator {
+    width: auto;
+    margin-bottom: 0;
+    margin-right: 1rem;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+
+  .step-line {
+    display: none;
+  }
+
+  .step-content {
+    max-width: none;
+    text-align: left;
+  }
+
+  .step-title {
+    font-size: 1rem;
+  }
+
+  .step-description {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkout-steps {
+    padding: 1rem;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .step-title {
+    font-size: 0.875rem;
+  }
+
+  .step-description {
+    font-size: 0.75rem;
+  }
+}

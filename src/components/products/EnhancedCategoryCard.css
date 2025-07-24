@@ -1,0 +1,244 @@
+.enhanced-category-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.enhanced-category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.category-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.category-icon-large {
+  font-size: 3rem;
+  line-height: 1;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e9ecef;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-name {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.category-description {
+  margin: 0 0 12px 0;
+  color: #6c757d;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.category-discount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.discount-badge {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.discount-text {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.tonnage-selector {
+  margin-bottom: 24px;
+}
+
+.tonnage-selector h4 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.tonnage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tonnage-option {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tonnage-option:hover {
+  border-color: #007bff;
+  background: #f0f8ff;
+}
+
+.tonnage-option.selected {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.tonnage-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tonnage-label {
+  font-weight: 600;
+  color: #212529;
+  font-size: 0.9rem;
+}
+
+.tonnage-desc {
+  color: #6c757d;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.category-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-actions .btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  
+}
+
+.btn-primary {
+  
+  background: #007bff;
+  color: white;
+  border: 1px solid #007bff;
+}
+
+.btn-primary:hover:not(.disabled) {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-primary.disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.category-features {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+  margin-top: auto;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.feature-icon {
+  font-size: 1.2rem;
+}
+
+.feature-item span:last-child {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .enhanced-category-card {
+    padding: 16px;
+  }
+  
+  .category-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .category-icon-large {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    margin: 0 auto;
+  }
+  
+  .tonnage-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-actions {
+    flex-direction: column;
+  }
+  
+  .category-features {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

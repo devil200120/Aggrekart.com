@@ -1,0 +1,265 @@
+.checkout-page {
+  min-height: 100vh;
+  background: var(--gray-50);
+  padding: 2rem 0;
+}
+
+.checkout-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.checkout-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.checkout-header p {
+  color: var(--gray-600);
+  font-size: 1.125rem;
+}
+
+.checkout-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.checkout-main {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.checkout-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.checkout-error {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.checkout-error h2 {
+  font-size: 1.75rem;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+}
+
+.checkout-error p {
+  color: var(--gray-600);
+  margin-bottom: 2rem;
+}
+
+/* Step Header */
+.step-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.step-header h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 0.5rem;
+}
+
+.step-header p {
+  color: var(--gray-600);
+}
+
+/* Review Order */
+.review-order {
+  padding: 2rem;
+}
+
+.review-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.review-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+}
+
+.address-card,
+.payment-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.address-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.address-header strong {
+  font-size: 1.125rem;
+  color: var(--gray-900);
+}
+
+.address-type {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.address-details p {
+  margin-bottom: 0.25rem;
+  color: var(--gray-700);
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+}
+
+.payment-icon {
+  font-size: 1.5rem;
+}
+
+/* Place Order */
+.place-order-section {
+  border-top: 2px solid var(--gray-200);
+  padding-top: 2rem;
+  text-align: center;
+}
+
+.place-order-btn {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.order-terms {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+
+.order-terms a {
+  color: var(--primary-600);
+  text-decoration: none;
+}
+
+.order-terms a:hover {
+  text-decoration: underline;
+}
+
+/* Form Styles */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.form-actions .btn {
+  min-width: 150px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .checkout-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .checkout-sidebar {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkout-page {
+    padding: 1rem 0;
+  }
+
+  .checkout-header {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .checkout-header h1 {
+    font-size: 2rem;
+  }
+
+  .step-header {
+    padding: 1.5rem;
+  }
+
+  .review-order {
+    padding: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .form-actions .btn {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkout-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .step-header {
+    padding: 1rem;
+  }
+
+  .review-order {
+    padding: 1rem;
+  }
+
+  .address-card,
+  .payment-card {
+    padding: 1rem;
+  }
+
+  .place-order-btn {
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem;
+  }
+}

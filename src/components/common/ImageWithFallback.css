@@ -1,0 +1,86 @@
+.image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #9ca3af;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-placeholder.loading {
+  background: #f9fafb;
+}
+
+.placeholder-icon {
+  width: 40%;
+  height: 40%;
+  max-width: 48px;
+  max-height: 48px;
+  margin-bottom: 4px;
+}
+
+.placeholder-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Size variants */
+.image-placeholder.item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+}
+
+.image-placeholder.product-image {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+}
+
+.image-placeholder.small {
+  width: 40px;
+  height: 40px;
+}
+
+.image-placeholder.medium {
+  width: 80px;
+  height: 80px;
+}
+
+.image-placeholder.large {
+  width: 120px;
+  height: 120px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .placeholder-icon {
+    width: 30%;
+    height: 30%;
+    max-width: 32px;
+    max-height: 32px;
+  }
+  
+  .placeholder-text {
+    font-size: 0.65rem;
+  }
+}

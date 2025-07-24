@@ -1,0 +1,174 @@
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Spinner Ring Animation */
+.spinner-ring {
+  display: inline-block;
+  position: relative;
+}
+
+.spinner-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  border-radius: 50%;
+  animation: spinner-rotate 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-style: solid;
+}
+
+.spinner-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.spinner-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.spinner-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+/* Size variants */
+.spinner-small .spinner-ring {
+  width: 24px;
+  height: 24px;
+}
+
+.spinner-small .spinner-ring div {
+  width: 20px;
+  height: 20px;
+  margin: 2px;
+  border-width: 2px;
+}
+
+.spinner-medium .spinner-ring {
+  width: 40px;
+  height: 40px;
+}
+
+.spinner-medium .spinner-ring div {
+  width: 32px;
+  height: 32px;
+  margin: 4px;
+  border-width: 3px;
+}
+
+.spinner-large .spinner-ring {
+  width: 64px;
+  height: 64px;
+}
+
+.spinner-large .spinner-ring div {
+  width: 52px;
+  height: 52px;
+  margin: 6px;
+  border-width: 4px;
+}
+
+/* Color variants */
+.spinner-primary .spinner-ring div {
+  border-color: #007bff transparent transparent transparent;
+}
+
+.spinner-secondary .spinner-ring div {
+  border-color: #6c757d transparent transparent transparent;
+}
+
+.spinner-success .spinner-ring div {
+  border-color: #28a745 transparent transparent transparent;
+}
+
+.spinner-danger .spinner-ring div {
+  border-color: #dc3545 transparent transparent transparent;
+}
+
+.spinner-warning .spinner-ring div {
+  border-color: #ffc107 transparent transparent transparent;
+}
+
+.spinner-info .spinner-ring div {
+  border-color: #17a2b8 transparent transparent transparent;
+}
+
+.spinner-light .spinner-ring div {
+  border-color: #f8f9fa transparent transparent transparent;
+}
+
+.spinner-dark .spinner-ring div {
+  border-color: #343a40 transparent transparent transparent;
+}
+
+.spinner-white .spinner-ring div {
+  border-color: #ffffff transparent transparent transparent;
+}
+
+/* Spinner text */
+.spinner-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-align: center;
+  font-weight: 500;
+}
+
+.spinner-small .spinner-text {
+  font-size: 0.75rem;
+}
+
+.spinner-large .spinner-text {
+  font-size: 1rem;
+}
+
+/* Overlay */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .spinner-overlay {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .spinner-text {
+    color: #adb5bd;
+  }
+}
+
+/* Animation */
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-ring div {
+    animation: none;
+    border-color: #007bff;
+    border-style: solid;
+    opacity: 0.3;
+  }
+  
+  .spinner-ring div:first-child {
+    opacity: 1;
+  }
+}

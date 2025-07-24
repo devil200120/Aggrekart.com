@@ -1,0 +1,389 @@
+/* Payment Failed Page Styles */
+
+.payment-failed-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  padding: 2rem 0;
+}
+
+.failed-header {
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.failed-icon-container {
+  margin-bottom: 1.5rem;
+}
+
+.failed-icon {
+  color: #ef4444;
+  filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
+}
+
+.failed-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.failed-header p {
+  font-size: 1.2rem;
+  color: #dc2626;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #991b1b;
+  font-size: 0.95rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.payment-status-section {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.quick-actions {
+  max-width: 1000px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.quick-actions h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #374151;
+  margin-bottom: 2rem;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.action-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.action-card.primary {
+  border-color: #ef4444;
+}
+
+.action-card.primary:hover {
+  border-color: #dc2626;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%);
+}
+
+.action-card.secondary {
+  border-color: #6b7280;
+}
+
+.action-card.secondary:hover {
+  border-color: #374151;
+  background: #f9fafb;
+}
+
+.action-card.support {
+  border-color: #3b82f6;
+}
+
+.action-card.support:hover {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%);
+}
+
+.action-card svg {
+  color: inherit;
+  margin-bottom: 1rem;
+}
+
+.action-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.3rem;
+}
+
+.action-card p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.common-reasons {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.common-reasons h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #374151;
+  margin-bottom: 2rem;
+}
+
+.reasons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.reason-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #ef4444;
+}
+
+.reason-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+.reason-card p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.troubleshooting {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.troubleshooting h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #374151;
+  margin-bottom: 2rem;
+}
+
+.steps-list {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.step-item:last-child {
+  border-bottom: none;
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.alternative-methods {
+  max-width: 1000px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.alternative-methods h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #374151;
+  margin-bottom: 2rem;
+}
+
+.methods-suggestion {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.method-option {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.method-option h4 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+.method-option p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.support-section {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.support-section h2 {
+  font-size: 2rem;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.support-section p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.support-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.support-option {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.support-option svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.support-option h4 {
+  margin: 0 0 0.25rem 0;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.support-option p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.retry-button,
+.home-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.home-button {
+  background: white;
+  color: #374151;
+  border: 2px solid #e2e8f0;
+}
+
+.home-button:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .failed-header {
+    padding: 1rem;
+  }
+  
+  .failed-header h1 {
+    font-size: 2rem;
+  }
+  
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .reasons-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .methods-suggestion,
+  .support-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .bottom-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bottom-actions button {
+    width: 100%;
+  }
+}
