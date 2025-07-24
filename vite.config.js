@@ -22,7 +22,7 @@ export default defineConfig({
   // Build configuration
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps in production for security
     rollupOptions: {
       output: {
         manualChunks: {
@@ -33,7 +33,16 @@ export default defineConfig({
           ui: ['lucide-react', 'react-hot-toast']
         }
       }
-    }
+    },
+    // Optimize for production
+    minify: 'esbuild',
+    target: 'es2015'
+  },
+  
+  // Preview configuration (for production preview)
+  preview: {
+    port: 3000,
+    host: true
   },
   
   // Path resolution
@@ -49,26 +58,11 @@ export default defineConfig({
     }
   },
   
-  // Environment variables prefix
+  // Environment variable prefix
   envPrefix: 'VITE_',
   
-  // Preview configuration (for production preview)
-  preview: {
-    port: 3000,
-    host: true
-  },
-  
-  // Optimize dependencies
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      'react-query',
-      'axios',
-      'lucide-react',
-      'react-hot-toast',
-      'react-hook-form'
-    ]
+  // Define global constants
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
   }
 })
