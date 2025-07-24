@@ -1,10 +1,22 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-// Create axios instance
+// Determine the API base URL based on environment
+const getApiBaseUrl = () => {
+  // Production environment detection
+  if (import.meta.env.PROD) {
+    // Use environment variable for production API URL
+    return import.meta.env.VITE_API_URL || 'https://your-backend-app-name.onrender.com/api'
+  }
+  
+  // Development environment - use proxy
+  return '/api'
+}
+
+// Create axios instance with dynamic base URL
 const api = axios.create({
-  baseURL: '/api', // Proxy configured in vite.config.js
-  timeout: 10000,
+  baseURL: getApiBaseUrl(),
+  timeout: 30000, // Increased timeout for Render cold starts
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,6 +29,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    
+    // Add production environment headers
+    if (import.meta.env.PROD) {
+      config.headers['X-Requested-With'] = 'XMLHttpRequest'
+    }
+    
     return config
   },
   (error) => {
@@ -24,6 +42,30 @@ api.interceptors.request.use(
   }
 )
 
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    // Handle network errors (common in production)
+    if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNABORTED') {
+      console.error('Network error:', error.message)
+      return Promise.reject(new Error('Network connection failed. Please check your internet connection.'))
+    }
+    
+    if (error.response?.status === 401) {
+      // Unauthorized - remove token and redirect to login
+      Cookies.remove('aggrekart_token')
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/auth/login')) {
+        window.location.href = '/auth/login'
+      }
+    }
+    
+    return Promise.reject(error)
+  }
+)
+
+// ...existing code...
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response.data,
