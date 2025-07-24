@@ -4,13 +4,10 @@ import Cookies from 'js-cookie'
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
   // Production environment detection
-  if (import.meta.env.PROD) {
-    // Use environment variable for production API URL
-    return import.meta.env.VITE_API_URL || 'https://your-backend-app-name.onrender.com/api'
-  }
+ return import.meta.env.VITE_API_URL || 'https://aggrekart-com-backend.onrender.com/api'
   
   // Development environment - use proxy
-  return '/api'
+
 }
 
 // Create axios instance with dynamic base URL
