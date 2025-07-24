@@ -695,3 +695,1196 @@
     grid-template-columns: 1fr;
   }
 }
+/* Our Products Section */
+/* Our Products Section - DESKTOP PRESERVED + MOBILE FRIENDLY */
+.our-products-section {
+  padding: 80px 0;
+  background: #f8f9fa;
+}
+
+.our-products-section .section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 60px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr; /* 40% - 60% allocation */
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  align-items: stretch;
+}
+
+/* Aggregate Card - 40% space - DESKTOP SIZE RESTORED */
+.aggregate-card {
+  position: relative;
+  left: 50px; /* Restored desktop positioning */
+  background: white;
+  width: 450px; /* Restored desktop width */
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.product-image-container {
+  height: 300px;
+  position: relative;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image-container img {
+  height: 450px; /* Restored desktop size */
+  width: 500px; /* Restored desktop size */
+}
+
+.product-content {
+  padding: 50px 40px; /* Restored desktop padding */
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.product-content h3 {
+  font-size: 2.2rem; /* Restored desktop font size */
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
+
+.product-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 18px 50px; /* Restored desktop padding */
+  border-radius: 30px;
+  font-size: 1.1rem; /* Restored desktop font size */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  align-self: center;
+}
+
+.product-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Other Products Grid - 60% space - DESKTOP SIZE RESTORED */
+.other-products-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  height: 100%;
+  min-height: 600px;
+}
+
+.small-product-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  height: 100%;
+  width: 250px; /* Restored desktop width */
+  position: relative;
+  left: 180px; /* Restored desktop positioning */
+}
+
+.small-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.small-product-image-container {
+  height: 180px; /* Restored desktop height */
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.small-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.small-product-title {
+  padding: 25px 15px; /* Restored desktop padding */
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.small-product-card h4 {
+  font-size: 1.3rem; /* Restored desktop font size */
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+  margin: 0;
+}
+
+/* MOBILE RESPONSIVE DESIGN - Only applies to mobile devices */
+@media (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 800px;
+  }
+  
+  /* Reset positioning and sizing for tablets */
+  .aggregate-card {
+    left: 0; /* Remove desktop positioning */
+    width: 100%; /* Make responsive */
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  .other-products-grid {
+    max-width: 100%;
+    margin: 0 auto;
+    min-height: auto;
+  }
+  
+  .small-product-card {
+    left: 0; /* Remove desktop positioning */
+    width: 100%; /* Make responsive */
+  }
+}
+
+@media (max-width: 768px) {
+  .our-products-section {
+    padding: 60px 0;
+  }
+  
+  .our-products-section .section-title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+    padding: 0 20px;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 0 20px;
+  }
+  
+  .aggregate-card {
+    left: 0;
+    width: 100%;
+    min-height: auto;
+    max-width: 100%;
+  }
+  
+  .product-image-container {
+    height: 250px;
+  }
+  
+  .product-image-container img {
+    width: 100%; /* Mobile responsive image */
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .product-content {
+    padding: 25px 20px;
+  }
+  
+  .product-content h3 {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .product-btn {
+    padding: 12px 25px;
+    font-size: 0.9rem;
+    width: 100%;
+    max-width: 180px;
+  }
+  
+  .other-products-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    min-height: auto;
+  }
+  
+  .small-product-card {
+    left: 0;
+    width: 100%;
+  }
+  
+  .small-product-image-container {
+    height: 120px;
+  }
+  
+  .small-product-title {
+    padding: 12px 8px;
+  }
+  
+  .small-product-card h4 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .our-products-section {
+    padding: 50px 0;
+  }
+  
+  .our-products-section .section-title {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+  }
+  
+  .products-grid {
+    padding: 0 15px;
+    gap: 25px;
+  }
+  
+  .aggregate-card {
+    border-radius: 15px;
+  }
+  
+  .product-image-container {
+    height: 200px;
+  }
+  
+  .product-content {
+    padding: 20px 15px;
+  }
+  
+  .product-content h3 {
+    font-size: 1.4rem;
+  }
+  
+  .product-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    border-radius: 25px;
+  }
+  
+  .other-products-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 15px;
+  }
+  
+  .small-product-card {
+    border-radius: 12px;
+  }
+  
+  .small-product-image-container {
+    height: 140px;
+  }
+  
+  .small-product-title {
+    padding: 15px 10px;
+  }
+  
+  .small-product-card h4 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .our-products-section .section-title {
+    font-size: 1.6rem;
+  }
+  
+  .product-content h3 {
+    font-size: 1.3rem;
+  }
+  
+  .small-product-card h4 {
+    font-size: 1rem;
+  }
+  
+  .other-products-grid {
+    gap: 12px;
+  }
+  
+  .small-product-image-container {
+    height: 120px;
+  }
+}
+/* Scrolling Product Gallery Section */
+.product-gallery-section {
+  padding: 80px 0;
+  background: #ffffff;
+}
+
+.gallery-title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 50px;
+}
+
+.product-scroll-container {
+  position: relative;
+  overflow: hidden;
+  padding: 0 20px;
+}
+
+.product-scroll-wrapper {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.product-scroll-wrapper::-webkit-scrollbar {
+  height: 12px;
+}
+
+.product-card-scroll {
+  flex: 0 0 280px; /* Fixed width for each card */
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.product-card-scroll:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.sale-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #3498db;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 2;
+  text-transform: uppercase;
+}
+
+.product-image-scroll {
+  height: 200px;
+  overflow: hidden;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.product-image-scroll img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card-scroll:hover .product-image-scroll img {
+  transform: scale(1.05);
+}
+
+.product-info-scroll {
+  padding: 20px;
+  text-align: center;
+}
+
+.product-info-scroll h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.price-scroll {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.original-price {
+  color: #7f8c8d;
+  text-decoration: line-through;
+  font-size: 0.9rem;
+}
+
+.sale-price {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.rating-scroll {
+  font-size: 0.9rem;
+}
+
+/* Scroll Indicators */
+.scroll-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #bdc3c7;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: #3498db;
+  width: 30px;
+  border-radius: 6px;
+}
+
+.indicator:hover {
+  background: #3498db;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-gallery-section {
+    padding: 60px 0;
+  }
+  
+  .gallery-title {
+    font-size: 1.8rem;
+    margin-bottom: 40px;
+    padding: 0 20px;
+  }
+  
+  .product-card-scroll {
+    flex: 0 0 250px;
+  }
+  
+  .product-scroll-container {
+    padding: 0 10px;
+  }
+  
+  .product-scroll-wrapper {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-title {
+    font-size: 1.6rem;
+  }
+  
+  .product-card-scroll {
+    flex: 0 0 220px;
+  }
+  
+  .product-image-scroll {
+    height: 160px;
+  }
+  
+  .product-info-scroll {
+    padding: 15px;
+  }
+  
+  .product-info-scroll h4 {
+    font-size: 1rem;
+  }
+}
+/* Footer Section */
+.footer-section {
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 60px 0 0;
+  margin-top: 80px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3498db;
+}
+
+.footer-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ecf0f1;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: #bdc3c7;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.footer-links a:hover {
+  color: #3498db;
+}
+
+/* Contact Column */
+.contact-column .contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.contact-icon {
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+.contact-item div {
+  color: #bdc3c7;
+  line-height: 1.4;
+}
+
+.contact-item strong {
+  color: #ecf0f1;
+  font-weight: 600;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  border-top: 1px solid #34495e;
+  padding: 25px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: #34495e;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  background: #3498db;
+  transform: translateY(-2px);
+}
+
+.social-links span {
+  font-size: 1.2rem;
+}
+
+.copyright {
+  color: #95a5a6;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.footer-bottom-right {
+  display: flex;
+  align-items: center;
+}
+
+.payment-methods {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.payment-methods img {
+  height: 24px;
+  width: auto;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.payment-methods img:hover {
+  opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .footer-bottom-left {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .payment-methods {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-section {
+    padding: 40px 0 0;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  
+  .footer-title {
+    font-size: 1.1rem;
+  }
+  
+  .contact-item {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .payment-methods img {
+    height: 20px;
+  }
+}
+/* App Download Section */
+.app-download-section {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-download-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Left Content */
+.app-download-left {
+  z-index: 2;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.logo-icon {
+  font-size: 2rem;
+  color: #f39c12;
+}
+
+.app-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f39c12;
+}
+
+.app-download-title {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.app-download-subtitle {
+  font-size: 1.2rem;
+  color: #bdc3c7;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+.download-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.download-btn {
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.download-btn:hover {
+  transform: translateY(-5px);
+}
+
+.download-btn img {
+  height: 60px;
+  width: auto;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Right Content - Phone */
+.app-download-right {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.phone-container {
+  position: relative;
+  z-index: 2;
+}
+
+.phone-mockup {
+  width: 280px;
+  height: 560px;
+  background: linear-gradient(145deg, #ecf0f1, #bdc3c7);
+  border-radius: 40px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.phone-mockup::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 25px;
+  background: #2c3e50;
+  border-radius: 15px;
+  z-index: 3;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.qr-container {
+  text-align: center;
+}
+
+/* Real QR Code Styling */
+.qr-code-real {
+  background: white;
+  border: 3px solid #2c3e50;
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: inline-block;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.qr-image {
+  width: 150px;
+  height: 150px;
+  display: block;
+  border-radius: 5px;
+}
+
+.scan-text {
+  color: #f39c12;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Floating Elements */
+.floating-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-item {
+  position: absolute;
+  font-size: 2.5rem;
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+.floating-item:nth-child(1) {
+  top: 20%;
+  right: -50px;
+  animation-delay: 0s;
+}
+
+.floating-item:nth-child(2) {
+  top: 60%;
+  right: -30px;
+  animation-delay: 2s;
+}
+
+.floating-item:nth-child(3) {
+  bottom: 30%;
+  right: -60px;
+  animation-delay: 4s;
+}
+
+.floating-item:nth-child(4) {
+  bottom: 10%;
+  right: -20px;
+  animation-delay: 1s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-download-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  
+  .app-download-title {
+    font-size: 2.2rem;
+  }
+  
+  .app-download-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .phone-mockup {
+    width: 240px;
+    height: 480px;
+  }
+  
+  .qr-image {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .download-btn img {
+    height: 50px;
+  }
+  
+  .floating-elements {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-download-section {
+    padding: 60px 0;
+  }
+  
+  .app-download-title {
+    font-size: 1.8rem;
+  }
+  
+  .download-buttons {
+    justify-content: center;
+  }
+  
+  .phone-mockup {
+    width: 200px;
+    height: 400px;
+  }
+  
+  .qr-image {
+    width: 100px;
+    height: 100px;
+  }
+}
+/* App Download Section - Smaller like Swiggy */
+.app-download-section {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 40px 0; /* Reduced from 80px */
+  position: relative;
+  overflow: hidden;
+}
+
+.app-download-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px; /* Reduced from 60px */
+  align-items: center;
+  max-width: 900px; /* Reduced from 1200px */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Left Content - Smaller */
+.app-download-left {
+  z-index: 2;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Reduced */
+  margin-bottom: 20px; /* Reduced */
+}
+
+.logo-icon {
+  font-size: 1.5rem; /* Reduced from 2rem */
+  color: #f39c12;
+}
+
+.app-name {
+  font-size: 1.4rem; /* Reduced from 1.8rem */
+  font-weight: 700;
+  color: #f39c12;
+}
+
+.app-download-title {
+  font-size: 2rem; /* Reduced from 3rem */
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 15px; /* Reduced */
+  color: white;
+}
+
+.app-download-subtitle {
+  font-size: 1rem; /* Reduced from 1.2rem */
+  color: #bdc3c7;
+  margin-bottom: 25px; /* Reduced */
+  line-height: 1.5;
+}
+
+.download-buttons {
+  display: flex;
+  gap: 15px; /* Reduced */
+  flex-wrap: wrap;
+}
+
+.download-btn img {
+  height: 45px; /* Reduced from 60px */
+  width: auto;
+  border-radius: 8px; /* Reduced */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Right Content - Smaller Phone */
+.phone-mockup {
+  width: 200px; /* Reduced from 280px */
+  height: 400px; /* Reduced from 560px */
+  background: linear-gradient(145deg, #ecf0f1, #bdc3c7);
+  border-radius: 30px; /* Reduced */
+  padding: 15px; /* Reduced */
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.phone-mockup::before {
+  content: '';
+  position: absolute;
+  top: 12px; /* Adjusted */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px; /* Reduced */
+  height: 18px; /* Reduced */
+  background: #2c3e50;
+  border-radius: 12px;
+  z-index: 3;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 22px; /* Reduced */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Smaller QR Code */
+.qr-code-real {
+  background: white;
+  border: 2px solid #2c3e50; /* Reduced */
+  border-radius: 10px;
+  padding: 10px; /* Reduced */
+  margin-bottom: 15px; /* Reduced */
+  display: inline-block;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.qr-image {
+  width: 100px; /* Reduced from 150px */
+  height: 100px; /* Reduced from 150px */
+  display: block;
+  border-radius: 4px;
+}
+
+.scan-text {
+  color: #f39c12;
+  font-weight: 600;
+  font-size: 0.9rem; /* Reduced */
+  margin: 0;
+}
+
+/* Smaller Floating Elements */
+.floating-item {
+  position: absolute;
+  font-size: 1.8rem; /* Reduced from 2.5rem */
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.6; /* Reduced opacity */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-download-section {
+    padding: 30px 0; /* Reduced */
+  }
+  
+  .app-download-content {
+    gap: 25px;
+    max-width: 100%;
+  }
+  
+  .app-download-title {
+    font-size: 1.6rem; /* Reduced */
+  }
+  
+  .phone-mockup {
+    width: 170px; /* Reduced */
+    height: 340px; /* Reduced */
+  }
+  
+  .qr-image {
+    width: 80px; /* Reduced */
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-download-section {
+    padding: 25px 0; /* Reduced */
+  }
+  
+  .app-download-title {
+    font-size: 1.4rem; /* Reduced */
+  }
+  
+  .phone-mockup {
+    width: 150px; /* Reduced */
+    height: 300px; /* Reduced */
+  }
+  
+  .qr-image {
+    width: 70px; /* Reduced */
+    height: 70px;
+  }
+}
