@@ -4,7 +4,17 @@ import { useAuth } from '../context/AuthContext'
 import MembershipCard from '../components/membership/MembershipCard'
 import EnhancedCategoryCard from '../components/products/EnhancedCategoryCard'
 import './HomePage.css'
-
+import AggregatesImg from '../Aggregates.JPG';
+import CCBlocksImg from '../CC Blocks.JPG';
+import TMTSteelImg from '../TMT Steel.webp';
+import RedBricksImg from '../Red Bricks.JPG';
+import CementImg from '../Cement.jpg';
+import DSC0200Img from '../DSC_0200.JPG';
+import DSC0141Img from '../DSC_0141.JPG';
+import DSC0158Img from '../DSC_0158.JPG';
+import SandImg from '../Sand.JPG';
+import Logo1Img from '../logo1.jpg';
+import Logo2Img from '../Aggrebhai.png';
 const HomePage = () => {
   const { user } = useAuth()
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -193,20 +203,7 @@ const HomePage = () => {
               </div>
               
               {/* Enhanced Stats */}
-              <div className="hero-stats">
-                {[
-                  { number: '1000+', label: 'Verified Suppliers', icon: '🏪' },
-                  { number: '50K+', label: 'Happy Customers', icon: '😊' },
-                  { number: '100+', label: 'Cities Covered', icon: '🌍' },
-                  { number: '24/7', label: 'Support Available', icon: '☎️' }
-                ].map((stat, index) => (
-                  <div key={index} className="hero-stat">
-                    <div className="hero-stat-icon">{stat.icon}</div>
-                    <div className="hero-stat-number">{stat.number}</div>
-                    <div className="hero-stat-label">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
+              
             </div>
           </div>
         </div>
@@ -233,38 +230,248 @@ const HomePage = () => {
       )}
 
       {/* Enhanced Features Section */}
-      <section className="features-section">
-        <div className="container">
-          <div className="section-header">
-            <div className="section-badge">
-              <span>✨ Why Choose Us</span>
-            </div>
-            <h2 className="section-title">Built for Modern Construction</h2>
-            <p className="section-subtitle">
-              We leverage technology to make construction material procurement simple, reliable, and cost-effective
-            </p>
+      {/* Our Products Section */}
+{/* Our Products Section */}
+<section className="our-products-section">
+  <div className="container">
+    <h2 className="section-title">Our Products</h2>
+    <div className="products-grid">
+      {/* Aggregates - 40% space (left side) */}
+      <div className="aggregate-card">
+        <div className="product-image-container">
+          <img 
+            src={AggregatesImg} 
+            alt="Aggregate products" 
+            className="product-image"
+          />
+        </div>
+        <div className="product-content">
+          <h3>Aggregate products</h3>
+          <button className="product-btn">CLICK HERE</button>
+        </div>
+      </div>
+
+      {/* Other Products - 60% space (right side grid) */}
+      <div className="other-products-grid">
+        <div className="small-product-card">
+          <div className="small-product-image-container">
+            <img 
+              src={CCBlocksImg} 
+              alt="Concrete Bricks" 
+              className="small-product-image"
+            />
           </div>
-          
-          <div className="features-grid">
-            {features.map((feature, index) => (
-              <div key={index} className="feature-card modern-card">
-                <div className="feature-icon-container" style={{ backgroundColor: `${feature.color}20` }}>
-                  <div className="feature-icon" style={{ color: feature.color }}>
-                    {feature.icon}
-                  </div>
-                </div>
-                <div className="feature-content">
-                  <h3 className="feature-title">{feature.title}</h3>
-                  <p className="feature-description">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+          <div className="small-product-title">
+            <h4>Concrete Bricks</h4>
           </div>
         </div>
-      </section>
+        
+        <div className="small-product-card">
+          <div className="small-product-image-container">
+            <img 
+              src={CementImg} 
+              alt="Cement" 
+              className="small-product-image"
+            />
+          </div>
+          <div className="small-product-title">
+            <h4>Cement</h4>
+          </div>
+        </div>
+        
+        <div className="small-product-card">
+          <div className="small-product-image-container">
+            <img 
+              src={TMTSteelImg} 
+              alt="Steel" 
+              className="small-product-image"
+            />
+          </div>
+          <div className="small-product-title">
+            <h4>STEEL</h4>
+          </div>
+        </div>
+        
+        <div className="small-product-card">
+          <div className="small-product-image-container">
+            <img 
+              src={RedBricksImg} 
+              alt="Clay Bricks" 
+              className="small-product-image"
+            />
+          </div>
+          <div className="small-product-title">
+            <h4>Clay Bricks</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>  
+<section className="product-gallery-section">
+  <div className="container">
+    <h2 className="gallery-title">Shop Aggregate products on Aggrekart App</h2>
+    
+    <div className="product-scroll-container">
+      <div className="product-scroll-wrapper">
+        
+        <div className="product-card-scroll">
+          <div className="sale-badge">Sale!</div>
+          <div className="product-image-scroll">
+            <img src={DSC0200Img} alt="53 Grade OPC Cement" />
+          </div>
+          <div className="product-info-scroll">
+            <h4>53 Grade OPC Cement</h4>
+            <div className="price-scroll">
+              <span className="original-price">₹1,300.00</span>
+              <span className="sale-price">₹750.00</span>
+            </div>
+            <div className="rating-scroll">
+              <span>⭐⭐⭐⭐⭐</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Enhanced Categories Section */}
-      <section className="categories-section">
+        <div className="product-card-scroll">
+          <div className="sale-badge">Sale!</div>
+          <div className="product-image-scroll">
+            <img src={DSC0141Img} alt="33 Grade OPC Cement" />
+          </div>
+          <div className="product-info-scroll">
+            <h4>33 Grade OPC Cement</h4>
+            <div className="price-scroll">
+              <span className="original-price">₹800.00</span>
+              <span className="sale-price">₹650.00</span>
+            </div>
+            <div className="rating-scroll">
+              <span>⭐⭐⭐⭐⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="product-card-scroll">
+          <div className="sale-badge">Sale!</div>
+          <div className="product-image-scroll">
+            <img src={SandImg} alt="Plaster Sand" />
+          </div>
+          <div className="product-info-scroll">
+            <h4>Plaster Sand</h4>
+            <div className="price-scroll">
+              <span className="original-price">₹10,000.00</span>
+              <span className="sale-price">₹8,000.00</span>
+            </div>
+            <div className="rating-scroll">
+              <span>⭐⭐⭐⭐⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="product-card-scroll">
+          <div className="sale-badge">Sale!</div>
+          <div className="product-image-scroll">
+            <img src={DSC0158Img} alt="River Sand" />
+          </div>
+          <div className="product-info-scroll">
+            <h4>River Sand</h4>
+            <div className="price-scroll">
+              <span className="original-price">₹13,000.00</span>
+              <span className="sale-price">₹11,000.00</span>
+            </div>
+            <div className="rating-scroll">
+              <span>⭐⭐⭐⭐⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="product-card-scroll">
+          <div className="sale-badge">Sale!</div>
+          <div className="product-image-scroll">
+            <img src={DSC0200Img} alt="43 Grade OPC Cement" />
+          </div>
+          <div className="product-info-scroll">
+            <h4>43 Grade OPC Cement</h4>
+            <div className="price-scroll">
+              <span className="original-price">₹900.00</span>
+              <span className="sale-price">₹720.00</span>
+            </div>
+            <div className="rating-scroll">
+              <span>⭐⭐⭐⭐⭐</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    {/* Scroll indicators */}
+    <div className="scroll-indicators">
+      <div className="indicator active"></div>
+      <div className="indicator"></div>
+      <div className="indicator"></div>
+      <div className="indicator"></div>
+    </div>
+  </div>
+</section>
+
+<section className="app-download-section">
+  <div className="container">
+    <div className="app-download-content">
+      
+      {/* Left Content */}
+      <div className="app-download-left">
+        <div className="app-logo">
+          <span className="logo-icon">🏗️</span>
+          <span className="app-name">Aggrekart</span>
+        </div>
+        <h2 className="app-download-title">Get the Aggrekart App now!</h2>
+        <p className="app-download-subtitle">
+          For best offers and discounts curated specially for you.
+        </p>
+        
+        {/* Download Links */}
+        <div className="download-buttons">
+          <a href="#" className="download-btn">
+            <img src={Logo1Img} alt="Download from App Store" />
+          </a>
+          <a href="#" className="download-btn">
+            <img src={Logo2Img} alt="Get it on Google Play" />
+          </a>
+        </div>
+      </div>
+
+      {/* Right Content - Phone with Real QR */}
+      <div className="app-download-right">
+        <div className="phone-container">
+          <div className="phone-mockup">
+            <div className="phone-screen">
+              <div className="qr-container">
+                <div className="qr-code-real">
+                  {/* Real QR Code Image - Replace with your actual QR code */}
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://aggrekart.com/download" 
+                    alt="Scan to download Aggrekart app" 
+                    className="qr-image"
+                  />
+                </div>
+                <p className="scan-text">Scan to download</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Floating Elements */}
+        <div className="floating-elements">
+          <div className="floating-item cement-bag">🏗️</div>
+          <div className="floating-item brick">🧱</div>
+          <div className="floating-item tools">🔨</div>
+          <div className="floating-item materials">📦</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+    <section className="categories-section">
         <div className="container">
           <div className="section-header">
             <div className="section-badge">
@@ -384,6 +591,101 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      {/* Footer Section */}
+<footer className="footer-section">
+  <div className="container">
+    <div className="footer-content">
+      
+      {/* Logo and Quick Links */}
+      <div className="footer-column">
+        <div className="footer-logo">
+          <span className="logo-icon">🏗️</span>
+          <span className="logo-text">Aggrekart</span>
+        </div>
+        <ul className="footer-links">
+          <li><Link to="/track-order">Track Order</Link></li>
+          <li><Link to="/delivery-returns">Delivery & Returns</Link></li>
+          <li><Link to="/contact">Contact Us</Link></li>
+          <li><Link to="/flash-sale">Flash Sale</Link></li>
+        </ul>
+      </div>
+
+      {/* Important Links */}
+      <div className="footer-column">
+        <h4 className="footer-title">Important Links</h4>
+        <ul className="footer-links">
+          <li><Link to="/about">About Us</Link></li>
+          <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+          <li><Link to="/faq">FAQ</Link></li>
+          <li><Link to="/terms">Terms and Condition</Link></li>
+        </ul>
+      </div>
+
+      {/* General Links */}
+      <div className="footer-column">
+        <h4 className="footer-title">General Links</h4>
+        <ul className="footer-links">
+          <li><Link to="/blog">Blog</Link></li>
+          <li><Link to="/products">Shop</Link></li>
+          <li><Link to="/support">Support</Link></li>
+          <li><Link to="/deals">Best Deals</Link></li>
+        </ul>
+      </div>
+
+      {/* Contact Info */}
+      <div className="footer-column contact-column">
+        <h4 className="footer-title">Contact Info</h4>
+        <div className="contact-info">
+          <div className="contact-item">
+            <span className="contact-icon">📍</span>
+            <div>
+              <strong>Address:</strong><br />
+              Bhubaneswar, Odisha, India
+            </div>
+          </div>
+          <div className="contact-item">
+            <span className="contact-icon">📞</span>
+            <div>
+              <strong>Phone:</strong><br />
+              +91-7978-123-456
+            </div>
+          </div>
+          <div className="contact-item">
+            <span className="contact-icon">✉️</span>
+            <div>
+              <strong>Email:</strong><br />
+              support@aggrekart.com
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {/* Footer Bottom */}
+    <div className="footer-bottom">
+      <div className="footer-bottom-left">
+        <div className="social-links">
+          <a href="#" aria-label="Facebook"><span>📘</span></a>
+          <a href="#" aria-label="Twitter"><span>🐦</span></a>
+          <a href="#" aria-label="LinkedIn"><span>💼</span></a>
+        </div>
+        <p className="copyright">©2025 Aggrekart All rights reserved</p>
+      </div>
+      
+      <div className="footer-bottom-right">
+        <div className="payment-methods">
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5NQVNURVJDQVJEPC90ZXh0Pjwvc3ZnPg==" alt="Mastercard" />
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzFFNDc4NiIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5WSVNBPC90ZXh0Pjwvc3ZnPg==" alt="Visa" />
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNzlDMSIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QQVlQQUw8L3RleHQ+PC9zdmc+" alt="PayPal" />
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNTFBNSIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjciIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TVFJJUEU8L3RleHQ+PC9zdmc+" alt="Stripe" />
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzY3Qjk2QSIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjciIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RVUVCQQ==</text></svg>" alt="Mollie" />
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzI1RDM2NiIvPjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjciIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SQVpPUlBBWTwvdGV4dD48L3N2Zz4=" alt="Razorpay" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
     </div>
   )
 }

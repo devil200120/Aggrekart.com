@@ -27,6 +27,8 @@ import SettingsPage from './pages/SettingsPage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+
 
 // Fix the import path for WhatsAppRegister - it's in pages/auth, not components/auth
 
@@ -94,6 +96,8 @@ function App() {
                   <Route path="/auth/register" element={<RegisterPage />} />
                   <Route path="/auth/verify-phone" element={<VerifyPhonePage />} />
 <Route path="/auth/whatsapp-register" element={<WhatsAppRegister />} />
+                  <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+
                   {/* Protected Routes - Customer Only */}
                   <Route 
                     path="/cart" 

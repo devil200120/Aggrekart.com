@@ -198,7 +198,7 @@ const LoginPage = () => {
               </label>
               <div className="input-wrapper">
                 <span className="input-icon">
-                  {loginType === 'email' ? '📧' : '📱'}
+                  {loginType === 'email' ? '' : ''}
                 </span>
                 <input
                   type={loginType === 'email' ? 'email' : 'tel'}
@@ -225,7 +225,7 @@ const LoginPage = () => {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"></span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
