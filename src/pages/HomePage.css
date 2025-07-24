@@ -696,7 +696,7 @@
   }
 }
 /* Our Products Section */
-/* Our Products Section - MOBILE FRIENDLY VERSION */
+/* Our Products Section - DESKTOP PRESERVED + MOBILE FRIENDLY */
 .our-products-section {
   padding: 80px 0;
   background: #f8f9fa;
@@ -720,10 +720,12 @@
   align-items: stretch;
 }
 
-/* Aggregate Card - 40% space */
+/* Aggregate Card - 40% space - DESKTOP SIZE RESTORED */
 .aggregate-card {
   position: relative;
+  left: 50px; /* Restored desktop positioning */
   background: white;
+  width: 450px; /* Restored desktop width */
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -731,7 +733,6 @@
   display: flex;
   flex-direction: column;
   min-height: 300px;
-  /* Removed fixed positioning and width for mobile compatibility */
 }
 
 .product-image-container {
@@ -741,18 +742,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 .product-image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Changed to responsive sizing */
+  height: 450px; /* Restored desktop size */
+  width: 500px; /* Restored desktop size */
 }
 
 .product-content {
-  padding: 30px 20px;
+  padding: 50px 40px; /* Restored desktop padding */
   text-align: center;
   flex-grow: 1;
   display: flex;
@@ -761,26 +759,25 @@
 }
 
 .product-content h3 {
-  font-size: 1.8rem;
+  font-size: 2.2rem; /* Restored desktop font size */
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .product-btn {
   background: #3498db;
   color: white;
   border: none;
-  padding: 15px 30px;
+  padding: 18px 50px; /* Restored desktop padding */
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.1rem; /* Restored desktop font size */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
   align-self: center;
-  max-width: 200px;
 }
 
 .product-btn:hover {
@@ -788,7 +785,7 @@
   transform: translateY(-2px);
 }
 
-/* Other Products Grid - 60% space */
+/* Other Products Grid - 60% space - DESKTOP SIZE RESTORED */
 .other-products-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -808,7 +805,9 @@
   flex-direction: column;
   cursor: pointer;
   height: 100%;
-  /* Removed fixed positioning and width for mobile compatibility */
+  width: 250px; /* Restored desktop width */
+  position: relative;
+  left: 180px; /* Restored desktop positioning */
 }
 
 .small-product-card:hover {
@@ -817,7 +816,7 @@
 }
 
 .small-product-image-container {
-  height: 150px;
+  height: 180px; /* Restored desktop height */
   overflow: hidden;
   background: #f0f0f0;
   display: flex;
@@ -833,7 +832,7 @@
 }
 
 .small-product-title {
-  padding: 15px 10px;
+  padding: 25px 15px; /* Restored desktop padding */
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -841,15 +840,14 @@
 }
 
 .small-product-card h4 {
-  font-size: 1.1rem;
+  font-size: 1.3rem; /* Restored desktop font size */
   font-weight: 600;
   color: #2c3e50;
   text-align: center;
   margin: 0;
-  line-height: 1.3;
 }
 
-/* ENHANCED MOBILE RESPONSIVE DESIGN */
+/* MOBILE RESPONSIVE DESIGN - Only applies to mobile devices */
 @media (max-width: 1024px) {
   .products-grid {
     grid-template-columns: 1fr;
@@ -857,7 +855,10 @@
     max-width: 800px;
   }
   
+  /* Reset positioning and sizing for tablets */
   .aggregate-card {
+    left: 0; /* Remove desktop positioning */
+    width: 100%; /* Make responsive */
     max-width: 100%;
     margin: 0 auto;
   }
@@ -866,6 +867,11 @@
     max-width: 100%;
     margin: 0 auto;
     min-height: auto;
+  }
+  
+  .small-product-card {
+    left: 0; /* Remove desktop positioning */
+    width: 100%; /* Make responsive */
   }
 }
 
@@ -887,12 +893,20 @@
   }
   
   .aggregate-card {
+    left: 0;
+    width: 100%;
     min-height: auto;
     max-width: 100%;
   }
   
   .product-image-container {
     height: 250px;
+  }
+  
+  .product-image-container img {
+    width: 100%; /* Mobile responsive image */
+    height: 100%;
+    object-fit: cover;
   }
   
   .product-content {
@@ -915,6 +929,11 @@
     grid-template-columns: 1fr 1fr;
     gap: 15px;
     min-height: auto;
+  }
+  
+  .small-product-card {
+    left: 0;
+    width: 100%;
   }
   
   .small-product-image-container {
