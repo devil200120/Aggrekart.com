@@ -14,6 +14,7 @@ const getApiBaseUrl = () => {
 const api = axios.create({
   baseURL: getApiBaseUrl(),
   timeout: 30000, // Increased timeout for Render cold starts
+  withCredentials: true, // Important for CORS
   headers: {
     'Content-Type': 'application/json',
   },
