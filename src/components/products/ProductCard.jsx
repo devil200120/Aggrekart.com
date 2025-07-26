@@ -97,38 +97,47 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
 
   // Extract data with proper fallbacks based on the actual database schema
   const productData = {
-    _id: product._id || '',
-    name: safeRender(product.name, 'Unnamed Product'),
-    description: safeRender(product.description, 'No description available'),
-    images: product.images || [],
-    
-    // Price from pricing.basePrice
-    price: safeNumber(product.pricing?.basePrice || product.price),
-    originalPrice: safeNumber(product.pricing?.originalPrice || product.originalPrice),
-    unit: safeRender(product.unit, 'unit'),
-    
-    // Stock from stock.available 
-    inStock: product.stock?.available > 0 || product.inStock || false,
-    stockQuantity: safeNumber(product.stock?.available || product.stockQuantity),
-    
-    // Ratings
-    averageRating: safeNumber(product.ratings?.average || product.averageRating),
-    reviewCount: safeNumber(product.ratings?.totalReviews || product.reviewCount || product.totalReviews),
-    
-    // Supplier info
-    supplier: {
-      _id: product.supplier?._id || '',
-      businessName: safeRender(product.supplier?.businessName || product.supplier?.name, 'Unknown Supplier'),
-      location: {
-        city: safeRender(product.supplier?.location?.city, ''),
-        state: safeRender(product.supplier?.location?.state, '')
-      }
-    },
-    
-    // Other fields
-    minOrderQuantity: safeNumber(product.minOrderQuantity),
-    badge: product.badge
-  };
+  _id: product._id || '',
+  name: safeRender(product.name, 'Unnamed Product'),
+  description: safeRender(product.description, 'No description available'),
+  
+  // Images - FIXED to match backend response
+  images: product.images || [],
+  primaryImage: product.primaryImage || product.image || (product.images?.[0]?.url),
+  
+  // Price from pricing.basePrice
+  price: safeNumber(product.pricing?.basePrice || product.price),
+  originalPrice: safeNumber(product.pricing?.originalPrice || product.originalPrice),
+  unit: safeRender(product.pricing?.unit || product.unit, 'unit'),
+  
+  // Stock from stock.available 
+  inStock: product.stock?.available > 0 || product.inStock || false,
+  stockQuantity: safeNumber(product.stock?.available || product.stockQuantity),
+  
+  // Ratings
+  averageRating: safeNumber(product.ratings?.average || product.averageRating),
+  reviewCount: safeNumber(product.ratings?.totalReviews || product.reviewCount || product.totalReviews),
+  
+  // Supplier info - FIXED to match backend response
+  supplier: {
+    _id: product.supplier?._id || '',
+    businessName: safeRender(
+      product.supplier?.companyName ||     // ← Backend sends 'companyName'
+      product.supplierName ||              // ← Backend also sends 'supplierName' 
+      product.supplier?.businessName ||    // ← Fallback for old data
+      product.supplier?.name,              // ← Another fallback
+      'Unknown Supplier'
+    ),
+    location: {
+      city: safeRender(product.supplier?.location?.city, ''),
+      state: safeRender(product.supplier?.location?.state, '')
+    }
+  },
+  
+  // Other fields
+  minOrderQuantity: safeNumber(product.pricing?.minimumQuantity || product.minOrderQuantity),
+  badge: product.badge
+};
 
   if (viewMode === 'list') {
     return (
@@ -136,11 +145,11 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
         <Link to={`/products/${productData._id}`} className="product-link">
           <div className="product-image-container">
             <ImageWithFallback
-              src={productData.images[0]}
-              alt={productData.name}
-              className="product-image"
-              fallbackType="product"
-            />
+  src={productData.primaryImage || '/placeholder-product.jpg'}
+  alt={productData.name}
+  className="product-image"
+  fallbackType="product"
+/>
             {productData.badge && (
               <span className={`product-badge ${productData.badge.type}`}>
                 {productData.badge.text}
@@ -247,11 +256,11 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
       <Link to={`/products/${productData._id}`} className="product-link">
         <div className="product-image-container">
           <ImageWithFallback
-            src={productData.images[0]}
-            alt={productData.name}
-            className="product-image"
-            fallbackType="product"
-          />
+  src={productData.primaryImage || '/placeholder-product.jpg'}
+  alt={productData.name}
+  className="product-image"
+  fallbackType="product"
+/>
           {productData.badge && (
             <span className={`product-badge ${productData.badge.type}`}>
               {productData.badge.text}
