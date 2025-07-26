@@ -28,6 +28,10 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage'
+import EditProductPage from './pages/supplier/EditProductPage'
+
+
 
 
 // Fix the import path for WhatsAppRegister - it's in pages/auth, not components/auth
@@ -200,13 +204,23 @@ function App() {
                   />
                   
                   <Route 
-                    path="/supplier/products/edit/:productId" 
+                    path="/supplier/products/:productId/edit" 
                     element={
                       <ProtectedRoute allowedRoles={['supplier']}>
-                        <AddProductPage />
+                        <EditProductPage />
                       </ProtectedRoute>
                     } 
                   />
+
+                  <Route 
+                    path="/supplier/orders" 
+                    element={
+                      <ProtectedRoute allowedRoles={['supplier']}>
+                        <SupplierOrdersPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
 
                   {/* Protected Routes - Admin Only */}
                   <Route 
