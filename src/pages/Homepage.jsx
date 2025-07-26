@@ -15,6 +15,8 @@ import DSC0158Img from '../DSC_0158.JPG';
 import SandImg from '../Sand.JPG';
 import Logo1Img from '../logo1.jpg';
 import Logo2Img from '../Aggrebhai.png';
+import AdvertisementImg from '../Advertisement.jpg';
+
 const HomePage = () => {
   const { user } = useAuth()
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -413,61 +415,16 @@ const HomePage = () => {
   </div>
 </section>
 
-<section className="app-download-section">
+<section className="advertisement-section">
   <div className="container">
-    <div className="app-download-content">
-      
-      {/* Left Content */}
-      <div className="app-download-left">
-        <div className="app-logo">
-          <span className="logo-icon">🏗️</span>
-          <span className="app-name">Aggrekart</span>
-        </div>
-        <h2 className="app-download-title">Get the Aggrekart App now!</h2>
-        <p className="app-download-subtitle">
-          For best offers and discounts curated specially for you.
-        </p>
-        
-        {/* Download Links */}
-        <div className="download-buttons">
-          <a href="#" className="download-btn">
-            <img src={Logo1Img} alt="Download from App Store" />
-          </a>
-          <a href="#" className="download-btn">
-            <img src={Logo2Img} alt="Get it on Google Play" />
-          </a>
-        </div>
+    <div className="advertisement-content">
+      <div className="advertisement-image-container">
+        <img 
+          src={AdvertisementImg} 
+          alt="Aggrekart Special Offer - WhatsApp Booking Available" 
+          className="advertisement-image"
+        />
       </div>
-
-      {/* Right Content - Phone with Real QR */}
-      <div className="app-download-right">
-        <div className="phone-container">
-          <div className="phone-mockup">
-            <div className="phone-screen">
-              <div className="qr-container">
-                <div className="qr-code-real">
-                  {/* Real QR Code Image - Replace with your actual QR code */}
-                  <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://aggrekart.com/download" 
-                    alt="Scan to download Aggrekart app" 
-                    className="qr-image"
-                  />
-                </div>
-                <p className="scan-text">Scan to download</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="floating-elements">
-          <div className="floating-item cement-bag">🏗️</div>
-          <div className="floating-item brick">🧱</div>
-          <div className="floating-item tools">🔨</div>
-          <div className="floating-item materials">📦</div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
