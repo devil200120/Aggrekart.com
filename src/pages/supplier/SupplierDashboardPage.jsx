@@ -1,95 +1,96 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import { useAuth } from '../../context/AuthContext'
 import { supplierAPI } from '../../services/api'
+import { Link } from 'react-router-dom'
+import LoadingSpinner from '../../components/common/LoadingSpinner'
 import DashboardStats from '../../components/supplier/DashboardStats'
-import RecentOrders from '../../components/supplier/RecentOrders'
-import ProductPerformance from '../../components/supplier/ProductPerformance'
 import SalesChart from '../../components/supplier/SalesChart'
 import QuickActions from '../../components/supplier/QuickActions'
-import LoadingSpinner from '../../components/common/LoadingSpinner'
 import './SupplierDashboardPage.css'
 
 const SupplierDashboardPage = () => {
   const { user } = useAuth()
-  const [dateRange, setDateRange] = useState('30') // days
+  const [dateRange, setDateRange] = useState('30')
+  const [greeting, setGreeting] = useState('')
+
+  // Set dynamic greeting based on time
+  useEffect(() => {
+    const hour = new Date().getHours()
+    if (hour < 12) setGreeting('Good Morning')
+    else if (hour < 17) setGreeting('Good Afternoon')
+    else setGreeting('Good Evening')
+  }, [])
 
   // Fetch dashboard data
-  const { data: dashboardData, isLoading, error } = useQuery(
+  const { data: dashboardData, isLoading, error, refetch } = useQuery(
     ['supplier-dashboard', user?.id, dateRange],
     () => supplierAPI.getDashboardData({ days: dateRange }),
     {
       enabled: !!user && user.role === 'supplier',
       staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      onError: (error) => {
+        console.error('Dashboard fetch error:', error)
+      }
     }
   )
 
-  // Fetch recent orders
-  const { data: recentOrders } = useQuery(
-    ['supplier-recent-orders', user?.id],
-    () => supplierAPI.getOrders({ limit: 5, status: 'recent' }),
-    {
-      enabled: !!user && user.role === 'supplier',
-      staleTime: 2 * 60 * 1000, // 2 minutes
-    }
-  )
-
-  // Fetch product performance
-  const { data: productPerformance } = useQuery(
-    ['supplier-product-performance', user?.id, dateRange],
-    () => supplierAPI.getProductAnalytics({ days: dateRange }),
-    {
-      enabled: !!user && user.role === 'supplier',
-      staleTime: 10 * 60 * 1000, // 10 minutes
-    }
-  )
-
+  // Access control
   if (!user || user.role !== 'supplier') {
     return (
       <div className="supplier-dashboard-page">
         <div className="container">
           <div className="access-denied">
+            <div className="access-denied-icon">🚫</div>
             <h2>Access Denied</h2>
             <p>Only suppliers can access this dashboard</p>
+            <Link to="/auth/login" className="btn btn-primary">Login as Supplier</Link>
           </div>
         </div>
       </div>
     )
   }
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="supplier-dashboard-page">
         <div className="container">
-          <LoadingSpinner size="large" text="Loading dashboard..." />
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="supplier-dashboard-page">
-        <div className="container">
-          <div className="dashboard-error">
-            <h2>Something went wrong</h2>
-            <p>Unable to load dashboard data. Please try again.</p>
+          <div className="loading-container">
+            <LoadingSpinner size="large" />
+            <h3>Loading Dashboard...</h3>
+            <p>Fetching your latest business data</p>
           </div>
         </div>
       </div>
     )
   }
 
-  const stats = dashboardData?.stats || {
-    totalRevenue: 0,
-    totalOrders: 0,
-    totalProducts: 0,
-    averageOrderValue: 0,
-    revenueGrowth: 0,
-    ordersGrowth: 0,
-    productsGrowth: 0,
-    aovGrowth: 0
+  // Error state
+  if (error) {
+    return (
+      <div className="supplier-dashboard-page">
+        <div className="container">
+          <div className="error-container">
+            <div className="error-icon">⚠️</div>
+            <h2>Unable to Load Dashboard</h2>
+            <p>We're having trouble fetching your dashboard data.</p>
+            <div className="error-actions">
+              <button onClick={refetch} className="btn btn-primary">
+                Try Again
+              </button>
+              <Link to="/supplier/products" className="btn btn-secondary">
+                View Products
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
+
+  const { supplier, stats, products, salesData, approvalStatus, notifications } = dashboardData.data
 
   return (
     <div className="supplier-dashboard-page">
@@ -97,54 +98,95 @@ const SupplierDashboardPage = () => {
         {/* Dashboard Header */}
         <div className="dashboard-header">
           <div className="header-content">
-            <h1>Supplier Dashboard</h1>
-            <p>Welcome back, {user.businessName || user.name}!</p>
-          </div>
-          
-          <div className="header-actions">
-            <div className="date-range-selector">
-              <label htmlFor="dateRange">Time Period:</label>
-              <select 
-                id="dateRange"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="date-select"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 3 months</option>
-                <option value="365">Last year</option>
-              </select>
+            <div className="welcome-section">
+              <h1 className="main-title">
+                {greeting}, {supplier.name}! 👋
+              </h1>
+              <p className="welcome-subtitle">
+                Here's what's happening with your business today
+              </p>
+              <div className="supplier-meta">
+                <span className="supplier-id">ID: {supplier.supplierId}</span>
+                <span className="member-since">
+                  Member since {new Date(supplier.memberSince).toLocaleDateString('en-IN', { 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </span>
+                <div className={`status-badge ${approvalStatus.isApproved ? 'approved' : 'pending'}`}>
+                  {approvalStatus.isApproved ? '✓ Approved' : '⏳ Pending'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="header-controls">
+              <div className="date-range-selector">
+                <label htmlFor="dateRange">📊 Time Period:</label>
+                <select 
+                  id="dateRange"
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="date-select"
+                >
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 3 months</option>
+                  <option value="365">Last year</option>
+                </select>
+              </div>
+              
+              <button onClick={refetch} className="refresh-btn" title="Refresh Data">
+                🔄
+              </button>
             </div>
           </div>
         </div>
 
+        {/* Notifications Panel */}
+        {notifications && notifications.length > 0 && (
+          <NotificationPanel notifications={notifications} />
+        )}
+
         {/* Dashboard Stats */}
         <DashboardStats stats={stats} />
 
-        {/* Dashboard Grid */}
+        {/* Main Dashboard Grid */}
         <div className="dashboard-grid">
           {/* Left Column */}
           <div className="dashboard-main">
             {/* Sales Chart */}
-            <div className="dashboard-card">
+            <div className="dashboard-card chart-card">
               <div className="card-header">
-                <h2>Sales Overview</h2>
-                <p>Revenue trends over time</p>
+                <div className="header-info">
+                  <h2>📈 Sales Overview</h2>
+                  <p>Revenue and orders trends for the selected period</p>
+                </div>
+                <div className="chart-legend">
+                  <div className="legend-item">
+                    <span className="legend-color revenue"></span>
+                    Revenue
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-color orders"></span>
+                    Orders
+                  </div>
+                </div>
               </div>
-              <SalesChart 
-                data={dashboardData?.salesData || []} 
-                dateRange={dateRange}
-              />
+              <SalesChart data={salesData} dateRange={dateRange} />
             </div>
 
-            {/* Recent Orders */}
+            {/* Recent Products */}
             <div className="dashboard-card">
               <div className="card-header">
-                <h2>Recent Orders</h2>
-                <p>Latest orders from customers</p>
+                <div className="header-info">
+                  <h2>🆕 Recent Products</h2>
+                  <p>Your latest product additions</p>
+                </div>
+                <Link to="/supplier/products" className="view-all-link">
+                  View All Products →
+                </Link>
               </div>
-              <RecentOrders orders={recentOrders?.orders || []} />
+              <RecentProducts products={products.recent} />
             </div>
           </div>
 
@@ -153,68 +195,129 @@ const SupplierDashboardPage = () => {
             {/* Quick Actions */}
             <QuickActions />
 
-            {/* Product Performance */}
-            <div className="dashboard-card">
+            {/* Product Overview */}
+            <div className="dashboard-card product-overview">
               <div className="card-header">
-                <h2>Top Products</h2>
-                <p>Best performing products</p>
+                <h2>📦 Product Overview</h2>
+                <p>Your product catalog status</p>
               </div>
-              <ProductPerformance 
-                products={productPerformance?.topProducts || []} 
-              />
+              <div className="product-stats-grid">
+                <div className="product-stat">
+                  <div className="stat-number">{products.total}</div>
+                  <div className="stat-label">Total Products</div>
+                </div>
+                <div className="product-stat active">
+                  <div className="stat-number">{products.active}</div>
+                  <div className="stat-label">Active</div>
+                </div>
+                <div className="product-stat pending">
+                  <div className="stat-number">{products.pending}</div>
+                  <div className="stat-label">Pending</div>
+                </div>
+                <div className="product-stat inactive">
+                  <div className="stat-number">{products.inactive}</div>
+                  <div className="stat-label">Inactive</div>
+                </div>
+              </div>
+              
+              {products.total === 0 && (
+                <div className="empty-state">
+                  <div className="empty-icon">📦</div>
+                  <p>No products yet</p>
+                  <Link to="/supplier/products/add" className="btn btn-primary btn-small">
+                    Add Your First Product
+                  </Link>
+                </div>
+              )}
             </div>
 
+            {/* Top Products */}
+            <TopProducts products={products.topPerforming} />
+
             {/* Business Insights */}
-            <div className="dashboard-card">
+            <div className="dashboard-card insights-card">
               <div className="card-header">
-                <h2>Business Insights</h2>
+                <h2>💡 Business Insights</h2>
                 <p>Key metrics and recommendations</p>
               </div>
               <div className="insights-content">
                 <div className="insight-item">
-                  <div className="insight-icon">📈</div>
+                  <div className={`insight-icon ${stats.revenueGrowth >= 0 ? 'positive' : 'negative'}`}>
+                    {stats.revenueGrowth >= 0 ? '📈' : '📉'}
+                  </div>
                   <div className="insight-text">
-                    <h4>Sales Trend</h4>
+                    <h4>Revenue Trend</h4>
                     <p>
                       {stats.revenueGrowth >= 0 ? 'Revenue is growing' : 'Revenue needs attention'}
-                      {' '}({stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth?.toFixed(1)}%)
+                      <span className={`growth-value ${stats.revenueGrowth >= 0 ? 'positive' : 'negative'}`}>
+                        {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth?.toFixed(1)}%
+                      </span>
                     </p>
                   </div>
                 </div>
 
                 <div className="insight-item">
-                  <div className="insight-icon">🛒</div>
+                  <div className={`insight-icon ${stats.ordersGrowth >= 0 ? 'positive' : 'negative'}`}>
+                    🛒
+                  </div>
                   <div className="insight-text">
                     <h4>Order Volume</h4>
                     <p>
-                      {stats.ordersGrowth >= 0 ? 'Orders are increasing' : 'Orders are declining'}
-                      {' '}({stats.ordersGrowth > 0 ? '+' : ''}{stats.ordersGrowth?.toFixed(1)}%)
+                      {stats.ordersGrowth >= 0 ? 'Orders increasing' : 'Orders declining'}
+                      <span className={`growth-value ${stats.ordersGrowth >= 0 ? 'positive' : 'negative'}`}>
+                        {stats.ordersGrowth > 0 ? '+' : ''}{stats.ordersGrowth?.toFixed(1)}%
+                      </span>
                     </p>
                   </div>
                 </div>
 
                 <div className="insight-item">
-                  <div className="insight-icon">💰</div>
+                  <div className="insight-icon">⭐</div>
                   <div className="insight-text">
-                    <h4>Average Order</h4>
+                    <h4>Product Rating</h4>
                     <p>
-                      Order value is {stats.aovGrowth >= 0 ? 'improving' : 'decreasing'}
-                      {' '}({stats.aovGrowth > 0 ? '+' : ''}{stats.aovGrowth?.toFixed(1)}%)
+                      {stats.avgProductRating > 0 
+                        ? `Average rating: ${stats.avgProductRating.toFixed(1)}/5`
+                        : 'No ratings yet'
+                      }
+                      {stats.totalReviews > 0 && (
+                        <span className="reviews-count">
+                          ({stats.totalReviews} review{stats.totalReviews !== 1 ? 's' : ''})
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
 
                 <div className="insight-item">
-                  <div className="insight-icon">📦</div>
+                  <div className="insight-icon">👀</div>
                   <div className="insight-text">
-                    <h4>Product Catalog</h4>
+                    <h4>Product Views</h4>
                     <p>
-                      You have {stats.totalProducts} products listed
-                      {stats.totalProducts < 10 && ' (Consider adding more products)'}
+                      {stats.productViews > 0 
+                        ? `${stats.productViews.toLocaleString()} total views`
+                        : 'No views yet'
+                      }
+                      {stats.productViews > 1000 && (
+                        <span className="achievement">🔥 Popular!</span>
+                      )}
                     </p>
                   </div>
                 </div>
               </div>
+
+              {!approvalStatus.isApproved && (
+                <div className="approval-notice">
+                  <div className="notice-icon">⚠️</div>
+                  <div className="notice-text">
+                    <strong>Account Pending Approval</strong>
+                    <p>Complete your profile to start selling and receiving orders.</p>
+                    <Link to="/supplier/profile" className="btn btn-primary btn-small">
+                      Complete Profile
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
