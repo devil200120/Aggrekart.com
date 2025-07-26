@@ -1888,3 +1888,94 @@
     height: 70px;
   }
 }
+/* Advertisement Section - Complete fix to show full banner */
+.advertisement-section {
+  padding: 40px 0;
+  background: #f8f9fa;
+  width: 100%;
+  overflow: hidden;
+}
+
+.advertisement-content {
+  width: 100%;
+  max-width: none; /* Remove any max-width constraints */
+  margin: 0;
+  padding: 0 20px;
+}
+
+.advertisement-image-container {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  background: #f39c12;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.advertisement-image-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.advertisement-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* This ensures the full image is visible */
+  display: block;
+  transition: transform 0.3s ease;
+  max-width: 100%;
+  /* Remove any height constraints that might cause cropping */
+}
+
+.advertisement-image-container:hover .advertisement-image {
+  transform: scale(1.01);
+}
+
+/* Alternative approach - if the above doesn't work, use this */
+.advertisement-image-full-width {
+  width: 100vw; /* Full viewport width */
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin-left: calc(-50vw + 50%); /* Center the full-width image */
+  border-radius: 0; /* Remove border radius for full width */
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .advertisement-content {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .advertisement-section {
+    padding: 30px 0;
+  }
+  
+  .advertisement-image-container {
+    border-radius: 10px;
+  }
+  
+  .advertisement-content {
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .advertisement-section {
+    padding: 20px 0;
+  }
+  
+  .advertisement-content {
+    padding: 0 5px;
+  }
+  
+  .advertisement-image-container {
+    border-radius: 8px;
+  }
+}
