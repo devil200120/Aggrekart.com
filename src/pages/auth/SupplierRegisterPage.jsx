@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { suppliersAPI } from '../../services/api'
+import { supplierAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import './AuthPages.css'
 
@@ -226,58 +226,72 @@ const handleSubmit = async (e) => {
   setIsSubmitting(true)
   
   try {
+   // Replace the registrationData object in handleSubmit (around line 225):
+
+    // Replace the registrationData object in handleSubmit function (around line 225):
+
     const registrationData = {
-      // User fields
+      // User fields (exact match to backend validation)
       email: formData.email.toLowerCase().trim(),
       phoneNumber: formData.phoneNumber,
       password: formData.password,
       contactPersonName: formData.contactPersonName.trim(),
       
-      // Supplier fields (map to backend expected names)
+      // Supplier fields (exact match to backend validation)
       businessName: formData.businessName.trim(),
-      gstNumber: formData.gstNumber.trim(),
-      panNumber: formData.panNumber.trim(),
+      gstNumber: formData.gstNumber.trim().toUpperCase(),
+      panNumber: formData.panNumber?.trim().toUpperCase() || '', // Fix: Handle empty PAN
       businessAddress: formData.businessAddress.trim(),
       city: formData.city.trim(),
       state: formData.state.trim(),
       pincode: formData.pincode,
       
-      productCategories: formData.productCategories,
-      yearEstablished: formData.yearEstablished,
-      numberOfEmployees: formData.numberOfEmployees,
-      annualTurnover: formData.annualTurnover,
+      // Optional fields with proper defaults
+      productCategories: formData.productCategories || [],
+      yearEstablished: formData.yearEstablished ? parseInt(formData.yearEstablished) : new Date().getFullYear(),
+      numberOfEmployees: formData.numberOfEmployees || '1-10',
+      annualTurnover: formData.annualTurnover || 'under-1cr',
       
+      // Bank details structure (EXACT match to backend expectation)
       bankDetails: {
         bankName: formData.bankName.trim(),
-        accountNumber: formData.bankAccountNumber.trim(),
-        ifscCode: formData.ifscCode.trim(),
-        accountHolderName: formData.accountHolderName.trim()
+        accountNumber: formData.bankAccountNumber.trim(), // Fix: frontend uses bankAccountNumber, backend expects accountNumber
+        ifscCode: formData.ifscCode.trim().toUpperCase(),
+        accountHolderName: formData.accountHolderName.trim(),
+        branchName: 'Main Branch', // Add required field
+        upiId: '' // Add optional field
       }
     }
-
     console.log('Sending supplier registration data:', registrationData)
 
-    const result = await suppliersAPI.register(registrationData)
+    const result = await supplierAPI.register(registrationData)
     console.log('Registration result:', result)
 
-    if (result.success) {
+        if (result.success) {
       toast.success('Supplier registration successful! Your application is under review.')
       
       // Show verification codes in development
-      if (result.data.dev_otps) {
+      if (result.data?.dev_otps) {
         console.log('Verification codes:', result.data.dev_otps)
         toast.success(`Development - Phone OTP: ${result.data.dev_otps.phoneOTP}, Email OTP: ${result.data.dev_otps.emailOTP}`, {
           duration: 10000
         })
       }
       
-      navigate('/auth/login', { 
+      // Navigate to phone verification
+      navigate('/auth/verify-phone', { 
         state: { 
-          message: 'Registration successful! Please login and verify your account. Your supplier account will be activated after admin approval.',
+          phoneNumber: formData.phoneNumber,
           email: formData.email,
-          showVerification: true
+          userType: 'supplier',
+          message: 'Please verify your phone number to complete supplier registration.',
+          devOtps: result.data?.dev_otps,
+          redirectAfterVerification: '/auth/supplier-dashboard'
         } 
-      })
+      }
+    )
+    
+    
     } else {
       toast.error(result.message || 'Registration failed. Please try again.')
       setErrors({
