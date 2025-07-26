@@ -1,182 +1,177 @@
-/* This file styles the quick action buttons on the supplier dashboard */
-
+/* Quick Actions Component */
 .quick-actions {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.quick-actions h3 {
-  font-size: 1.25rem;
+.actions-header {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.actions-title {
+  font-size: 1.4rem;
   font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 1.5rem 0;
+  color: #2c3e50;
+  margin: 0;
 }
 
 .actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 20px;
 }
 
 .action-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem;
-  border: 2px solid #f3f4f6;
-  border-radius: 8px;
+  text-align: center;
+  padding: 25px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 15px;
   text-decoration: none;
-  color: #374151;
+  color: inherit;
   transition: all 0.3s ease;
-  background: #fafafa;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+  cursor: pointer;
   position: relative;
   overflow: hidden;
 }
 
-/* Hover effect with gradient background */
 .action-card::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.action-card:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.5s;
 }
 
 .action-card:hover::before {
-  opacity: 1;
+  left: 100%;
 }
 
-.action-card:hover .action-icon {
-  transform: scale(1.1);
-  color: var(--primary-color);
-}
-
-.action-card:hover .action-title {
-  color: var(--primary-color);
+.action-card:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
 }
 
 .action-icon {
   font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: #6b7280;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
+}
+
+.action-card:hover .action-icon {
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
 .action-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  text-align: center;
-  transition: color 0.3s ease;
-  position: relative;
-  z-index: 1;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
 }
 
 .action-description {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: #6b7280;
-  text-align: center;
+  margin: 0;
   line-height: 1.4;
-  position: relative;
-  z-index: 1;
 }
 
-/* Specific colors for different action types */
-.action-card.add-product {
-  border-color: #10b981;
+/* Specific action colors */
+.action-card.add-product .action-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-.action-card.add-product:hover {
-  border-color: #10b981;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+.action-card.manage-orders .action-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
 
-.action-card.add-product:hover .action-icon,
-.action-card.add-product:hover .action-title {
-  color: #10b981;
+.action-card.analytics .action-icon {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
-.action-card.manage-orders {
-  border-color: #f59e0b;
+.action-card.settings .action-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
-.action-card.manage-orders:hover {
-  border-color: #f59e0b;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+.action-card.inventory .action-icon {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-.action-card.manage-orders:hover .action-icon,
-.action-card.manage-orders:hover .action-title {
-  color: #f59e0b;
+.action-card.profile .action-icon {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
 }
 
-/* Mobile responsive design */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   .actions-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
   }
-
+  
   .action-card {
-    padding: 1rem;
+    padding: 20px 15px;
   }
-
+  
   .action-icon {
     font-size: 2rem;
-    margin-bottom: 0.75rem;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
   }
-
+  
   .action-title {
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
-
+  
   .action-description {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
   .actions-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
-
+  
   .action-card {
-    flex-direction: row;
-    text-align: left;
-    padding: 1rem;
+    padding: 15px 10px;
   }
-
+  
   .action-icon {
-    font-size: 1.5rem;
-    margin-bottom: 0;
-    margin-right: 1rem;
+    font-size: 1.8rem;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
   }
-
-  .action-content {
-    display: flex;
-    flex-direction: column;
-  }
-
+  
   .action-title {
-    text-align: left;
-    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
   }
-
+  
   .action-description {
-    text-align: left;
+    font-size: 0.8rem;
   }
 }
