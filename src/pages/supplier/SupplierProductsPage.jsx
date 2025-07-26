@@ -13,25 +13,57 @@ const SupplierProductsPage = () => {
   const [filters, setFilters] = useState({
     search: '',
     category: '',
-    status: '',
+    status: 'all',
     sortBy: 'newest'
   })
   const [currentPage, setCurrentPage] = useState(1)
 
   // Fetch supplier products
   const { data: productsData, isLoading, error } = useQuery(
-    ['supplier-products', user?.id, filters, currentPage],
-    () => supplierAPI.getProducts({
-      ...filters,
-      page: currentPage,
-      limit: 12
-    }),
-    {
-      enabled: !!user && user.role === 'supplier',
-      keepPreviousData: true,
-      staleTime: 5 * 60 * 1000,
+  ['supplier-products', user?.id, filters, currentPage],
+  () => {
+    // Clean parameters - remove empty strings
+    const cleanParams = {}
+    
+    if (filters.search && filters.search.trim() !== '') {
+      cleanParams.search = filters.search
     }
-  )
+    
+    if (filters.category && filters.category.trim() !== '') {
+      cleanParams.category = filters.category
+    }
+    
+    if (filters.status && filters.status !== '') {
+      cleanParams.status = filters.status
+    } else {
+      cleanParams.status = 'all' // Default to 'all' if empty
+    }
+    
+    if (filters.sortBy && filters.sortBy.trim() !== '') {
+      cleanParams.sortBy = filters.sortBy
+    }
+    
+    cleanParams.page = currentPage
+    cleanParams.limit = 12
+
+    console.log('Sending clean params:', cleanParams) // Debug log
+    
+    return supplierAPI.getProducts(cleanParams)
+  },
+  {
+    enabled: !!user && user.role === 'supplier',
+    keepPreviousData: true,
+    staleTime: 5 * 60 * 1000,
+    onSuccess: (data) => {
+  console.log('Frontend: API Response received:', data)
+  console.log('Frontend: Products data:', data?.data?.products)
+},
+onError: (error) => {
+  console.error('Frontend: Query error:', error.response?.data || error.message)
+}
+  }
+)
+
 
   // Delete product mutation
   const deleteProductMutation = useMutation(
@@ -48,19 +80,29 @@ const SupplierProductsPage = () => {
   )
 
   // Toggle product status mutation
+  // Replace lines 36-45 with this:
+
+  // Toggle product status mutation
+  // Replace the toggleStatusMutation (around lines 80-90):
+
+  // Toggle product status mutation - FIXED
   const toggleStatusMutation = useMutation(
-    ({ productId, status }) => supplierAPI.updateProductStatus(productId, status),
+    ({ productId, currentStatus }) => {
+      // Convert status to isActive boolean for backend
+      const isActive = currentStatus !== 'active';
+      return supplierAPI.updateProduct(productId, { isActive });
+    },
     {
       onSuccess: () => {
-        toast.success('Product status updated')
+        toast.success('Product status updated successfully')
         queryClient.invalidateQueries('supplier-products')
       },
       onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to update status')
+        console.error('Status toggle error:', error.response?.data)
+        toast.error(error.response?.data?.message || 'Failed to update product status')
       }
     }
   )
-
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }))
     setCurrentPage(1)
@@ -72,11 +114,12 @@ const SupplierProductsPage = () => {
     }
   }
 
-  const handleToggleStatus = (productId, currentStatus) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
-    toggleStatusMutation.mutate({ productId, status: newStatus })
-  }
+  // Replace the handleToggleStatus function (around lines 108-111):
 
+  const handleToggleStatus = (productId, currentStatus) => {
+    console.log('Toggling status for product:', productId, 'current status:', currentStatus)
+    toggleStatusMutation.mutate({ productId, currentStatus })
+  }
   const formatCurrency = (price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -93,8 +136,9 @@ const SupplierProductsPage = () => {
     })
   }
 
-  const products = productsData?.products || []
-  const pagination = productsData?.pagination || {}
+  const products = productsData?.data?.products || []
+const pagination = productsData?.data?.pagination || {}
+const stats = productsData?.data?.stats || {}
 
   if (!user || user.role !== 'supplier') {
     return (
@@ -150,29 +194,31 @@ const SupplierProductsPage = () => {
             </div>
 
             <div className="filter-selects">
+
               <select
                 value={filters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
                 className="filter-select"
               >
                 <option value="">All Categories</option>
-                <option value="cement">Cement</option>
-                <option value="steel">TMT Steel</option>
-                <option value="bricks">Bricks</option>
+                <option value="aggregate">Aggregate</option>
                 <option value="sand">Sand</option>
-                <option value="aggregates">Aggregates</option>
+                <option value="tmt_steel">TMT Steel</option>
+                <option value="bricks_blocks">Bricks & Blocks</option>
+                <option value="cement">Cement</option>
               </select>
 
               <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="filter-select"
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="out_of_stock">Out of Stock</option>
-              </select>
+  value={filters.status}
+  onChange={(e) => handleFilterChange('status', e.target.value)}
+  className="filter-select"
+>
+  <option value="all">All Status</option>
+  <option value="active">Active</option>
+  <option value="inactive">Inactive</option>
+  <option value="pending">Pending Approval</option>
+  <option value="approved">Approved</option>
+</select>
 
               <select
                 value={filters.sortBy}
@@ -190,8 +236,8 @@ const SupplierProductsPage = () => {
 
           <div className="results-info">
             <span className="results-count">
-              {pagination.total || 0} products found
-            </span>
+  {pagination?.totalItems || 0} products found
+</span>
           </div>
         </div>
 
@@ -221,15 +267,20 @@ const SupplierProductsPage = () => {
               {products.map((product) => (
                 <div key={product._id} className="product-card">
                   <div className="product-image">
-                    <img 
-                      src={product.images?.[0] || '/placeholder-product.jpg'} 
-                      alt={product.name}
-                    />
+  <img 
+    src={product.primaryImage || product.images?.[0]?.url || '/placeholder-product.jpg'} 
+    alt={product.name}
+    onError={(e) => {
+      e.target.src = '/placeholder-product.jpg';
+    }}
+  />
+
                     <div className="product-status-overlay">
                       <span className={`status-badge ${product.status}`}>
                         {product.status === 'active' ? 'Active' :
                          product.status === 'inactive' ? 'Inactive' :
-                         product.status === 'out_of_stock' ? 'Out of Stock' : product.status}
+                         product.status === 'pending' ? 'Pending Approval' : 
+                         product.status}
                       </span>
                     </div>
                   </div>
@@ -238,12 +289,13 @@ const SupplierProductsPage = () => {
                     <h3 className="product-name">{product.name}</h3>
                     <div className="product-category">{product.category}</div>
                     
+
                     <div className="product-details">
                       <div className="product-price">
-                        {formatCurrency(product.price)}/{product.unit}
+                        {formatCurrency(product.price || product.pricing?.basePrice || 0)}/{product.unit || product.pricing?.unit || 'unit'}
                       </div>
                       <div className="product-stock">
-                        Stock: {product.stockQuantity || 0} {product.unit}
+                        Stock: {product.stockQuantity || product.stock?.available || 0} {product.unit || product.pricing?.unit || 'units'}
                       </div>
                     </div>
 
@@ -252,10 +304,9 @@ const SupplierProductsPage = () => {
                         <span>Added: {formatDate(product.createdAt)}</span>
                       </div>
                       <div className="meta-item">
-                        <span>Views: {product.views || 0}</span>
+                        <span>Views: {product.viewCount || 0}</span>
                       </div>
                     </div>
-
                     <div className="product-actions">
                       <Link 
                         to={`/supplier/products/${product._id}/edit`}
