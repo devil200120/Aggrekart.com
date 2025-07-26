@@ -7,6 +7,8 @@ import { useCart } from '../context/CartContext'
 import { toast } from 'react-hot-toast'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
+import ImageWithFallback from '../components/common/ImageWithFallback'
+import ReviewSection from '../components/products/ReviewSection'
 import './ProductDetailPage.css'
 
 const ProductDetailPage = () => {
@@ -48,7 +50,15 @@ const ProductDetailPage = () => {
         console.error('Failed to fetch product:', error)
       },
       onSuccess: (data) => {
-        console.log('API Response:', data)
+        console.log('ProductDetailPage API Response:', data)
+        console.log('Product data structure:', data?.data?.product)
+        console.log('Images array:', data?.data?.product?.images)
+        console.log('Supplier info:', data?.data?.product?.supplier)
+        console.log('Reviews info:', {
+          averageRating: data?.data?.product?.averageRating,
+          totalReviews: data?.data?.product?.totalReviews,
+          reviewsArray: data?.data?.product?.reviews?.length || 0
+        })
       }
     }
   )
@@ -137,7 +147,21 @@ const ProductDetailPage = () => {
     productId: safeRender(product.productId),
     averageRating: safeNumber(product.averageRating),
     totalReviews: safeNumber(product.totalReviews),
-    images: Array.isArray(product.images) ? product.images : [],
+    
+    // Enhanced image handling with debugging
+    images: (() => {
+      console.log('Processing images:', product.images)
+      
+      if (!product.images || !Array.isArray(product.images)) {
+        console.log('No images array found')
+        return []
+      }
+      
+      const validImages = product.images.filter(img => img && img.url)
+      console.log('Valid images found:', validImages.length, validImages)
+      return validImages
+    })(),
+    
     pricing: {
       basePrice: safeNumber(product.pricing?.basePrice),
       unit: safeRender(product.pricing?.unit, 'unit'),
@@ -150,9 +174,16 @@ const ProductDetailPage = () => {
       reserved: safeNumber(product.stock?.reserved)
     },
     supplier: product.supplier ? {
-      companyName: safeRender(product.supplier.companyName, 'Unknown Supplier'),
+      _id: product.supplier._id || '',
+      companyName: safeRender(
+        product.supplier.companyName || 
+        product.supplier.businessName || 
+        product.supplier.name, 
+        'Unknown Supplier'
+      ),
       rating: safeNumber(product.supplier.rating),
-      totalOrders: safeNumber(product.supplier.totalOrders)
+      totalOrders: safeNumber(product.supplier.totalOrders),
+      location: product.supplier.location || {}
     } : null,
     specifications: product.specifications || {}
   }
@@ -163,6 +194,18 @@ const ProductDetailPage = () => {
   const price = productData.pricing.basePrice
   const stockQuantity = productData.stock.available
   const minQuantity = productData.pricing.minimumQuantity
+
+  console.log('Final processed data:', {
+    hasImages,
+    imageCount: images.length,
+    firstImageUrl: images[0]?.url,
+    selectedImage,
+    supplier: productData.supplier,
+    reviews: {
+      averageRating: productData.averageRating,
+      totalReviews: productData.totalReviews
+    }
+  })
 
   const handleAddToCart = () => {
     if (!user) {
@@ -249,15 +292,17 @@ const ProductDetailPage = () => {
           <div className="product-images">
             <div className="main-image">
               {hasImages ? (
-                <img 
-                  src={images[selectedImage]?.url || images[0]?.url} 
+                <ImageWithFallback
+                  src={images[selectedImage]?.url || images[0]?.url}
                   alt={productData.name}
                   className="product-main-image"
+                  fallbackType="product"
                 />
               ) : (
                 <div className="no-image-placeholder">
                   <div className="placeholder-icon">📦</div>
                   <span>No Image Available</span>
+                  <small>Product images will appear here once uploaded</small>
                 </div>
               )}
             </div>
@@ -270,7 +315,11 @@ const ProductDetailPage = () => {
                     className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <img src={image.url} alt={`${productData.name} ${index + 1}`} />
+                    <ImageWithFallback
+                      src={image.url}
+                      alt={`${productData.name} ${index + 1}`}
+                      fallbackType="product"
+                    />
                   </button>
                 ))}
               </div>
@@ -280,6 +329,13 @@ const ProductDetailPage = () => {
           {/* Product Info */}
           <div className="product-info">
             <h1 className="product-title">{productData.name}</h1>
+            
+            {/* Brand */}
+            {productData.brand && productData.brand !== 'N/A' && (
+              <div className="product-brand">
+                <span className="brand-label">Brand:</span> {productData.brand}
+              </div>
+            )}
             
             {/* Rating */}
             <div className="product-rating">
@@ -294,14 +350,14 @@ const ProductDetailPage = () => {
                 ))}
               </div>
               <span className="rating-text">
-                ({productData.averageRating}) • {productData.totalReviews} reviews
+                ({productData.averageRating.toFixed(1)}) • {productData.totalReviews} review{productData.totalReviews !== 1 ? 's' : ''}
               </span>
             </div>
 
             {/* Price */}
             <div className="product-price">
               <span className="current-price">
-                ₹{price.toLocaleString()}
+                ₹{price.toLocaleString('en-IN')}
                 <span className="price-unit"> /{productData.pricing.unit}</span>
               </span>
               <div className="gst-info">
@@ -328,8 +384,92 @@ const ProductDetailPage = () => {
               </div>
             )}
 
+            {/* Supplier Info */}
+            {productData.supplier && (
+              <div className="supplier-info">
+                <h4>Supplier Information</h4>
+                <div className="supplier-details">
+                  <div className="supplier-name">
+                    <strong>{productData.supplier.companyName}</strong>
+                  </div>
+                  {productData.supplier.location.city && (
+                    <div className="supplier-location">
+                      📍 {productData.supplier.location.city}
+                      {productData.supplier.location.state && `, ${productData.supplier.location.state}`}
+                    </div>
+                  )}
+                  {productData.supplier.rating > 0 && (
+                    <div className="supplier-rating">
+                      ⭐ {productData.supplier.rating.toFixed(1)} supplier rating
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Quantity Selection & Actions */}
+            {isInStock && (
+              <div className="product-actions">
+                <div className="quantity-selector">
+                  <label>Quantity:</label>
+                  <div className="quantity-controls">
+                    <button 
+                      onClick={() => setQuantity(Math.max(minQuantity, quantity - 1))}
+                      disabled={quantity <= minQuantity}
+                      className="quantity-btn"
+                    >
+                      -
+                    </button>
+                    <input 
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(minQuantity, parseInt(e.target.value) || minQuantity))}
+                      min={minQuantity}
+                      max={stockQuantity}
+                      className="quantity-input"
+                    />
+                    <button 
+                      onClick={() => setQuantity(Math.min(stockQuantity, quantity + 1))}
+                      disabled={quantity >= stockQuantity}
+                      className="quantity-btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="quantity-unit">{productData.pricing.unit}</span>
+                </div>
+
+                <div className="action-buttons">
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={addToCartMutation.isLoading}
+                    className="btn btn-secondary add-to-cart-btn"
+                  >
+                    {addToCartMutation.isLoading ? 'Adding...' : 'Add to Cart'}
+                  </button>
+                  
+                  <button 
+                    onClick={handleBuyNow}
+                    disabled={addToCartMutation.isLoading}
+                    className="btn btn-primary buy-now-btn"
+                  >
+                    Buy Now
+                  </button>
+                  
+                  <button 
+                    onClick={handleAddToWishlist}
+                    disabled={addToWishlistMutation.isLoading}
+                    className="btn btn-outline wishlist-btn"
+                    title="Add to Wishlist"
+                  >
+                    ♡
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Description */}
-            {productData.description && (
+            {productData.description && productData.description !== 'N/A' && (
               <div className="product-description">
                 <h3>Description</h3>
                 <p className={showFullDescription ? 'full' : 'truncated'}>
@@ -350,166 +490,52 @@ const ProductDetailPage = () => {
             <div className="product-details">
               <h3>Product Details</h3>
               <div className="details-grid">
-                <div className="detail-item">
+                <div className="detail-row">
                   <span className="detail-label">Category:</span>
                   <span className="detail-value">{productData.category}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Subcategory:</span>
-                  <span className="detail-value">{productData.subcategory}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Brand:</span>
-                  <span className="detail-value">{productData.brand}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">HSN Code:</span>
-                  <span className="detail-value">{productData.hsnCode}</span>
-                </div>
-                <div className="detail-item">
+                {productData.subcategory && productData.subcategory !== 'N/A' && (
+                  <div className="detail-row">
+                    <span className="detail-label">Subcategory:</span>
+                    <span className="detail-value">{productData.subcategory}</span>
+                  </div>
+                )}
+                {productData.hsnCode && productData.hsnCode !== 'N/A' && (
+                  <div className="detail-row">
+                    <span className="detail-label">HSN Code:</span>
+                    <span className="detail-value">{productData.hsnCode}</span>
+                  </div>
+                )}
+                <div className="detail-row">
                   <span className="detail-label">Delivery Time:</span>
                   <span className="detail-value">{productData.deliveryTime}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Product ID:</span>
-                  <span className="detail-value">{productData.productId}</span>
+                <div className="detail-row">
+                  <span className="detail-label">Unit:</span>
+                  <span className="detail-value">{productData.pricing.unit}</span>
                 </div>
-                
-                {/* Specifications */}
-                {Object.keys(productData.specifications).map((key) => {
-                  const value = productData.specifications[key]
-                  if (value) {
-                    return (
-                      <div key={key} className="detail-item">
-                        <span className="detail-label">
-                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:
-                        </span>
-                        <span className="detail-value">{safeRender(value)}</span>
-                      </div>
-                    )
-                  }
-                  return null
-                })}
               </div>
             </div>
 
-            {/* Supplier Info */}
-            {productData.supplier && (
-              <div className="supplier-info">
-                <h3>Supplier</h3>
-                <p>
-                  <strong>{productData.supplier.companyName}</strong>
-                </p>
-                {productData.supplier.rating > 0 && (
-                  <div className="supplier-rating">
-                    <span>Rating: </span>
-                    <div className="stars">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span 
-                          key={star}
-                          className={`star ${star <= productData.supplier.rating ? 'filled' : ''}`}
-                        >
-                          ★
-                        </span>
-                      ))}
+            {/* Specifications */}
+            {Object.keys(productData.specifications).length > 0 && (
+              <div className="product-specifications">
+                <h3>Specifications</h3>
+                <div className="specs-grid">
+                  {Object.entries(productData.specifications).map(([key, value]) => (
+                    <div key={key} className="spec-row">
+                      <span className="spec-label">{key}:</span>
+                      <span className="spec-value">{safeRender(value)}</span>
                     </div>
-                    <span>({productData.supplier.rating})</span>
-                  </div>
-                )}
-                <p className="supplier-orders">
-                  Total Orders: {productData.supplier.totalOrders}
-                </p>
+                  ))}
+                </div>
               </div>
             )}
-
-            {/* Quantity and Actions */}
-            <div className="product-actions">
-              {isInStock && (
-                <div className="quantity-selector">
-                  <label htmlFor="quantity">Quantity ({productData.pricing.unit}):</label>
-                  <div className="quantity-controls">
-                    <button 
-                      onClick={() => setQuantity(Math.max(minQuantity, quantity - 1))}
-                      disabled={quantity <= minQuantity}
-                    >
-                      -
-                    </button>
-                    <input 
-                      type="number" 
-                      id="quantity"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(minQuantity, parseInt(e.target.value) || minQuantity))}
-                      min={minQuantity}
-                      max={stockQuantity}
-                    />
-                    <button 
-                      onClick={() => setQuantity(Math.min(stockQuantity, quantity + 1))}
-                      disabled={quantity >= stockQuantity}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <div className="quantity-info">
-                    Total: ₹{(price * quantity).toLocaleString()}
-                    {!productData.pricing.includesGST && (
-                      <span className="gst-extra"> + {productData.pricing.gstRate}% GST</span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="action-buttons">
-                {isInStock ? (
-                  <>
-                    <button 
-                      className="btn btn-primary btn-buy-now"
-                      onClick={handleBuyNow}
-                      disabled={addToCartMutation.isLoading}
-                    >
-                      {addToCartMutation.isLoading ? 'Processing...' : 'Buy Now'}
-                    </button>
-                    
-                    <button 
-                      className="btn btn-secondary btn-add-to-cart"
-                      onClick={handleAddToCart}
-                      disabled={addToCartMutation.isLoading}
-                    >
-                      {addToCartMutation.isLoading ? 'Adding...' : 'Add to Cart'}
-                    </button>
-                    
-                    <button 
-                      className="btn btn-outline btn-wishlist"
-                      onClick={handleAddToWishlist}
-                      disabled={addToWishlistMutation.isLoading}
-                    >
-                      {addToWishlistMutation.isLoading ? '...' : '♡'} Wishlist
-                    </button>
-                  </>
-                ) : (
-                  <button className="btn btn-disabled" disabled>
-                    Out of Stock
-                  </button>
-                )}
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="trust-indicators">
-                <div className="trust-item">
-                  <span className="trust-icon">🔒</span>
-                  <span>Secure Payment</span>
-                </div>
-                <div className="trust-item">
-                  <span className="trust-icon">↩️</span>
-                  <span>Easy Returns</span>
-                </div>
-                <div className="trust-item">
-                  <span className="trust-icon">🚚</span>
-                  <span>{productData.deliveryTime}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <ReviewSection productId={productData._id} />
       </div>
     </div>
   )
