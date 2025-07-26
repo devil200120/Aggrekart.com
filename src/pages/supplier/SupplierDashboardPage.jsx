@@ -143,9 +143,7 @@ const SupplierDashboardPage = () => {
         </div>
 
         {/* Notifications Panel */}
-        {notifications && notifications.length > 0 && (
-          <NotificationPanel notifications={notifications} />
-        )}
+        
 
         {/* Dashboard Stats */}
         <DashboardStats stats={stats} />
@@ -186,7 +184,7 @@ const SupplierDashboardPage = () => {
                   View All Products →
                 </Link>
               </div>
-              <RecentProducts products={products.recent} />
+              
             </div>
           </div>
 
@@ -232,7 +230,7 @@ const SupplierDashboardPage = () => {
             </div>
 
             {/* Top Products */}
-            <TopProducts products={products.topPerforming} />
+            
 
             {/* Business Insights */}
             <div className="dashboard-card insights-card">
