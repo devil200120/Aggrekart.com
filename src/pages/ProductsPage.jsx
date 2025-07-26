@@ -72,16 +72,25 @@ const ProductsPage = () => {
 
     return params
   }, [filters, currentPage])
+  
 
   // Fetch products
   const { data, isLoading, error } = useQuery(
-    ['products', apiParams],
-    () => productsAPI.getProducts(apiParams),
-    {
-      keepPreviousData: true,
-      staleTime: 30000,
+  ['products', apiParams],
+  () => productsAPI.getProducts(apiParams),
+  {
+    keepPreviousData: true,
+    staleTime: 30000,
+    onSuccess: (data) => {
+      console.log('ProductsPage Response:', data)
+      console.log('Products:', data?.data?.products?.length)
+      console.log('Total Items:', data?.data?.pagination?.totalItems)
+    },
+    onError: (error) => {
+      console.error('ProductsPage Error:', error)
     }
-  )
+  }
+)
 
   // Fetch categories for filters
   // Replace lines 86-92 with:
@@ -172,8 +181,10 @@ const categories = useMemo(() => {
   }
 
   // Calculate total pages
-  const totalPages = data?.data?.pagination?.totalPages || data?.pagination?.totalPages || 1
-  const products = data?.data?.products || data?.products || []
+  const totalPages = data?.data?.pagination?.totalPages || 1
+const products = data?.data?.products || []
+const totalItems = data?.data?.pagination?.totalItems || 0
+
 
   return (
     <div className="products-page">
@@ -284,11 +295,11 @@ const categories = useMemo(() => {
                   <div className="results-skeleton">Loading...</div>
                 ) : (
                   <span className="results-count">
-                    {data?.pagination?.total || 0} products found
-                    {filters.search && (
-                      <span className="search-term"> for "{filters.search}"</span>
-                    )}
-                  </span>
+  {data?.data?.pagination?.totalItems || 0} products found
+  {filters.search && (
+    <span className="search-term"> for "{filters.search}"</span>
+  )}
+</span>
                 )}
               </div>
               
