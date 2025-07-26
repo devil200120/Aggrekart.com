@@ -620,3 +620,61 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Search Bar Integration */
+.navbar-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 2rem;
+}
+
+.desktop-search {
+  display: none;
+}
+
+.mobile-search {
+  padding: 15px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-search .search-bar.expanded .search-input-container {
+  width: 100%;
+}
+
+/* Updated navbar actions */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Desktop responsive */
+@media (min-width: 1024px) {
+  .desktop-search {
+    display: flex;
+  }
+  
+  .navbar-content {
+    gap: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .desktop-search {
+    display: flex;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .desktop-search {
+    display: none;
+  }
+  
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+}
