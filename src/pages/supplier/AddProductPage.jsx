@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 import { supplierAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
@@ -14,44 +13,69 @@ const AddProductPage = () => {
   const [imageFiles, setImageFiles] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  // Product categories that match backend
+  const productCategories = {
+    aggregate: {
+      name: 'Aggregate',
+      subcategories: {
+        dust: 'Dust',
+        '10mm_metal': '10 MM Metal',
+        '20mm_metal': '20 MM Metal',
+        '40mm_metal': '40 MM Metal',
+        gsb: 'GSB',
+        wmm: 'WMM',
+        m_sand: 'M.sand'
+      }
+    },
+    sand: {
+      name: 'Sand',
+      subcategories: {
+        river_sand_plastering: 'River sand (Plastering)',
+        river_sand: 'River sand'
+      }
+    },
+    tmt_steel: {
+      name: 'TMT Steel',
+      subcategories: {
+        fe_415: 'FE-415',
+        fe_500: 'FE-500',
+        fe_550: 'FE-550',
+        fe_600: 'FE-600'
+      }
+    },
+    bricks_blocks: {
+      name: 'Bricks & Blocks',
+      subcategories: {
+        red_bricks: 'Red Bricks',
+        fly_ash_bricks: 'Fly Ash Bricks',
+        concrete_blocks: 'Concrete Blocks',
+        aac_blocks: 'AAC Blocks'
+      }
+    },
+    cement: {
+      name: 'Cement',
+      subcategories: {
+        opc: 'OPC',
+        ppc: 'PPC'
+      }
+    }
+  }
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       category: '',
+      subcategory: '',
       description: '',
-      price: '',
-      unit: '',
-      minOrderQuantity: '1',
-      stockQuantity: '',
-      specifications: '',
+      basePrice: '',
+      minimumQuantity: '1',
+      available: '',
       brand: '',
-      model: '',
-      weight: '',
-      dimensions: '',
-      deliveryTime: '3-5',
-      returnPolicy: '7',
-      warranty: '',
-      certifications: '',
-      keywords: ''
+      deliveryTime: '3-5 days'
     }
   })
 
-  const addProductMutation = useMutation(
-    (productData) => supplierAPI.addProduct(productData),
-    {
-      onSuccess: (data) => {
-        toast.success('Product added successfully!')
-        console.log(data)
-        navigate('/supplier/products')
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to add product')
-      },
-      onSettled: () => {
-        setIsSubmitting(false)
-      }
-    }
-  )
+  const selectedCategory = watch('category')
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files)
@@ -89,23 +113,71 @@ const AddProductPage = () => {
 
     setIsSubmitting(true)
 
-    // Create FormData for file upload
-    const formData = new FormData()
-    
-    // Add product data
-    Object.keys(data).forEach(key => {
-      if (data[key]) {
-        formData.append(key, data[key])
+    try {
+      // Step 1: Create the product
+      const productData = {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        subcategory: data.subcategory,
+        brand: data.brand || '',
+        basePrice: parseFloat(data.basePrice),
+        minimumQuantity: parseFloat(data.minimumQuantity),
+        available: parseInt(data.available),
+        deliveryTime: data.deliveryTime,
+        specifications: data.specifications || '',
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
       }
-    })
 
-    // Add images
-    imageFiles.forEach((file, index) => {
-        console.log(index)
-      formData.append('images', file)
-    })
+      console.log('Creating product with data:', productData)
+      
+      // Create the product first
+      const createResponse = await supplierAPI.addProduct(productData)
+      
+      if (createResponse.data?.success && createResponse.data?.data?.product?._id) {
+        const productId = createResponse.data.data.product._id
+        console.log('Product created with ID:', productId)
 
-    addProductMutation.mutate(formData)
+        // Step 2: Upload images if product creation was successful
+        if (imageFiles.length > 0) {
+          console.log('Uploading images for product:', productId)
+          
+          const formData = new FormData()
+          imageFiles.forEach((file, index) => {
+            formData.append('images', file)
+            // Mark first image as primary
+            if (index === 0) {
+              formData.append('primaryImageIndex', '0')
+            }
+          })
+
+          try {
+            const uploadResponse = await supplierAPI.uploadProductImages(productId, formData)
+            console.log('Images uploaded successfully:', uploadResponse.data)
+            
+            toast.success('Product and images added successfully!')
+            navigate('/supplier/products')
+          } catch (uploadError) {
+            console.error('Image upload failed:', uploadError)
+            toast.error('Product created but image upload failed. You can add images later.')
+            navigate('/supplier/products')
+          }
+        } else {
+          toast.success('Product created successfully!')
+          navigate('/supplier/products')
+        }
+      } else {
+        console.error('Invalid response structure:', createResponse)
+        toast.error('Failed to create product - invalid response')
+      }
+      
+    } catch (error) {
+      console.error('Form submission error:', error)
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create product'
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (!user || user.role !== 'supplier') {
@@ -124,7 +196,6 @@ const AddProductPage = () => {
   return (
     <div className="add-product-page">
       <div className="container">
-        {/* Page Header */}
         <div className="page-header">
           <h1>Add New Product</h1>
           <p>Add a new product to your catalog</p>
@@ -142,7 +213,7 @@ const AddProductPage = () => {
                   type="text"
                   {...register('name', { 
                     required: 'Product name is required',
-                    minLength: { value: 3, message: 'Name must be at least 3 characters' }
+                    minLength: { value: 2, message: 'Name must be at least 2 characters' }
                   })}
                   className={errors.name ? 'error' : ''}
                   placeholder="Enter product name"
@@ -158,28 +229,42 @@ const AddProductPage = () => {
                     className={errors.category ? 'error' : ''}
                   >
                     <option value="">Select Category</option>
-                    <option value="cement">Cement</option>
-                    <option value="steel">TMT Steel</option>
-                    <option value="bricks">Bricks & Blocks</option>
-                    <option value="sand">Sand</option>
-                    <option value="aggregates">Aggregates</option>
-                    <option value="concrete">Ready Mix Concrete</option>
-                    <option value="roofing">Roofing Materials</option>
-                    <option value="pipes">Pipes & Fittings</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="hardware">Hardware</option>
+                    {Object.keys(productCategories).map(key => (
+                      <option key={key} value={key}>
+                        {productCategories[key].name}
+                      </option>
+                    ))}
                   </select>
                   {errors.category && <span className="error-message">{errors.category.message}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label>Brand</label>
-                  <input
-                    type="text"
-                    {...register('brand')}
-                    placeholder="Enter brand name"
-                  />
+                  <label>Subcategory *</label>
+                  <select
+                    {...register('subcategory', { required: 'Subcategory is required' })}
+                    className={errors.subcategory ? 'error' : ''}
+                    disabled={!selectedCategory}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {selectedCategory && productCategories[selectedCategory]?.subcategories && 
+                      Object.keys(productCategories[selectedCategory].subcategories).map(key => (
+                        <option key={key} value={key}>
+                          {productCategories[selectedCategory].subcategories[key]}
+                        </option>
+                      ))
+                    }
+                  </select>
+                  {errors.subcategory && <span className="error-message">{errors.subcategory.message}</span>}
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Brand</label>
+                <input
+                  type="text"
+                  {...register('brand')}
+                  placeholder="Enter brand name"
+                />
               </div>
 
               <div className="form-group">
@@ -187,7 +272,7 @@ const AddProductPage = () => {
                 <textarea
                   {...register('description', { 
                     required: 'Description is required',
-                    minLength: { value: 20, message: 'Description must be at least 20 characters' }
+                    minLength: { value: 10, message: 'Description must be at least 10 characters' }
                   })}
                   className={errors.description ? 'error' : ''}
                   placeholder="Describe your product in detail"
@@ -203,63 +288,86 @@ const AddProductPage = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price *</label>
+                  <label>Base Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
-                    {...register('price', { 
-                      required: 'Price is required',
+                    {...register('basePrice', { 
+                      required: 'Base price is required',
                       min: { value: 0.01, message: 'Price must be greater than 0' }
                     })}
-                    className={errors.price ? 'error' : ''}
-                    placeholder="Enter price"
+                    className={errors.basePrice ? 'error' : ''}
+                    placeholder="Enter base price"
                   />
-                  {errors.price && <span className="error-message">{errors.price.message}</span>}
+                  {errors.basePrice && <span className="error-message">{errors.basePrice.message}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label>Unit *</label>
-                  <select
-                    {...register('unit', { required: 'Unit is required' })}
-                    className={errors.unit ? 'error' : ''}
-                  >
-                    <option value="">Select Unit</option>
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="ton">Ton</option>
-                    <option value="piece">Piece</option>
-                    <option value="bag">Bag</option>
-                    <option value="cubic meter">Cubic Meter</option>
-                    <option value="square meter">Square Meter</option>
-                    <option value="feet">Feet</option>
-                    <option value="meter">Meter</option>
-                  </select>
-                  {errors.unit && <span className="error-message">{errors.unit.message}</span>}
+                  <label>Minimum Quantity *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register('minimumQuantity', { 
+                      required: 'Minimum quantity is required',
+                      min: { value: 0.1, message: 'Minimum quantity must be at least 0.1' }
+                    })}
+                    className={errors.minimumQuantity ? 'error' : ''}
+                    placeholder="Minimum order quantity"
+                  />
+                  {errors.minimumQuantity && <span className="error-message">{errors.minimumQuantity.message}</span>}
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Stock Quantity *</label>
+                  <label>Available Stock *</label>
                   <input
                     type="number"
-                    {...register('stockQuantity', { 
-                      required: 'Stock quantity is required',
+                    {...register('available', { 
+                      required: 'Available stock is required',
                       min: { value: 0, message: 'Stock cannot be negative' }
                     })}
-                    className={errors.stockQuantity ? 'error' : ''}
+                    className={errors.available ? 'error' : ''}
                     placeholder="Available quantity"
                   />
-                  {errors.stockQuantity && <span className="error-message">{errors.stockQuantity.message}</span>}
+                  {errors.available && <span className="error-message">{errors.available.message}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label>Minimum Order Quantity</label>
+                  <label>Delivery Time *</label>
                   <input
-                    type="number"
-                    {...register('minOrderQuantity')}
-                    placeholder="Minimum order quantity"
+                    type="text"
+                    {...register('deliveryTime', { 
+                      required: 'Delivery time is required'
+                    })}
+                    className={errors.deliveryTime ? 'error' : ''}
+                    placeholder="e.g., 3-5 days"
                   />
+                  {errors.deliveryTime && <span className="error-message">{errors.deliveryTime.message}</span>}
                 </div>
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="form-section">
+              <h2>Additional Details</h2>
+              
+              <div className="form-group">
+                <label>Specifications</label>
+                <textarea
+                  {...register('specifications')}
+                  placeholder="Technical specifications, dimensions, etc."
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  {...register('tags')}
+                  placeholder="e.g., premium, durable, certified"
+                />
               </div>
             </div>
 
@@ -298,129 +406,29 @@ const AddProductPage = () => {
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="remove-image"
+                        className="remove-image-btn"
                       >
                         ✕
                       </button>
+                      {index === 0 && <div className="primary-badge">Primary</div>}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
-            {/* Additional Details */}
-            <div className="form-section">
-              <h2>Additional Details</h2>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Model/Grade</label>
-                  <input
-                    type="text"
-                    {...register('model')}
-                    placeholder="Model or grade"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Weight</label>
-                  <input
-                    type="text"
-                    {...register('weight')}
-                    placeholder="Product weight"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Dimensions</label>
-                <input
-                  type="text"
-                  {...register('dimensions')}
-                  placeholder="Length x Width x Height"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Specifications</label>
-                <textarea
-                  {...register('specifications')}
-                  placeholder="Technical specifications, features, etc."
-                  rows="3"
-                />
-              </div>
-            </div>
-
-            {/* Business Terms */}
-            <div className="form-section">
-              <h2>Business Terms</h2>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Delivery Time</label>
-                  <select {...register('deliveryTime')}>
-                    <option value="1-2">1-2 days</option>
-                    <option value="3-5">3-5 days</option>
-                    <option value="1-2 weeks">1-2 weeks</option>
-                    <option value="2-4 weeks">2-4 weeks</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Return Policy</label>
-                  <select {...register('returnPolicy')}>
-                    <option value="7">7 days</option>
-                    <option value="15">15 days</option>
-                    <option value="30">30 days</option>
-                    <option value="no-return">No returns</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Warranty</label>
-                  <input
-                    type="text"
-                    {...register('warranty')}
-                    placeholder="Warranty period"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Certifications</label>
-                  <input
-                    type="text"
-                    {...register('certifications')}
-                    placeholder="ISI, BIS, etc."
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Keywords</label>
-                <input
-                  type="text"
-                  {...register('keywords')}
-                  placeholder="Search keywords (comma separated)"
-                />
-              </div>
-            </div>
           </div>
 
           {/* Form Actions */}
           <div className="form-actions">
-            <button 
+            <button
               type="button"
               onClick={() => navigate('/supplier/products')}
-              className="btn btn-outline"
+              className="btn btn-secondary"
               disabled={isSubmitting}
             >
               Cancel
             </button>
-            
-            <button 
+            <button
               type="submit"
               className="btn btn-primary"
               disabled={isSubmitting}
