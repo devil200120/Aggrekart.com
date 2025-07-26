@@ -25,7 +25,8 @@ const VerifyPhonePage = () => {
   useEffect(() => {
     if (import.meta.env.MODE === 'development' && devOtps?.phoneOTP) {
       console.log('🔧 Development mode: Auto-filling phone OTP:', devOtps.phoneOTP)
-      const otpArray = devOtps.phoneOTP.split('')
+      const otpString = String(devOtps.phoneOTP)
+      const otpArray = otpString.split('')
       setOtp(otpArray)
     }
   }, [devOtps])
@@ -65,6 +66,7 @@ const VerifyPhonePage = () => {
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus()
+      
     }
   }
 
