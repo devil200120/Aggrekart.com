@@ -5,69 +5,73 @@ import './QuickActions.css'
 const QuickActions = () => {
   const actions = [
     {
-      title: 'Add New Product',
+      id: 'add-product',
+      title: 'Add Product',
       description: 'List a new product in your catalog',
       icon: '➕',
       link: '/supplier/products/add',
-      color: 'green'
+      className: 'add-product'
     },
     {
+      id: 'manage-orders',
       title: 'Manage Orders',
-      description: 'View and update order status',
-      icon: '📋',
-      link: '/supplier/orders',
-      color: 'blue'
-    },
-    {
-      title: 'Update Inventory',
-      description: 'Manage stock levels',
+      description: 'View and process customer orders',
       icon: '📦',
-      link: '/supplier/inventory',
-      color: 'orange'
+      link: '/supplier/orders',
+      className: 'manage-orders'
     },
     {
-      title: 'View Analytics',
-      description: 'Detailed sales reports',
+      id: 'inventory',
+      title: 'Inventory',
+      description: 'Manage stock levels and updates',
       icon: '📊',
+      link: '/supplier/inventory',
+      className: 'inventory'
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      description: 'View sales reports and insights',
+      icon: '📈',
       link: '/supplier/analytics',
-      color: 'purple'
+      className: 'analytics'
     },
     {
-      title: 'Profile Settings',
+      id: 'profile',
+      title: 'Profile',
       description: 'Update business information',
-      icon: '⚙️',
+      icon: '👤',
       link: '/supplier/profile',
-      color: 'gray'
+      className: 'profile'
     },
     {
-      title: 'Support Center',
-      description: 'Get help and support',
-      icon: '🆘',
-      link: '/supplier/support',
-      color: 'red'
+      id: 'settings',
+      title: 'Settings',
+      description: 'Configure account preferences',
+      icon: '⚙️',
+      link: '/supplier/settings',
+      className: 'settings'
     }
   ]
 
   return (
     <div className="quick-actions">
       <div className="actions-header">
-        <h2>Quick Actions</h2>
-        <p>Common tasks and shortcuts</p>
+        <h3 className="actions-title">Quick Actions</h3>
       </div>
       
       <div className="actions-grid">
-        {actions.map((action, index) => (
-          <Link 
-            key={index}
+        {actions.map((action) => (
+          <Link
+            key={action.id}
             to={action.link}
-            className={`action-card ${action.color}`}
+            className={`action-card ${action.className}`}
           >
-            <div className="action-icon">{action.icon}</div>
-            <div className="action-content">
-              <h3>{action.title}</h3>
-              <p>{action.description}</p>
+            <div className="action-icon">
+              {action.icon}
             </div>
-            <div className="action-arrow">→</div>
+            <h4 className="action-title">{action.title}</h4>
+            <p className="action-description">{action.description}</p>
           </Link>
         ))}
       </div>
