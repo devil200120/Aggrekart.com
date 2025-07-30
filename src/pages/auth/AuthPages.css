@@ -784,3 +784,190 @@ select.form-control {
     font-size: 1.25rem;
   }
 }
+/* Add these styles to your existing components.css file */
+
+/* GST Auto-fill Styles */
+.gst-auto-fill .input-group {
+  position: relative;
+}
+
+.auto-fill-preview {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auto-fill-preview .card {
+  border: 2px solid #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.auto-fill-preview .card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-bottom: none;
+}
+
+.auto-fill-preview .card-body {
+  padding: 1.5rem;
+}
+
+.auto-fill-preview .badge {
+  font-size: 0.75rem;
+}
+
+.auto-fill-preview ul li {
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.auto-fill-preview .btn {
+  min-width: 140px;
+}
+
+/* Form Section Styling */
+.form-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h4 {
+  color: #495057;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.section-header p {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Checkbox Grid */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.checkbox-grid .form-check {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.checkbox-grid .form-check:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.checkbox-grid .form-check-input:checked + .form-check-label {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Loading States */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .auto-fill-preview .card-body {
+    padding: 1rem;
+  }
+  
+  .auto-fill-preview .row {
+    margin: 0;
+  }
+  
+  .auto-fill-preview .col-md-6,
+  .auto-fill-preview .col-md-4 {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .auto-fill-preview .btn {
+    min-width: auto;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Alert Styling */
+.alert {
+  border-radius: 6px;
+  border: none;
+}
+
+.alert-success {
+  background-color: #d1edff;
+  color: #0c5460;
+  border-left: 4px solid #17a2b8;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+/* Add these styles to your existing AuthPages.css */
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: 400;
+  font-style: italic;
+  margin-left: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

@@ -12,48 +12,45 @@ const MembershipTab = ({ user }) => {
     friendPhoneNumber: '',
     friendName: ''
   })
+  const [showRedeemModal, setShowRedeemModal] = useState(false)
 
-  // Fetch loyalty data
-  const { data: loyaltyData, isLoading: loyaltyLoading } = useQuery(
+  // Fetch loyalty data with proper error handling
+  const { data: loyaltyData, isLoading: loyaltyLoading, error: loyaltyError } = useQuery(
     'loyaltyData',
     loyaltyAPI.getMyCoins,
     {
       refetchInterval: 30000, // Refresh every 30 seconds
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       onError: (error) => {
         console.error('Failed to fetch loyalty data:', error)
+        if (error?.response?.status === 404 || error?.response?.status === 401) {
+          console.warn('User may not have loyalty account yet')
+        }
       }
     }
   )
 
-  // Fetch user analytics for progress calculation
-  const { data: analyticsData, isLoading: analyticsLoading } = useQuery(
-    'userAnalytics',
-    () => usersAPI.getAnalytics(),
+  // Fetch user dashboard data for membership info
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery(
+    'userDashboard',
+    () => usersAPI.getDashboard(),
     {
+      retry: 2,
       onError: (error) => {
-        console.error('Failed to fetch analytics data:', error)
+        console.warn('Dashboard data not available:', error)
       }
     }
   )
 
-  // Fetch membership details
-  const { data: membershipData, isLoading: membershipLoading } = useQuery(
-    'membershipDetails',
-    usersAPI.getMembershipDetails,
-    {
-      onError: (error) => {
-        console.error('Failed to fetch membership data:', error)
-      }
-    }
-  )
-
-  // Fetch referrals
+  // Fetch referrals with error handling
   const { data: referralsData, isLoading: referralsLoading } = useQuery(
     'referrals',
     loyaltyAPI.getReferrals,
     {
+      retry: 2,
       onError: (error) => {
-        console.error('Failed to fetch referrals:', error)
+        console.warn('Referrals data not available:', error)
       }
     }
   )
@@ -63,17 +60,20 @@ const MembershipTab = ({ user }) => {
     (amount) => loyaltyAPI.redeemCoins({ amount: parseInt(amount) }),
     {
       onSuccess: (response) => {
-        toast.success(`Successfully redeemed ${redeemAmount} AggreCoins! Cash value: ₹${response.data?.data?.cashValue || (redeemAmount * 0.1)}`)
+        const cashValue = response.data?.data?.cashValue || (redeemAmount * 0.1)
+        toast.success(`Successfully redeemed ${redeemAmount} AggreCoins for ₹${cashValue}!`)
         setRedeemAmount('')
+        setShowRedeemModal(false)
         queryClient.invalidateQueries('loyaltyData')
       },
       onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to redeem coins')
+        const message = error?.response?.data?.message || 'Failed to redeem coins'
+        toast.error(message)
       }
     }
   )
 
-  // Refer friend mutation
+  // Refer friend mutation  
   const referMutation = useMutation(
     (data) => loyaltyAPI.referFriend(data),
     {
@@ -81,9 +81,11 @@ const MembershipTab = ({ user }) => {
         toast.success('Referral sent successfully! Your friend will receive an SMS invitation.')
         setReferralData({ friendPhoneNumber: '', friendName: '' })
         queryClient.invalidateQueries('referrals')
+        queryClient.invalidateQueries('loyaltyData')
       },
       onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to send referral')
+        const message = error?.response?.data?.message || 'Failed to send referral'
+        toast.error(message)
       }
     }
   )
@@ -97,33 +99,32 @@ const MembershipTab = ({ user }) => {
       return
     }
     
-    if (amount > (loyaltyData?.data?.balance || 0)) {
-      toast.error('Insufficient coin balance')
+    const availableBalance = loyaltyData?.data?.balance || 0
+    if (amount > availableBalance) {
+      toast.error(`Insufficient AggreCoins balance. Available: ${availableBalance}`)
       return
     }
     
     redeemMutation.mutate(amount)
   }
 
-  const handleRefer = (e) => {
+  const handleReferFriend = (e) => {
     e.preventDefault()
     
-    if (!referralData.friendPhoneNumber) {
-      toast.error('Please enter your friend\'s phone number')
+    if (!referralData.friendPhoneNumber || !referralData.friendName) {
+      toast.error('Please fill in all fields')
       return
     }
     
-    // Validate Indian phone number
-    const phoneRegex = /^[6-9]\d{9}$/
-    if (!phoneRegex.test(referralData.friendPhoneNumber)) {
-      toast.error('Please enter a valid Indian phone number (10 digits, starting with 6-9)')
+    if (!/^[6-9]\d{9}$/.test(referralData.friendPhoneNumber)) {
+      toast.error('Please enter a valid Indian phone number')
       return
     }
     
     referMutation.mutate(referralData)
   }
 
-  const handleReferralInputChange = (e) => {
+  const handleReferralChange = (e) => {
     const { name, value } = e.target
     setReferralData(prev => ({
       ...prev,
@@ -131,319 +132,395 @@ const MembershipTab = ({ user }) => {
     }))
   }
 
-  const getTierInfo = (tier) => {
+  // Calculate membership progress from user data
+  const getMembershipProgress = () => {
+    const userTier = user?.membershipTier || 'silver'
+    const totalSpent = user?.totalOrderValue || dashboardData?.data?.stats?.totalSpent || 0
+    
     const tiers = {
-      platinum: {
-        name: 'Platinum',
-        icon: '💎',
-        color: '#E5E4E2',
-        benefits: ['15% discount on all orders', 'Priority delivery', 'Dedicated account manager', 'Free site visits'],
-        requirements: { orders: 25, value: 1000000 } // ₹10L
-      },
-      gold: {
-        name: 'Gold',
-        icon: '🥇',
-        color: '#FFD700',
-        benefits: ['10% discount on all orders', 'Fast delivery', 'Premium support', 'Extended warranty'],
-        requirements: { orders: 10, value: 200000 } // ₹2L
-      },
-      silver: {
-        name: 'Silver',
-        icon: '🥈',
-        color: '#C0C0C0',
-        benefits: ['5% discount on all orders', 'Standard delivery', 'Basic support', 'AggreCoin rewards'],
-        requirements: { orders: 3, value: 50000 } // ₹50K
-      }
+      silver: { threshold: 0, nextThreshold: 50000, nextTier: 'gold' },
+      gold: { threshold: 50000, nextThreshold: 200000, nextTier: 'platinum' },
+      platinum: { threshold: 200000, nextThreshold: null, nextTier: null }
     }
-
-    return tiers[tier] || tiers.silver
+    
+    const currentTier = tiers[userTier]
+    if (!currentTier.nextThreshold) {
+      return { progress: 100, remaining: 0, nextTier: null }
+    }
+    
+    const progress = Math.min(((totalSpent - currentTier.threshold) / (currentTier.nextThreshold - currentTier.threshold)) * 100, 100)
+    const remaining = Math.max(currentTier.nextThreshold - totalSpent, 0)
+    
+    return { progress, remaining, nextTier: currentTier.nextTier }
   }
 
-  const getNextTierInfo = (currentTier) => {
-    const tierOrder = ['silver', 'gold', 'platinum']
-    const currentIndex = tierOrder.indexOf(currentTier)
-    
-    if (currentIndex < tierOrder.length - 1) {
-      return getTierInfo(tierOrder[currentIndex + 1])
-    }
-    
-    return null // Already at highest tier
-  }
+  const membershipProgress = getMembershipProgress()
 
-  const calculateProgress = (currentTier, userStats) => {
-    const nextTier = getNextTierInfo(currentTier)
-    
-    if (!nextTier || !userStats) {
-      return { percentage: 100, ordersProgress: 100, valueProgress: 100, isMaxTier: !nextTier }
-    }
-
-    const { totalOrders = 0, totalSpent = 0 } = userStats
-    const { orders: requiredOrders, value: requiredValue } = nextTier.requirements
-
-    // Calculate progress for both requirements
-    const ordersProgress = Math.min((totalOrders / requiredOrders) * 100, 100)
-    const valueProgress = Math.min((totalSpent / requiredValue) * 100, 100)
-    
-    // Overall progress is the minimum of both requirements (both must be met)
-    const overallProgress = Math.min(ordersProgress, valueProgress)
-
-    return {
-      percentage: Math.round(overallProgress),
-      ordersProgress: Math.round(ordersProgress),
-      valueProgress: Math.round(valueProgress),
-      isMaxTier: false,
-      nextTier,
-      current: { orders: totalOrders, value: totalSpent },
-      required: { orders: requiredOrders, value: requiredValue },
-      remaining: {
-        orders: Math.max(0, requiredOrders - totalOrders),
-        value: Math.max(0, requiredValue - totalSpent)
-      }
-    }
-  }
-
-  if (loyaltyLoading || analyticsLoading || membershipLoading) {
+  // Show loading state
+  if (loyaltyLoading || dashboardLoading) {
     return (
-      <div className="membership-loading">
+      <div className="membership-tab">
         <LoadingSpinner />
-        <p>Loading membership data...</p>
       </div>
     )
   }
 
-  const loyalty = loyaltyData?.data || {}
-  const referrals = referralsData?.data || {}
-  const analytics = analyticsData?.data || {}
-  const membership = membershipData?.data || {}
-  
-  const currentTier = user?.membershipTier || membership?.tier || 'silver'
-  const tierInfo = getTierInfo(currentTier)
-  
-  // Calculate dynamic progress
-  const userStats = {
-    totalOrders: analytics.totalOrders || membership?.totalOrders || 0,
-    totalSpent: analytics.totalSpent || membership?.totalSpent || 0
-  }
-  
-  const progressInfo = calculateProgress(currentTier, userStats)
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount)
-  }
+  // Get data with fallbacks
+  const loyaltyBalance = loyaltyData?.data?.balance || 0
+  const totalEarned = loyaltyData?.data?.totalEarned || 0
+  const totalRedeemed = loyaltyData?.data?.totalRedeemed || 0
+  const referralCode = loyaltyData?.data?.referralCode || `AGGRE${user?.name?.slice(0, 3).toUpperCase() || 'USR'}${Math.random().toString(36).substr(2, 3).toUpperCase()}`
 
   return (
     <div className="membership-tab">
-      {/* Membership Tier Card */}
-      <div className="tier-card">
-        <div className="tier-header">
-          <div className="tier-badge" style={{ background: tierInfo.color }}>
-            <span className="tier-icon">{tierInfo.icon}</span>
-            <span className="tier-name">{tierInfo.name}</span>
+      {/* Membership Status */}
+      <div className="membership-status">
+        <div className="membership-tier">
+          <div className="tier-badge">
+            <span className="tier-icon">
+              {user?.membershipTier === 'platinum' ? '💎' : 
+               user?.membershipTier === 'gold' ? '🥇' : '🥈'}
+            </span>
+            <div className="tier-info">
+              <h3>{(user?.membershipTier || 'silver').charAt(0).toUpperCase() + (user?.membershipTier || 'silver').slice(1)} Member</h3>
+              <p>{membershipProgress.nextTier ? `Progress to ${membershipProgress.nextTier}` : 'Highest Tier Achieved'}</p>
+            </div>
           </div>
-          <div className="tier-progress">
-            <div className="progress-info">
-              <span>
-                {progressInfo.isMaxTier 
-                  ? 'Highest tier achieved!' 
-                  : `Progress to ${progressInfo.nextTier?.name}`
-                }
-              </span>
-              <span>{progressInfo.percentage}%</span>
+          
+          {membershipProgress.nextTier && (
+            <div className="progress-section">
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${Math.max(membershipProgress.progress, 5)}%` }}
+                ></div>
+              </div>
+              <div className="progress-text">
+                <span>{membershipProgress.progress.toFixed(1)}% Complete</span>
+                <span>₹{membershipProgress.remaining.toLocaleString()} more needed</span>
+              </div>
             </div>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${progressInfo.percentage}%` }}
-              ></div>
+          )}
+        </div>
+
+        <div className="membership-benefits">
+          <h4>Your Benefits</h4>
+          <div className="benefits-list">
+            <div className="benefit-item">
+              <span className="benefit-icon">🚚</span>
+              <span>Free delivery on orders above ₹{user?.membershipTier === 'platinum' ? '1000' : user?.membershipTier === 'gold' ? '1500' : '2000'}</span>
             </div>
-            {!progressInfo.isMaxTier && (
-              <div className="progress-details">
-                <small>
-                  Orders: {userStats.totalOrders}/{progressInfo.required.orders} 
-                  {progressInfo.remaining.orders > 0 && ` (${progressInfo.remaining.orders} more needed)`}
-                </small>
-                <small>
-                  Spent: {formatCurrency(userStats.totalSpent)}/{formatCurrency(progressInfo.required.value)}
-                  {progressInfo.remaining.value > 0 && ` (${formatCurrency(progressInfo.remaining.value)} more needed)`}
-                </small>
+            <div className="benefit-item">
+              <span className="benefit-icon">💰</span>
+              <span>{user?.membershipTier === 'platinum' ? '10%' : user?.membershipTier === 'gold' ? '5%' : '2%'} discount on all orders</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">🪙</span>
+              <span>{user?.membershipTier === 'platinum' ? '2x' : user?.membershipTier === 'gold' ? '1.5x' : '1x'} AggreCoins multiplier</span>
+            </div>
+            {(user?.membershipTier === 'gold' || user?.membershipTier === 'platinum') && (
+              <div className="benefit-item">
+                <span className="benefit-icon">⭐</span>
+                <span>Priority customer support</span>
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* AggreCoins Balance */}
-        <div className="coins-balance">
-          <div className="coins-header">
-            <div className="coins-icon">🪙</div>
-            <div className="coins-info">
-              <h3>{loyalty.balance?.toLocaleString() || 0} AggreCoins</h3>
-              <p>Available Balance</p>
+      {/* AggreCoins Overview */}
+      <div className="aggrecoins-overview">
+        <div className="coins-header">
+          <div className="coins-info">
+            <h3>🪙 AggreCoins Wallet</h3>
+            <div className="coins-balance">
+              <span className="balance-amount">{loyaltyBalance.toLocaleString()}</span>
+              <span className="balance-label">Available Coins</span>
+            </div>
+            <div className="balance-value">
+              <small>Worth ₹{(loyaltyBalance * 0.1).toFixed(2)} • 1 Coin = ₹0.10</small>
             </div>
           </div>
+          
           <div className="coins-stats">
-            <div className="coins-stat">
-              <span>Earned: {loyalty.totalEarned?.toLocaleString() || 0}</span>
+            <div className="stat-item">
+              <span className="stat-value">{totalEarned.toLocaleString()}</span>
+              <span className="stat-label">Total Earned</span>
             </div>
-            <div className="coins-stat">
-              <span>Redeemed: {loyalty.totalRedeemed?.toLocaleString() || 0}</span>
+            <div className="stat-item">
+              <span className="stat-value">{totalRedeemed.toLocaleString()}</span>
+              <span className="stat-label">Total Redeemed</span>
             </div>
           </div>
         </div>
+
+        {loyaltyError && (
+          <div className="error-message">
+            <h4>⚠️ AggreCoins Not Available Yet</h4>
+            <p>Your loyalty account will be created automatically after your first order!</p>
+            <p>Start shopping to earn AggreCoins on every purchase.</p>
+          </div>
+        )}
       </div>
 
-      {/* Tier Benefits */}
-      <div className="tier-benefits">
-        <h3>Your {tierInfo.name} Benefits</h3>
-        <div className="benefits-grid">
-          {tierInfo.benefits.map((benefit, index) => (
-            <div key={index} className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">{benefit}</span>
-            </div>
-          ))}
+      {/* Redemption Section - Always Visible */}
+      <div className="redemption-section">
+        <div className="section-header">
+          <h4>💰 Redeem AggreCoins</h4>
+          <p>Convert your AggreCoins to cash value for future orders</p>
         </div>
+
+        {loyaltyBalance >= 100 ? (
+          <div className="redemption-active">
+            <div className="redemption-options">
+              <div className="quick-redeem">
+                <h5>Quick Redeem Options</h5>
+                <div className="quick-buttons">
+                  {[100, 500, 1000, 2000].filter(amount => amount <= loyaltyBalance).map(amount => (
+                    <button
+                      key={amount}
+                      className="quick-redeem-btn"
+                      onClick={() => {
+                        setRedeemAmount(amount.toString())
+                        setShowRedeemModal(true)
+                      }}
+                    >
+                      <span className="coins">{amount} Coins</span>
+                      <span className="cash">₹{(amount * 0.1).toFixed(2)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="custom-redeem">
+                <h5>Custom Amount</h5>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowRedeemModal(true)}
+                  disabled={loyaltyBalance < 100}
+                >
+                  💰 Redeem Custom Amount
+                </button>
+              </div>
+            </div>
+
+            <div className="redemption-info">
+              <h6>How Redemption Works:</h6>
+              <ul>
+                <li>✅ Minimum redemption: 100 coins (₹10)</li>
+                <li>✅ Redeemed amount is added to your wallet</li>
+                <li>✅ Use wallet balance for future orders</li>
+                <li>✅ Instant processing - no waiting time</li>
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <div className="redemption-inactive">
+            <div className="redemption-locked">
+              <div className="locked-icon">🔒</div>
+              <h5>Redemption Locked</h5>
+              <p>You need at least <strong>100 AggreCoins</strong> to start redeeming</p>
+              <p>Current balance: <strong>{loyaltyBalance} coins</strong></p>
+              <p>Need <strong>{100 - loyaltyBalance} more coins</strong> to unlock redemption</p>
+            </div>
+            
+            <div className="earn-more-tips">
+              <h6>💡 How to Earn More Coins:</h6>
+              <div className="tips-grid">
+                <div className="tip-item">
+                  <span className="tip-icon">🛒</span>
+                  <div>
+                    <strong>Place Orders</strong>
+                    <small>Earn 1-2x coins on every purchase</small>
+                  </div>
+                </div>
+                <div className="tip-item">
+                  <span className="tip-icon">👥</span>
+                  <div>
+                    <strong>Refer Friends</strong>
+                    <small>Get 100 coins per successful referral</small>
+                  </div>
+                </div>
+                <div className="tip-item">
+                  <span className="tip-icon">🎯</span>
+                  <div>
+                    <strong>Complete Milestones</strong>
+                    <small>Bonus coins for achievements</small>
+                  </div>
+                </div>
+                <div className="tip-item">
+                  <span className="tip-icon">🎁</span>
+                  <div>
+                    <strong>Special Promotions</strong>
+                    <small>Extra coins during campaigns</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Progress Breakdown - NEW */}
-      {!progressInfo.isMaxTier && (
-        <div className="progress-breakdown">
-          <h3>Next Tier Requirements</h3>
-          <div className="requirements-grid">
-            <div className="requirement-item">
-              <div className="requirement-header">
-                <span>Orders Completed</span>
-                <span>{progressInfo.ordersProgress}%</span>
+      {/* Referral Section */}
+      <div className="referral-section">
+        <div className="referral-header">
+          <h4>🎁 Refer Friends & Earn</h4>
+          <p>Earn 100 AggreCoins for each successful referral!</p>
+        </div>
+
+        <div className="referral-code">
+          <label>Your Referral Code:</label>
+          <div className="code-display">
+            <span className="code">{referralCode}</span>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(referralCode)
+                toast.success('Referral code copied!')
+              }}
+              className="btn btn-outline btn-sm"
+            >
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleReferFriend} className="refer-form">
+          <div className="form-row">
+            <input
+              type="text"
+              name="friendName"
+              placeholder="Friend's Name"
+              value={referralData.friendName}
+              onChange={handleReferralChange}
+              required
+            />
+            <input
+              type="tel"
+              name="friendPhoneNumber"
+              placeholder="Friend's Phone (10 digits)"
+              value={referralData.friendPhoneNumber}
+              onChange={handleReferralChange}
+              pattern="[6-9][0-9]{9}"
+              maxLength="10"
+              required
+            />
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={referMutation.isLoading}
+            >
+              {referMutation.isLoading ? 'Sending...' : '📤 Send Invite'}
+            </button>
+          </div>
+        </form>
+
+        {/* Referral Stats */}
+        {referralsData?.data && (
+          <div className="referral-stats">
+            <h5>📊 Your Referral Stats</h5>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-value">{referralsData.data.totalReferrals || 0}</span>
+                <span className="stat-label">Total Sent</span>
               </div>
-              <div className="requirement-bar">
-                <div 
-                  className="requirement-fill" 
-                  style={{ width: `${progressInfo.ordersProgress}%` }}
-                ></div>
+              <div className="stat-item">
+                <span className="stat-value">{referralsData.data.completedReferrals || 0}</span>
+                <span className="stat-label">Successful</span>
               </div>
-              <small>{userStats.totalOrders} of {progressInfo.required.orders} orders</small>
+              <div className="stat-item">
+                <span className="stat-value">{referralsData.data.totalEarnings || 0}</span>
+                <span className="stat-label">Coins Earned</span>
+              </div>
             </div>
-            <div className="requirement-item">
-              <div className="requirement-header">
-                <span>Total Spending</span>
-                <span>{progressInfo.valueProgress}%</span>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Transactions */}
+      {loyaltyData?.data?.recentTransactions?.length > 0 && (
+        <div className="recent-transactions">
+          <h4>💰 Recent Transactions</h4>
+          <div className="transactions-list">
+            {loyaltyData.data.recentTransactions.slice(0, 5).map((transaction, index) => (
+              <div key={index} className="transaction-item">
+                <div className="transaction-info">
+                  <span className="transaction-type">
+                    {transaction.type === 'earned' ? '➕' : 
+                     transaction.type === 'redeemed' ? '➖' : 
+                     transaction.type === 'bonus' ? '🎁' : 
+                     transaction.type === 'referral' ? '👥' : '📝'}
+                  </span>
+                  <span className="transaction-desc">{transaction.description}</span>
+                </div>
+                <div className="transaction-amount">
+                  <span className={transaction.type === 'redeemed' ? 'negative' : 'positive'}>
+                    {transaction.type === 'redeemed' ? '-' : '+'}{Math.abs(transaction.amount)}
+                  </span>
+                </div>
               </div>
-              <div className="requirement-bar">
-                <div 
-                  className="requirement-fill" 
-                  style={{ width: `${progressInfo.valueProgress}%` }}
-                ></div>
-              </div>
-              <small>{formatCurrency(userStats.totalSpent)} of {formatCurrency(progressInfo.required.value)}</small>
-            </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        {/* Redeem Coins */}
-        <div className="action-card">
-          <h4>Redeem AggreCoins</h4>
-          <p>Redeem your coins for cash value (1 AggreCoin = ₹0.10)</p>
-          <form onSubmit={handleRedeem} className="redeem-form">
-            <div className="input-group">
-              <input
-                type="number"
-                placeholder="Enter amount (min 100)"
-                value={redeemAmount}
-                onChange={(e) => setRedeemAmount(e.target.value)}
-                min="100"
-                max={loyalty.balance || 0}
-                step="10"
-              />
+      {/* Redeem Modal */}
+      {showRedeemModal && (
+        <div className="modal-overlay" onClick={() => setShowRedeemModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>💰 Redeem AggreCoins</h3>
               <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={redeemMutation.isLoading || !redeemAmount || parseInt(redeemAmount) < 100}
+                onClick={() => setShowRedeemModal(false)}
+                className="modal-close"
               >
-                {redeemMutation.isLoading ? 'Redeeming...' : 'Redeem'}
+                ✕
               </button>
             </div>
-            <small>Available: {loyalty.balance || 0} coins | Cash value: ₹{((redeemAmount || 0) * 0.1).toFixed(2)}</small>
-          </form>
-        </div>
-
-        {/* Refer Friends */}
-        <div className="action-card">
-          <h4>Refer & Earn</h4>
-          <p>Refer friends and earn 500 AggreCoins for each successful referral</p>
-          <form onSubmit={handleRefer} className="refer-form">
-            <div className="input-group">
-              <input
-                type="tel"
-                name="friendPhoneNumber"
-                placeholder="Friend's phone number (10 digits)"
-                value={referralData.friendPhoneNumber}
-                onChange={handleReferralInputChange}
-                maxLength="10"
-                pattern="[6-9][0-9]{9}"
-              />
-              <input
-                type="text"
-                name="friendName"
-                placeholder="Friend's name (optional)"
-                value={referralData.friendName}
-                onChange={handleReferralInputChange}
-              />
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={referMutation.isLoading || !referralData.friendPhoneNumber}
-              >
-                {referMutation.isLoading ? 'Sending...' : 'Send Invite'}
-              </button>
-            </div>
-            <small>Your referral code: {loyalty.referralCode || 'Loading...'}</small>
-          </form>
-        </div>
-      </div>
-
-      {/* Referral Stats */}
-      <div className="referral-stats">
-        <h3>Referral Statistics</h3>
-        <div className="stats-grid">
-          <div className="stat-item">
-            <span className="stat-number">{referrals.totalReferrals || 0}</span>
-            <span className="stat-label">Total Referrals</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">{referrals.completedReferrals || 0}</span>
-            <span className="stat-label">Successful</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">₹{referrals.totalEarnings || 0}</span>
-            <span className="stat-label">Total Earnings</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Transactions */}
-      {loyalty.recentTransactions && loyalty.recentTransactions.length > 0 && (
-        <div className="recent-transactions">
-          <h3>Recent Transactions</h3>
-          <div className="transactions-list">
-            {loyalty.recentTransactions.slice(0, 5).map((transaction, index) => (
-              <div key={index} className="transaction-item">
-                <div className="transaction-info">
-                  <span className="transaction-type">{transaction.description}</span>
-                  <span className="transaction-date">
-                    {new Date(transaction.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <span className={`transaction-amount ${transaction.type === 'earned' ? 'positive' : 'negative'}`}>
-                  {transaction.type === 'earned' ? '+' : '-'}{transaction.amount} coins
-                </span>
+            <div className="modal-content">
+              <div className="redeem-info">
+                <p><strong>Available Balance:</strong> {loyaltyBalance.toLocaleString()} coins</p>
+                <p><strong>Exchange Rate:</strong> 1 AggreCoin = ₹0.10</p>
+                <p><strong>Minimum Redemption:</strong> 100 coins (₹10)</p>
               </div>
-            ))}
+
+              <form onSubmit={handleRedeem} className="redeem-form">
+                <div className="form-group">
+                  <label>Amount to Redeem (Coins)</label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={redeemAmount}
+                    onChange={(e) => setRedeemAmount(e.target.value)}
+                    min="100"
+                    max={loyaltyBalance}
+                    step="10"
+                    required
+                  />
+                  {redeemAmount && (
+                    <div className="conversion-display">
+                      <span>{parseInt(redeemAmount || 0).toLocaleString()} coins = ₹{(parseInt(redeemAmount || 0) * 0.1).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    onClick={() => setShowRedeemModal(false)}
+                    className="btn btn-outline"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={redeemMutation.isLoading || !redeemAmount || parseInt(redeemAmount) < 100}
+                  >
+                    {redeemMutation.isLoading ? 'Redeeming...' : 'Redeem Now'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

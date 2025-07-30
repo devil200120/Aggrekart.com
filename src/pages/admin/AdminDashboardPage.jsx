@@ -30,23 +30,43 @@ const AdminDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview')
 
   // Fetch admin dashboard data
-  const { data: dashboardStats, isLoading: statsLoading } = useQuery(
+  const { data: dashboardData, isLoading: statsLoading, error: statsError } = useQuery(
     'admin-dashboard-stats',
     adminAPI.getDashboardStats,
     {
       enabled: !!user && user.role === 'admin',
       refetchInterval: 30000, // Refresh every 30 seconds
+      onSuccess: (data) => {
+        console.log('📊 Dashboard data received:', data);
+      },
+      onError: (error) => {
+        console.error('❌ Dashboard stats error:', error);
+        toast.error('Failed to load dashboard statistics');
+      }
     }
   )
+    const dashboardStats = dashboardData?.data || dashboardData || {};
 
   // Fetch recent users
-  const { data: recentUsers, isLoading: usersLoading } = useQuery(
+  // Find lines 45-52 (the recentUsers query) and replace with:
+
+  // Fetch recent users
+  const { data: recentUsersData, isLoading: usersLoading, error: usersError } = useQuery(
     'admin-recent-users',
     () => adminAPI.getUsers({ limit: 10, sort: 'createdAt', order: 'desc' }),
     {
       enabled: !!user && user.role === 'admin',
+      onSuccess: (data) => {
+        console.log('👥 Users data received:', data);
+      },
+      onError: (error) => {
+        console.error('❌ Users fetch error:', error);
+      }
     }
   )
+
+  // Extract users array from API response
+  const recentUsers = recentUsersData?.data?.users || recentUsersData?.users || [];
 
   // Fetch pending approvals
   const { data: pendingApprovals, isLoading: approvalsLoading } = useQuery(

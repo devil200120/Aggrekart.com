@@ -70,112 +70,121 @@ const CartItem = ({ item }) => {
 
   return (
     <div className={`cart-item ${isLoading ? 'loading' : ''}`}>
-      {/* Product Image */}
-      <div className="cart-item-image">
-        <Link to={`/products/${product._id}`}>
-          <img 
-            src={product.images?.[0]?.url || product.images?.[0] || '/placeholder-product.jpg'} 
-            alt={product.name}
-            loading="lazy"
-          />
-        </Link>
-      </div>
-
-      {/* Product Details */}
-      <div className="cart-item-details">
-        <div className="cart-item-info">
-          <Link 
-            to={`/products/${product._id}`}
-            className="cart-item-name"
-          >
-            {product.name}
-          </Link>
-          
-          <div className="cart-item-supplier">
-            <span>Sold by:</span>
-            <Link 
-              to={`/suppliers/${product.supplier?._id}`}
-              className="supplier-link"
-            >
-              {product.supplier?.businessName || product.supplier?.companyName || 'Unknown Supplier'}
+      <div className="cart-item-content">
+        {/* Mobile/Tablet: Top Row - Image + Details */}
+        <div className="cart-item-top">
+          <div className="cart-item-image">
+            <Link to={`/products/${product._id}`}>
+              <img 
+                src={product.images?.[0]?.url || product.images?.[0] || '/placeholder-product.jpg'} 
+                alt={product.name}
+                loading="lazy"
+              />
             </Link>
           </div>
 
-          <div className="cart-item-specs">
-            {product.category && (
-              <span className="spec">Category: {product.category}</span>
-            )}
-            {(product.pricing?.unit || product.unit) && (
-              <span className="spec">Unit: {product.pricing?.unit || product.unit}</span>
-            )}
+          <div className="cart-item-details">
+            <div className="cart-item-info">
+              <Link 
+                to={`/products/${product._id}`}
+                className="cart-item-name"
+              >
+                {product.name}
+              </Link>
+              
+              <div className="cart-item-supplier">
+                <span>Sold by:</span>
+                <Link 
+                  to={`/suppliers/${product.supplier?._id}`}
+                  className="supplier-link"
+                >
+                  {product.supplier?.businessName || product.supplier?.companyName || 'Unknown Supplier'}
+                </Link>
+              </div>
+
+              <div className="cart-item-specs">
+                {product.category && (
+                  <span className="spec">Category: {product.category}</span>
+                )}
+                {(product.pricing?.unit || product.unit) && (
+                  <span className="spec">Unit: {product.pricing?.unit || product.unit}</span>
+                )}
+              </div>
+
+              <div className={`stock-status ${stockStatus.isInStock ? 'in-stock' : 'out-of-stock'}`}>
+                {stockStatus.isInStock ? '✅' : '❌'} {stockStatus.text}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile/Tablet: Middle Row - Quantity + Price */}
+        <div className="cart-item-middle">
+          {/* Quantity Controls */}
+          <div className="cart-item-quantity">
+            <label className="quantity-label">Quantity</label>
+            <div className="quantity-controls">
+              <button 
+                onClick={() => handleQuantityChange(quantity - 1)}
+                disabled={quantity <= 1 || isLoading}
+                className="quantity-btn"
+                aria-label="Decrease quantity"
+              >
+                -
+              </button>
+              <input 
+                type="number"
+                value={quantity}
+                onChange={(e) => {
+                  const newQty = Math.max(1, parseInt(e.target.value) || 1)
+                  handleQuantityChange(newQty)
+                }}
+                disabled={isLoading}
+                className="quantity-input"
+                min="1"
+                aria-label="Item quantity"
+              />
+              <button 
+                onClick={() => handleQuantityChange(quantity + 1)}
+                disabled={isLoading}
+                className="quantity-btn"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
           </div>
 
-          <div className={`stock-status ${stockStatus.isInStock ? 'in-stock' : 'out-of-stock'}`}>
-            {stockStatus.isInStock ? '✅' : '❌'} {stockStatus.text}
+          {/* Price */}
+          <div className="cart-item-price">
+            <div className="price-per-unit">
+              {formatPrice(itemPrice)}/{product.pricing?.unit || product.unit || 'unit'}
+            </div>
+            <div className="price-total">
+              {formatPrice(itemTotal)}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Quantity Controls */}
-      <div className="cart-item-quantity">
-        <label className="quantity-label">Quantity</label>
-        <div className="quantity-controls">
-          <button 
-            onClick={() => handleQuantityChange(quantity - 1)}
-            disabled={quantity <= 1 || isLoading}
-            className="quantity-btn"
-          >
-            -
-          </button>
-          <input 
-            type="number"
-            value={quantity}
-            onChange={(e) => {
-              const newQty = Math.max(1, parseInt(e.target.value) || 1)
-              handleQuantityChange(newQty)
-            }}
+        {/* Mobile/Tablet: Bottom Row - Actions */}
+        <div className="cart-item-actions">
+          <button
+            onClick={handleRemove}
             disabled={isLoading}
-            className="quantity-input"
-            min="1"
-          />
-          <button 
-            onClick={() => handleQuantityChange(quantity + 1)}
-            disabled={isLoading}
-            className="quantity-btn"
+            className="remove-btn"
+            aria-label="Remove item from cart"
           >
-            +
+            {isRemoving ? (
+              <span>Removing...</span>
+            ) : (
+              <>
+                <span className="remove-icon">🗑️</span>
+                <span className="remove-text">Remove</span>
+              </>
+            )}
           </button>
         </div>
       </div>
-
-      {/* Price - Fixed */}
-      <div className="cart-item-price">
-        <div className="price-per-unit">
-          {formatPrice(itemPrice)}/{product.pricing?.unit || product.unit || 'unit'}
-        </div>
-        <div className="price-total">
-          {formatPrice(itemTotal)}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="cart-item-actions">
-        <button
-          onClick={handleRemove}
-          disabled={isLoading}
-          className="remove-btn"
-          title="Remove from cart"
-        >
-          {isRemoving ? '...' : '🗑️'}
-        </button>
-      </div>
-
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="cart-item-loading">
-          <div className="loading-spinner small"></div>
-        </div>
-      )}
     </div>
   )
 }

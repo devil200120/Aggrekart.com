@@ -1,0 +1,167 @@
+.google-maps-address-input {
+  width: 100%;
+  position: relative;
+}
+
+.address-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.address-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.address-input::placeholder {
+  color: #a0aec0;
+}
+
+/* Google's autocomplete dropdown styling */
+.pac-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  margin-top: 4px;
+  z-index: 1000;
+}
+
+.pac-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background-color: #f7fafc;
+}
+
+.pac-item:last-child {
+  border-bottom: none;
+}
+
+.pac-item-query {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.pac-matched {
+  font-weight: 700;
+  color: #667eea;
+}
+
+.pac-item-type {
+  color: #718096;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Error state */
+.google-maps-address-input.error .address-input {
+  border-color: #f56565;
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+}
+
+/* Success state */
+.google-maps-address-input.success .address-input {
+  border-color: #48bb78;
+  box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .address-input {
+    padding: 0.625rem 0.875rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .pac-item {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .address-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 16px;
+  }
+
+  .pac-container {
+    margin-top: 2px;
+  }
+
+  .pac-item {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .address-input {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .address-input::placeholder {
+    color: #a0aec0;
+  }
+
+  .pac-container {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  .pac-item {
+    border-bottom-color: #4a5568;
+  }
+
+  .pac-item:hover,
+  .pac-item-selected {
+    background-color: #374151;
+  }
+
+  .pac-item-query {
+    color: #e2e8f0;
+  }
+
+  .pac-matched {
+    color: #9f7aea;
+  }
+
+  .pac-item-type {
+    color: #a0aec0;
+  }
+}
+
+/* Focus styles for accessibility */
+.address-input:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .address-input {
+    border-width: 3px;
+    border-color: #000;
+  }
+
+  .pac-container {
+    border-width: 2px;
+    border-color: #000;
+  }
+}

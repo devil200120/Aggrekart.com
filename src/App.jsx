@@ -28,6 +28,10 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage'
+import EditProductPage from './pages/supplier/EditProductPage'
+
+
 
 
 // Fix the import path for WhatsAppRegister - it's in pages/auth, not components/auth
@@ -55,7 +59,7 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage'
 import PaymentProcessingPage from './pages/payment/PaymentProcessingPage'
 import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
 import PaymentFailedPage from './pages/payment/PaymentFailedPage'
-
+import RoleBasedLanding from './components/common/RoleBasedLanding'
 // Styles
 import './styles/variables.css'
 import './styles/global.css'
@@ -89,7 +93,7 @@ function App() {
                   {/* Public Routes */}
                   <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
                   <Route path="/auth/supplier-register" element={<SupplierRegisterPage />} />
-                  <Route path="/" element={<HomePage />} />
+                  <Route path="/" element={<RoleBasedLanding />} />
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/auth/login" element={<LoginPage />} />
                   <Route path="/products/:productId" element={<ProductDetailPage />} />
@@ -200,13 +204,23 @@ function App() {
                   />
                   
                   <Route 
-                    path="/supplier/products/edit/:productId" 
+                    path="/supplier/products/:productId/edit" 
                     element={
                       <ProtectedRoute allowedRoles={['supplier']}>
-                        <AddProductPage />
+                        <EditProductPage />
                       </ProtectedRoute>
                     } 
                   />
+
+                  <Route 
+                    path="/supplier/orders" 
+                    element={
+                      <ProtectedRoute allowedRoles={['supplier']}>
+                        <SupplierOrdersPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
 
                   {/* Protected Routes - Admin Only */}
                   <Route 

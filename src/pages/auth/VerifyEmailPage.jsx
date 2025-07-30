@@ -156,7 +156,7 @@ const handleVerifyOtp = async () => {
         }
       }
     } catch (error) {
-      toast.error('Failed to resend OTP. Please try again.')
+      toast.error('Failed to resend OTP. Please try again.', error)
     } finally {
       setIsResending(false)
     }

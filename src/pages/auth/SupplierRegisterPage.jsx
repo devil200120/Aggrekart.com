@@ -1,772 +1,1028 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { suppliersAPI } from '../../services/api'
-import toast from 'react-hot-toast'
-import './AuthPages.css'
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supplierAPI } from "../../services/api";
+import GSTAutoFill from "../../components/supplier/GSTAutoFill";
+import toast from "react-hot-toast";
+import "./AuthPages.css";
 
 const SupplierRegisterPage = () => {
-  const navigate = useNavigate()
-  
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const navigate = useNavigate();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [gstValidationIssues, setGstValidationIssues] = useState([]);
   const [formData, setFormData] = useState({
     // Business Information
-    businessName: '',
-    businessType: 'manufacturer',
-    gstNumber: '',
-    panNumber: '',
-    businessRegistrationNumber: '',
-    
+    businessName: "",
+    businessType: "manufacturer",
+    gstNumber: "",
+    panNumber: "",
+    businessRegistrationNumber: "",
+
     // Contact Information
-    contactPersonName: '',
-    email: '',
-    phoneNumber: '',
-    alternatePhone: '',
-    
+    contactPersonName: "",
+    email: "",
+    phoneNumber: "",
+    alternatePhone: "",
+
     // Business Address
-    businessAddress: '',
-    city: '',
-    state: '',
-    pincode: '',
-    
+    businessAddress: "",
+    city: "",
+    state: "",
+    pincode: "",
+
     // Account Information
-    password: '',
-    confirmPassword: '',
-    
+    password: "",
+    confirmPassword: "",
+
     // Product Categories
     productCategories: [],
-    
+
     // Business Details
-    yearEstablished: '',
-    numberOfEmployees: '',
-    annualTurnover: '',
-    
+    yearEstablished: "",
+    numberOfEmployees: "",
+    annualTurnover: "",
+
     // Banking Information
-    bankAccountNumber: '',
-    bankName: '',
-    ifscCode: '',
-    accountHolderName: '',
-    
+    bankAccountNumber: "",
+    bankName: "",
+    ifscCode: "",
+    accountHolderName: "",
+
     // Agreements
     agreeToTerms: false,
-    agreeToCommission: false
-  })
-  const [errors, setErrors] = useState({})
+    agreeToCommission: false,
+  });
+  const [errors, setErrors] = useState({});
 
   const businessTypes = [
-    { value: 'manufacturer', label: 'Manufacturer' },
-    { value: 'distributor', label: 'Distributor' },
-    { value: 'wholesaler', label: 'Wholesaler' },
-    { value: 'retailer', label: 'Retailer' },
-    { value: 'contractor', label: 'Contractor' },
-    { value: 'supplier', label: 'Supplier' }
-  ]
+    { value: "manufacturer", label: "Manufacturer" },
+    { value: "distributor", label: "Distributor" },
+    { value: "wholesaler", label: "Wholesaler" },
+    { value: "retailer", label: "Retailer" },
+    { value: "contractor", label: "Contractor" },
+    { value: "supplier", label: "Supplier" },
+  ];
 
   const productCategoriesOptions = [
-    'aggregate', 'sand', 'tmt_steel', 'bricks_blocks', 'cement'
-  ]
+    { value: "aggregate", label: "Aggregate (Stone, Metal, Dust)" },
+    { value: "sand", label: "Sand (River Sand, M.Sand)" },
+    { value: "tmt_steel", label: "TMT Steel & Reinforcement" },
+    { value: "bricks_blocks", label: "Bricks & Blocks" },
+    { value: "cement", label: "Cement" },
+  ];
 
   const employeeRanges = [
-    { value: '1-10', label: '1-10 employees' },
-    { value: '11-50', label: '11-50 employees' },
-    { value: '51-200', label: '51-200 employees' },
-    { value: '201-500', label: '201-500 employees' },
-    { value: '500+', label: '500+ employees' }
-  ]
+    { value: "1-10", label: "1-10 employees" },
+    { value: "11-50", label: "11-50 employees" },
+    { value: "51-200", label: "51-200 employees" },
+    { value: "201-500", label: "201-500 employees" },
+    { value: "500+", label: "500+ employees" },
+  ];
 
   const turnoverRanges = [
-    { value: 'under-1cr', label: 'Under ₹1 Crore' },
-    { value: '1-5cr', label: '₹1-5 Crores' },
-    { value: '5-10cr', label: '₹5-10 Crores' },
-    { value: '10-25cr', label: '₹10-25 Crores' },
-    { value: '25cr+', label: '₹25+ Crores' }
-  ]
+    { value: "under-1cr", label: "Under ₹1 Crore" },
+    { value: "1-5cr", label: "₹1-5 Crores" },
+    { value: "5-10cr", label: "₹5-10 Crores" },
+    { value: "10-25cr", label: "₹10-25 Crores" },
+    { value: "25cr+", label: "₹25+ Crores" },
+  ];
+
+  const indianStates = [
+    { code: "01", name: "Jammu and Kashmir", gstCode: "01" },
+    { code: "02", name: "Himachal Pradesh", gstCode: "02" },
+    { code: "03", name: "Punjab", gstCode: "03" },
+    { code: "04", name: "Chandigarh", gstCode: "04" },
+    { code: "05", name: "Uttarakhand", gstCode: "05" },
+    { code: "06", name: "Haryana", gstCode: "06" },
+    { code: "07", name: "Delhi", gstCode: "07" },
+    { code: "08", name: "Rajasthan", gstCode: "08" },
+    { code: "09", name: "Uttar Pradesh", gstCode: "09" },
+    { code: "10", name: "Bihar", gstCode: "10" },
+    { code: "11", name: "Sikkim", gstCode: "11" },
+    { code: "12", name: "Arunachal Pradesh", gstCode: "12" },
+    { code: "13", name: "Nagaland", gstCode: "13" },
+    { code: "14", name: "Manipur", gstCode: "14" },
+    { code: "15", name: "Mizoram", gstCode: "15" },
+    { code: "16", name: "Tripura", gstCode: "16" },
+    { code: "17", name: "Meghalaya", gstCode: "17" },
+    { code: "18", name: "Assam", gstCode: "18" },
+    { code: "19", name: "West Bengal", gstCode: "19" },
+    { code: "20", name: "Jharkhand", gstCode: "20" },
+    { code: "21", name: "Odisha", gstCode: "21" },
+    { code: "22", name: "Chhattisgarh", gstCode: "22" },
+    { code: "23", name: "Madhya Pradesh", gstCode: "23" },
+    { code: "24", name: "Gujarat", gstCode: "24" },
+    { code: "25", name: "Daman and Diu", gstCode: "25" },
+    { code: "26", name: "Dadra and Nagar Haveli", gstCode: "26" },
+    { code: "27", name: "Maharashtra", gstCode: "27" },
+    { code: "28", name: "Andhra Pradesh", gstCode: "28" },
+    { code: "29", name: "Karnataka", gstCode: "29" },
+    { code: "30", name: "Goa", gstCode: "30" },
+    { code: "31", name: "Lakshadweep", gstCode: "31" },
+    { code: "32", name: "Kerala", gstCode: "32" },
+    { code: "33", name: "Tamil Nadu", gstCode: "33" },
+    { code: "34", name: "Puducherry", gstCode: "34" },
+    { code: "35", name: "Andaman and Nicobar Islands", gstCode: "35" },
+    { code: "36", name: "Telangana", gstCode: "36" },
+    { code: "37", name: "Andhra Pradesh (New)", gstCode: "37" },
+    { code: "38", name: "Ladakh", gstCode: "38" },
+  ];
+
+  // Handle GST auto-fill data
+  const handleGSTAutoFill = (autoFillData) => {
+    setFormData((prev) => ({
+      ...prev,
+      gstNumber: autoFillData.gstNumber,
+      businessName: autoFillData.businessName,
+      businessAddress: autoFillData.businessAddress,
+      city: autoFillData.city,
+      state: autoFillData.state,
+      pincode: autoFillData.pincode,
+      // Apply suggestions only if fields are empty
+      contactPersonName:
+        prev.contactPersonName || autoFillData.contactPersonName,
+      email: prev.email || autoFillData.email,
+      accountHolderName:
+        prev.accountHolderName || autoFillData.accountHolderName,
+    }));
+
+    // Clear related errors
+    setErrors((prev) => ({
+      ...prev,
+      gstNumber: "",
+      businessName: "",
+      businessAddress: "",
+      city: "",
+      state: "",
+      pincode: "",
+      contactPersonName: "",
+      email: "",
+      accountHolderName: "",
+    }));
+
+    toast.success("Business details filled automatically from GST records!");
+  };
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+      [name]: type === "checkbox" ? checked : value,
+    }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: "",
+      }));
     }
-  }
+  };
 
   // Handle product categories selection
-  const handleCategoryChange = (category) => {
-    setFormData(prev => ({
+  const handleCategoryChange = (categoryValue) => {
+    setFormData((prev) => ({
       ...prev,
-      productCategories: prev.productCategories.includes(category)
-        ? prev.productCategories.filter(cat => cat !== category)
-        : [...prev.productCategories, category]
-    }))
-  }
+      productCategories: prev.productCategories.includes(categoryValue)
+        ? prev.productCategories.filter((cat) => cat !== categoryValue)
+        : [...prev.productCategories, categoryValue],
+    }));
+    if (errors.productCategories) {
+      setErrors((prev) => ({
+        ...prev,
+        productCategories: "",
+      }));
+    }
+  };
 
   // Validate form
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
+
+    // Check for GST validation issues
+    const hasGSTErrors = gstValidationIssues.some(
+      (issue) => issue.type === "error"
+    );
+    if (hasGSTErrors) {
+      newErrors.gstNumber =
+        "Please resolve GST validation errors before submitting";
+    }
 
     // Business Information
     if (!formData.businessName.trim()) {
-      newErrors.businessName = 'Business name is required'
+      newErrors.businessName = "Business name is required";
     }
 
     if (!formData.gstNumber.trim()) {
-      newErrors.gstNumber = 'GST number is required'
-    } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber)) {
-      newErrors.gstNumber = 'Please enter a valid GST number'
-    }
-
-    if (!formData.panNumber.trim()) {
-      newErrors.panNumber = 'PAN number is required'
-    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber)) {
-      newErrors.panNumber = 'Please enter a valid PAN number'
+      newErrors.gstNumber = "GST number is required";
+    } else if (
+      !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(
+        formData.gstNumber.replace(/[^A-Z0-9]/g, "")
+      )
+    ) {
+      newErrors.gstNumber = "Please enter a valid GST number";
     }
 
     // Contact Information
     if (!formData.contactPersonName.trim()) {
-      newErrors.contactPersonName = 'Contact person name is required'
+      newErrors.contactPersonName = "Contact person name is required";
     }
 
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = 'Phone number is required'
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
     } else if (!/^[6-9]\d{9}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid 10-digit phone number'
+      newErrors.phoneNumber = "Please enter a valid 10-digit phone number";
     }
 
-    // Address
+    // Business Address
     if (!formData.businessAddress.trim()) {
-      newErrors.businessAddress = 'Business address is required'
+      newErrors.businessAddress = "Business address is required";
     }
 
     if (!formData.city.trim()) {
-      newErrors.city = 'City is required'
+      newErrors.city = "City is required";
     }
 
     if (!formData.state.trim()) {
-      newErrors.state = 'State is required'
+      newErrors.state = "State is required";
     }
 
     if (!formData.pincode) {
-      newErrors.pincode = 'Pincode is required'
+      newErrors.pincode = "Pincode is required";
     } else if (!/^[1-9][0-9]{5}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Please enter a valid 6-digit pincode'
+      newErrors.pincode = "Please enter a valid 6-digit pincode";
     }
 
     // Password
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     // Product Categories
     if (formData.productCategories.length === 0) {
-      newErrors.productCategories = 'Please select at least one product category'
+      newErrors.productCategories =
+        "Please select at least one product category";
     }
 
     // Banking Information
     if (!formData.bankAccountNumber.trim()) {
-      newErrors.bankAccountNumber = 'Bank account number is required'
+      newErrors.bankAccountNumber = "Bank account number is required";
     }
 
     if (!formData.bankName.trim()) {
-      newErrors.bankName = 'Bank name is required'
+      newErrors.bankName = "Bank name is required";
     }
 
     if (!formData.ifscCode.trim()) {
-      newErrors.ifscCode = 'IFSC code is required'
+      newErrors.ifscCode = "IFSC code is required";
     } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode)) {
-      newErrors.ifscCode = 'Please enter a valid IFSC code'
+      newErrors.ifscCode = "Please enter a valid IFSC code";
     }
 
     if (!formData.accountHolderName.trim()) {
-      newErrors.accountHolderName = 'Account holder name is required'
+      newErrors.accountHolderName = "Account holder name is required";
     }
 
     // Agreements
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions'
+      newErrors.agreeToTerms = "You must agree to the terms and conditions";
     }
 
     if (!formData.agreeToCommission) {
-      newErrors.agreeToCommission = 'You must agree to the commission structure'
+      newErrors.agreeToCommission = "You must agree to the commission terms";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  // Update the handleSubmit function around line 217
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-const handleSubmit = async (e) => {
-  e.preventDefault()
-  
-  if (!validateForm()) {
-    return
-  }
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
 
-  setIsSubmitting(true)
-  
-  try {
-    const registrationData = {
-      // User fields
-      email: formData.email.toLowerCase().trim(),
-      phoneNumber: formData.phoneNumber,
-      password: formData.password,
-      contactPersonName: formData.contactPersonName.trim(),
-      
-      // Supplier fields (map to backend expected names)
-      businessName: formData.businessName.trim(),
-      gstNumber: formData.gstNumber.trim(),
-      panNumber: formData.panNumber.trim(),
-      businessAddress: formData.businessAddress.trim(),
-      city: formData.city.trim(),
-      state: formData.state.trim(),
-      pincode: formData.pincode,
-      
-      productCategories: formData.productCategories,
-      yearEstablished: formData.yearEstablished,
-      numberOfEmployees: formData.numberOfEmployees,
-      annualTurnover: formData.annualTurnover,
-      
-      bankDetails: {
-        bankName: formData.bankName.trim(),
-        accountNumber: formData.bankAccountNumber.trim(),
-        ifscCode: formData.ifscCode.trim(),
-        accountHolderName: formData.accountHolderName.trim()
+    setIsSubmitting(true);
+
+    try {
+      // Prepare data for API
+      const submissionData = {
+        // User fields
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        password: formData.password,
+        contactPersonName: formData.contactPersonName,
+
+        // Supplier fields
+        businessName: formData.businessName,
+        gstNumber: formData.gstNumber.replace(/[^A-Z0-9]/g, ""),
+        panNumber: formData.panNumber,
+        businessAddress: formData.businessAddress,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+
+        // Bank details
+        bankDetails: {
+          bankName: formData.bankName,
+          accountNumber: formData.bankAccountNumber,
+          ifscCode: formData.ifscCode,
+          accountHolderName: formData.accountHolderName,
+        },
+
+        // Additional info
+        productCategories: formData.productCategories,
+        yearEstablished: formData.yearEstablished,
+        numberOfEmployees: formData.numberOfEmployees,
+        annualTurnover: formData.annualTurnover,
+      };
+
+      const response = await supplierAPI.register(submissionData);
+
+      if (response.success) {
+        toast.success(
+          "Registration successful! Please check your email and phone for verification."
+        );
+        navigate("/auth/verify-phone", {
+          state: {
+            phoneNumber: formData.phoneNumber,
+            email: formData.email,
+            userType: "supplier",
+          },
+        });
       }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    console.log('Sending supplier registration data:', registrationData)
-
-    const result = await suppliersAPI.register(registrationData)
-    console.log('Registration result:', result)
-
-    if (result.success) {
-      toast.success('Supplier registration successful! Your application is under review.')
-      
-      // Show verification codes in development
-      if (result.data.dev_otps) {
-        console.log('Verification codes:', result.data.dev_otps)
-        toast.success(`Development - Phone OTP: ${result.data.dev_otps.phoneOTP}, Email OTP: ${result.data.dev_otps.emailOTP}`, {
-          duration: 10000
-        })
-      }
-      
-      navigate('/auth/login', { 
-        state: { 
-          message: 'Registration successful! Please login and verify your account. Your supplier account will be activated after admin approval.',
-          email: formData.email,
-          showVerification: true
-        } 
-      })
-    } else {
-      toast.error(result.message || 'Registration failed. Please try again.')
-      setErrors({
-        submit: result.message || 'Registration failed. Please try again.'
-      })
-    }
-  } catch (error) {
-    console.error('Supplier registration error:', error)
-    
-    if (error.response?.status === 401) {
-      toast.error('Authentication error. Please try again.')
-    } else if (error.response?.status === 400) {
-      const errorMessage = error.response?.data?.message || 'Validation failed'
-      toast.error(errorMessage)
-      
-      // Handle validation errors
-      if (error.response?.data?.errors) {
-        const validationErrors = {}
-        error.response.data.errors.forEach(err => {
-          const field = err.path || err.param || 'submit'
-          validationErrors[field] = err.message
-        })
-        setErrors(validationErrors)
-      } else {
-        setErrors({ submit: errorMessage })
-      }
-    } else {
-      const errorMessage = error?.response?.data?.message || 'An error occurred during registration. Please try again.'
-      toast.error(errorMessage)
-      setErrors({ submit: errorMessage })
-    }
-  } finally {
-    setIsSubmitting(false)
-  }
-}
+  };
 
   return (
     <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <Link to="/" className="auth-logo">
-            <span className="logo-icon">🏗️</span>
-            <span className="logo-text">Aggrekart</span>
-          </Link>
-          <h1 className="auth-title">Become a Supplier</h1>
-          <p className="auth-subtitle">
-            Join India's most trusted construction marketplace and grow your business
-          </p>
-        </div>
-
-        <div className="auth-card supplier-register-card">
-          <form onSubmit={handleSubmit} className="auth-form supplier-form">
-            
-            {/* Business Information */}
-            <div className="form-section">
-              <h3>🏢 Business Information</h3>
-              
-              <div className="form-group">
-                <label>Business Name *</label>
-                <input
-                  type="text"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleInputChange}
-                  placeholder="Enter your business name"
-                  className={errors.businessName ? 'error' : ''}
-                />
-                {errors.businessName && <span className="error-text">{errors.businessName}</span>}
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="auth-card">
+              <div className="auth-header">
+                <h2>Supplier Registration</h2>
+                <p>
+                  Join Aggrekart as a supplier partner and grow your business
+                </p>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Business Type *</label>
-                  <select
-                    name="businessType"
-                    value={formData.businessType}
-                    onChange={handleInputChange}
-                  >
-                    {businessTypes.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
+              <form onSubmit={handleSubmit} className="auth-form">
+                {/* GST Auto-fill Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-file-invoice me-2"></i>
+                      Business Verification
+                    </h4>
+                    <p className="text-muted">
+                      Enter your GST number to auto-fill business details
+                    </p>
+                  </div>
+
+                  <GSTAutoFill
+                    onDataFilled={handleGSTAutoFill}
+                    initialGST={formData.gstNumber}
+                    formData={formData}
+                    onValidationChange={setGstValidationIssues}
+                  />
+                </div>
+
+                {/* Business Information */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-building me-2"></i>
+                      Business Information
+                    </h4>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Business Name
+                        </label>
+                        <input
+                          type="text"
+                          name="businessName"
+                          className={`form-control ${errors.businessName ? "is-invalid" : ""}`}
+                          value={formData.businessName}
+                          onChange={handleInputChange}
+                          placeholder="Enter your business name"
+                        />
+                        {errors.businessName && (
+                          <div className="invalid-feedback">
+                            {errors.businessName}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Business Type
+                        </label>
+                        <select
+                          name="businessType"
+                          className="form-control"
+                          value={formData.businessType}
+                          onChange={handleInputChange}
+                        >
+                          {businessTypes.map((type) => (
+                            <option key={type.value} value={type.value}>
+                              {type.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label">PAN Number</label>
+                        <input
+                          type="text"
+                          name="panNumber"
+                          className="form-control"
+                          value={formData.panNumber}
+                          onChange={handleInputChange}
+                          placeholder="ABCDE1234F"
+                          maxLength="10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          Business Registration Number
+                        </label>
+                        <input
+                          type="text"
+                          name="businessRegistrationNumber"
+                          className="form-control"
+                          value={formData.businessRegistrationNumber}
+                          onChange={handleInputChange}
+                          placeholder="Enter registration number"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-user me-2"></i>
+                      Contact Information
+                    </h4>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Contact Person Name
+                        </label>
+                        <input
+                          type="text"
+                          name="contactPersonName"
+                          className={`form-control ${errors.contactPersonName ? "is-invalid" : ""}`}
+                          value={formData.contactPersonName}
+                          onChange={handleInputChange}
+                          placeholder="Enter contact person name"
+                        />
+                        {errors.contactPersonName && (
+                          <div className="invalid-feedback">
+                            {errors.contactPersonName}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="Enter email address"
+                        />
+                        {errors.email && (
+                          <div className="invalid-feedback">{errors.email}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          name="phoneNumber"
+                          className={`form-control ${errors.phoneNumber ? "is-invalid" : ""}`}
+                          value={formData.phoneNumber}
+                          onChange={handleInputChange}
+                          placeholder="10-digit phone number"
+                          maxLength="10"
+                        />
+                        {errors.phoneNumber && (
+                          <div className="invalid-feedback">
+                            {errors.phoneNumber}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label">Alternate Phone</label>
+                        <input
+                          type="tel"
+                          name="alternatePhone"
+                          className="form-control"
+                          value={formData.alternatePhone}
+                          onChange={handleInputChange}
+                          placeholder="Alternate phone number"
+                          maxLength="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Business Address */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-map-marker-alt me-2"></i>
+                      Business Address
+                    </h4>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label required">
+                      Business Address
+                    </label>
+                    <textarea
+                      name="businessAddress"
+                      className={`form-control ${errors.businessAddress ? "is-invalid" : ""}`}
+                      value={formData.businessAddress}
+                      onChange={handleInputChange}
+                      placeholder="Enter complete business address"
+                      rows={3}
+                    />
+                    {errors.businessAddress && (
+                      <div className="invalid-feedback">
+                        {errors.businessAddress}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label required">City</label>
+                        <input
+                          type="text"
+                          name="city"
+                          className={`form-control ${errors.city ? "is-invalid" : ""}`}
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          placeholder="Enter city"
+                        />
+                        {errors.city && (
+                          <div className="invalid-feedback">{errors.city}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label required">State</label>
+                        <select
+                          name="state"
+                          className={`form-control ${errors.state ? "is-invalid" : ""}`}
+                          value={formData.state}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select State</option>
+                          {indianStates.map((state) => (
+                            <option key={state.code} value={state.name}>
+                              {state.name} (GST: {state.gstCode})
+                            </option>
+                          ))}
+                        </select>
+                        {errors.state && (
+                          <div className="invalid-feedback">{errors.state}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label required">Pincode</label>
+                        <input
+                          type="text"
+                          name="pincode"
+                          className={`form-control ${errors.pincode ? "is-invalid" : ""}`}
+                          value={formData.pincode}
+                          onChange={handleInputChange}
+                          placeholder="6-digit pincode"
+                          maxLength="6"
+                        />
+                        {errors.pincode && (
+                          <div className="invalid-feedback">
+                            {errors.pincode}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Information */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-lock me-2"></i>
+                      Account Information
+                    </h4>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">Password</label>
+                        <input
+                          type="password"
+                          name="password"
+                          className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          placeholder="Enter password (min 6 characters)"
+                        />
+                        {errors.password && (
+                          <div className="invalid-feedback">
+                            {errors.password}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Confirm Password
+                        </label>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          placeholder="Confirm your password"
+                        />
+                        {errors.confirmPassword && (
+                          <div className="invalid-feedback">
+                            {errors.confirmPassword}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Product Categories */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-boxes me-2"></i>
+                      Product Categories
+                    </h4>
+                    <p className="text-muted">
+                      Select the product categories you will supply
+                    </p>
+                  </div>
+
+                  <div className="checkbox-grid">
+                    {productCategoriesOptions.map((category) => (
+                      <div key={category.value} className="form-check">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          id={category.value}
+                          checked={formData.productCategories.includes(
+                            category.value
+                          )}
+                          onChange={() => handleCategoryChange(category.value)}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor={category.value}
+                        >
+                          {category.label}
+                        </label>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                  {errors.productCategories && (
+                    <div className="text-danger small mt-2">
+                      {errors.productCategories}
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label>Year Established</label>
-                  <input
-                    type="number"
-                    name="yearEstablished"
-                    value={formData.yearEstablished}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 2010"
-                    min="1900"
-                    max="2025"
-                  />
-                </div>
-              </div>
+                {/* Business Details */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-chart-line me-2"></i>
+                      Business Details
+                    </h4>
+                  </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>GST Number *</label>
-                  <input
-                    type="text"
-                    name="gstNumber"
-                    value={formData.gstNumber}
-                    onChange={handleInputChange}
-                    placeholder="22AAAAA0000A1Z5"
-                    className={errors.gstNumber ? 'error' : ''}
-                  />
-                  {errors.gstNumber && <span className="error-text">{errors.gstNumber}</span>}
-                </div>
+                  <div className="row">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label">Year Established</label>
+                        <input
+                          type="number"
+                          name="yearEstablished"
+                          className="form-control"
+                          value={formData.yearEstablished}
+                          onChange={handleInputChange}
+                          placeholder="e.g., 2015"
+                          min="1900"
+                          max={new Date().getFullYear()}
+                        />
+                      </div>
+                    </div>
 
-                <div className="form-group">
-                  <label>PAN Number *</label>
-                  <input
-                    type="text"
-                    name="panNumber"
-                    value={formData.panNumber}
-                    onChange={handleInputChange}
-                    placeholder="ABCDE1234F"
-                    className={errors.panNumber ? 'error' : ''}
-                  />
-                  {errors.panNumber && <span className="error-text">{errors.panNumber}</span>}
-                </div>
-              </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label">
+                          Number of Employees
+                        </label>
+                        <select
+                          name="numberOfEmployees"
+                          className="form-control"
+                          value={formData.numberOfEmployees}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select range</option>
+                          {employeeRanges.map((range) => (
+                            <option key={range.value} value={range.value}>
+                              {range.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
 
-              <div className="form-group">
-                <label>Business Registration Number</label>
-                <input
-                  type="text"
-                  name="businessRegistrationNumber"
-                  value={formData.businessRegistrationNumber}
-                  onChange={handleInputChange}
-                  placeholder="Enter registration number (if applicable)"
-                />
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="form-section">
-              <h3>👤 Contact Information</h3>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Contact Person Name *</label>
-                  <input
-                    type="text"
-                    name="contactPersonName"
-                    value={formData.contactPersonName}
-                    onChange={handleInputChange}
-                    placeholder="Full name of contact person"
-                    className={errors.contactPersonName ? 'error' : ''}
-                  />
-                  {errors.contactPersonName && <span className="error-text">{errors.contactPersonName}</span>}
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label className="form-label">Annual Turnover</label>
+                        <select
+                          name="annualTurnover"
+                          className="form-control"
+                          value={formData.annualTurnover}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select range</option>
+                          {turnoverRanges.map((range) => (
+                            <option key={range.value} value={range.value}>
+                              {range.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="business@example.com"
-                    className={errors.email ? 'error' : ''}
-                  />
-                  {errors.email && <span className="error-text">{errors.email}</span>}
+                {/* Banking Information */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-university me-2"></i>
+                      Banking Information
+                    </h4>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">Bank Name</label>
+                        <input
+                          type="text"
+                          name="bankName"
+                          className={`form-control ${errors.bankName ? "is-invalid" : ""}`}
+                          value={formData.bankName}
+                          onChange={handleInputChange}
+                          placeholder="Enter bank name"
+                        />
+                        {errors.bankName && (
+                          <div className="invalid-feedback">
+                            {errors.bankName}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">IFSC Code</label>
+                        <input
+                          type="text"
+                          name="ifscCode"
+                          className={`form-control ${errors.ifscCode ? "is-invalid" : ""}`}
+                          value={formData.ifscCode}
+                          onChange={handleInputChange}
+                          placeholder="e.g., SBIN0001234"
+                          maxLength="11"
+                        />
+                        {errors.ifscCode && (
+                          <div className="invalid-feedback">
+                            {errors.ifscCode}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Account Number
+                        </label>
+                        <input
+                          type="text"
+                          name="bankAccountNumber"
+                          className={`form-control ${errors.bankAccountNumber ? "is-invalid" : ""}`}
+                          value={formData.bankAccountNumber}
+                          onChange={handleInputChange}
+                          placeholder="Enter account number"
+                        />
+                        {errors.bankAccountNumber && (
+                          <div className="invalid-feedback">
+                            {errors.bankAccountNumber}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">
+                          Account Holder Name
+                        </label>
+                        <input
+                          type="text"
+                          name="accountHolderName"
+                          className={`form-control ${errors.accountHolderName ? "is-invalid" : ""}`}
+                          value={formData.accountHolderName}
+                          onChange={handleInputChange}
+                          placeholder="Enter account holder name"
+                        />
+                        {errors.accountHolderName && (
+                          <div className="invalid-feedback">
+                            {errors.accountHolderName}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    placeholder="10-digit mobile number"
-                    className={errors.phoneNumber ? 'error' : ''}
-                  />
-                  {errors.phoneNumber && <span className="error-text">{errors.phoneNumber}</span>}
-                </div>
+                {/* Terms and Agreements */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <h4>
+                      <i className="fas fa-file-contract me-2"></i>
+                      Terms and Agreements
+                    </h4>
+                  </div>
 
-                <div className="form-group">
-                  <label>Alternate Phone</label>
-                  <input
-                    type="tel"
-                    name="alternatePhone"
-                    value={formData.alternatePhone}
-                    onChange={handleInputChange}
-                    placeholder="Alternate contact number"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Business Address */}
-            <div className="form-section">
-              <h3>📍 Business Address</h3>
-              
-              <div className="form-group">
-                <label>Business Address *</label>
-                <textarea
-                  name="businessAddress"
-                  value={formData.businessAddress}
-                  onChange={handleInputChange}
-                  placeholder="Complete business address"
-                  rows="3"
-                  className={errors.businessAddress ? 'error' : ''}
-                />
-                {errors.businessAddress && <span className="error-text">{errors.businessAddress}</span>}
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>City *</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="City"
-                    className={errors.city ? 'error' : ''}
-                  />
-                  {errors.city && <span className="error-text">{errors.city}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>State *</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    placeholder="State"
-                    className={errors.state ? 'error' : ''}
-                  />
-                  {errors.state && <span className="error-text">{errors.state}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>Pincode *</label>
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    placeholder="6-digit pincode"
-                    className={errors.pincode ? 'error' : ''}
-                  />
-                  {errors.pincode && <span className="error-text">{errors.pincode}</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* Product Categories */}
-            <div className="form-section">
-              <h3>📦 Product Categories</h3>
-              <p className="section-description">Select the categories of products you supply</p>
-              
-              <div className="checkbox-grid">
-                {productCategoriesOptions.map(category => (
-                  <label key={category} className="checkbox-label">
+                  <div className="form-check">
                     <input
                       type="checkbox"
-                      checked={formData.productCategories.includes(category)}
-                      onChange={() => handleCategoryChange(category)}
+                      className={`form-check-input ${errors.agreeToTerms ? "is-invalid" : ""}`}
+                      id="agreeToTerms"
+                      name="agreeToTerms"
+                      checked={formData.agreeToTerms}
+                      onChange={handleInputChange}
                     />
-                    <span className="checkbox-text">
-                      {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {errors.productCategories && <span className="error-text">{errors.productCategories}</span>}
-            </div>
+                    <label className="form-check-label" htmlFor="agreeToTerms">
+                      I agree to the{" "}
+                      <Link to="/terms" target="_blank">
+                        Terms and Conditions
+                      </Link>
+                    </label>
+                    {errors.agreeToTerms && (
+                      <div className="invalid-feedback d-block">
+                        {errors.agreeToTerms}
+                      </div>
+                    )}
+                  </div>
 
-            {/* Business Details */}
-            <div className="form-section">
-              <h3>📊 Business Details</h3>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Number of Employees</label>
-                  <select
-                    name="numberOfEmployees"
-                    value={formData.numberOfEmployees}
-                    onChange={handleInputChange}
+                  <div className="form-check">
+                    <input
+                      type="checkbox"
+                      className={`form-check-input ${errors.agreeToCommission ? "is-invalid" : ""}`}
+                      id="agreeToCommission"
+                      name="agreeToCommission"
+                      checked={formData.agreeToCommission}
+                      onChange={handleInputChange}
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="agreeToCommission"
+                    >
+                      I agree to the commission structure and payment terms
+                    </label>
+                    {errors.agreeToCommission && (
+                      <div className="invalid-feedback d-block">
+                        {errors.agreeToCommission}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="form-section">
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-lg w-100"
+                    disabled={isSubmitting}
                   >
-                    <option value="">Select range</option>
-                    {employeeRanges.map(range => (
-                      <option key={range.value} value={range.value}>
-                        {range.label}
-                      </option>
-                    ))}
-                  </select>
+                    {isSubmitting ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Registering...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-user-plus me-2"></i>
+                        Register as Supplier
+                      </>
+                    )}
+                  </button>
                 </div>
 
-                <div className="form-group">
-                  <label>Annual Turnover</label>
-                  <select
-                    name="annualTurnover"
-                    value={formData.annualTurnover}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Select range</option>
-                    {turnoverRanges.map(range => (
-                      <option key={range.value} value={range.value}>
-                        {range.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="auth-footer">
+                  <p>
+                    Already have an account?{" "}
+                    <Link to="/auth/login">Login here</Link>
+                  </p>
                 </div>
-              </div>
+              </form>
             </div>
-
-            {/* Banking Information */}
-            <div className="form-section">
-              <h3>🏦 Banking Information</h3>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Bank Account Number *</label>
-                  <input
-                    type="text"
-                    name="bankAccountNumber"
-                    value={formData.bankAccountNumber}
-                    onChange={handleInputChange}
-                    placeholder="Bank account number"
-                    className={errors.bankAccountNumber ? 'error' : ''}
-                  />
-                  {errors.bankAccountNumber && <span className="error-text">{errors.bankAccountNumber}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>Bank Name *</label>
-                  <input
-                    type="text"
-                    name="bankName"
-                    value={formData.bankName}
-                    onChange={handleInputChange}
-                    placeholder="Name of the bank"
-                    className={errors.bankName ? 'error' : ''}
-                  />
-                  {errors.bankName && <span className="error-text">{errors.bankName}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>IFSC Code *</label>
-                  <input
-                    type="text"
-                    name="ifscCode"
-                    value={formData.ifscCode}
-                    onChange={handleInputChange}
-                    placeholder="ABCD0123456"
-                    className={errors.ifscCode ? 'error' : ''}
-                  />
-                  {errors.ifscCode && <span className="error-text">{errors.ifscCode}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>Account Holder Name *</label>
-                  <input
-                    type="text"
-                    name="accountHolderName"
-                    value={formData.accountHolderName}
-                    onChange={handleInputChange}
-                    placeholder="Name as per bank records"
-                    className={errors.accountHolderName ? 'error' : ''}
-                  />
-                  {errors.accountHolderName && <span className="error-text">{errors.accountHolderName}</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* Account Information */}
-            <div className="form-section">
-              <h3>🔒 Account Security</h3>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Password *</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Create a strong password"
-                    className={errors.password ? 'error' : ''}
-                  />
-                  {errors.password && <span className="error-text">{errors.password}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>Confirm Password *</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    placeholder="Confirm your password"
-                    className={errors.confirmPassword ? 'error' : ''}
-                  />
-                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* Terms and Agreements */}
-            <div className="form-section">
-              <h3>📋 Terms & Agreements</h3>
-              
-              <div className="checkbox-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="agreeToTerms"
-                    checked={formData.agreeToTerms}
-                    onChange={handleInputChange}
-                    className={errors.agreeToTerms ? 'error' : ''}
-                  />
-                  <span className="checkbox-text">
-                    I agree to the <Link to="/terms" target="_blank">Terms and Conditions</Link> and <Link to="/privacy" target="_blank">Privacy Policy</Link> *
-                  </span>
-                </label>
-                {errors.agreeToTerms && <span className="error-text">{errors.agreeToTerms}</span>}
-
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="agreeToCommission"
-                    checked={formData.agreeToCommission}
-                    onChange={handleInputChange}
-                    className={errors.agreeToCommission ? 'error' : ''}
-                  />
-                  <span className="checkbox-text">
-                    I agree to the commission structure and payment terms *
-                  </span>
-                </label>
-                {errors.agreeToCommission && <span className="error-text">{errors.agreeToCommission}</span>}
-              </div>
-            </div>
-
-            {/* Submit Error */}
-            {errors.submit && (
-              <div className="error-message">
-                {errors.submit}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary btn-full"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="spinner"></span>
-                  Submitting Application...
-                </>
-              ) : (
-                'Submit Supplier Application'
-              )}
-            </button>
-
-            <div className="auth-footer">
-              <p>
-                Already have a supplier account?{' '}
-                <Link to="/auth/login" className="auth-link">
-                  Login here
-                </Link>
-              </p>
-              <p>
-                Want to register as a customer?{' '}
-                <Link to="/auth/register" className="auth-link">
-                  Customer Registration
-                </Link>
-              </p>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SupplierRegisterPage
+export default SupplierRegisterPage;

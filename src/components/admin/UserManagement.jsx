@@ -19,7 +19,17 @@ import {
 } from 'lucide-react'
 import './UserManagement.css'
 
-const UserManagement = ({ users = [], loading, onUpdateUser, onDeleteUser }) => {
+const UserManagement = ({ 
+  users = [], 
+  loading, 
+  onUpdateUser, 
+  onDeleteUser,
+  pagination,
+  filters,
+  onFilterChange,
+  onPageChange,
+  onRefresh
+}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterRole, setFilterRole] = useState('all')
@@ -76,6 +86,15 @@ const UserManagement = ({ users = [], loading, onUpdateUser, onDeleteUser }) => 
       setSelectedUsers(filteredUsers.map(user => user._id))
     }
   }
+  // Add this function after the existing utility functions
+const handleUserAction = (userId, action) => {
+  if (typeof onUpdateUser === 'function') {
+    onUpdateUser(userId, action)
+  } else {
+    console.error('onUpdateUser function not provided')
+    alert('Action handler not available')
+  }
+}
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -273,23 +292,37 @@ const UserManagement = ({ users = [], loading, onUpdateUser, onDeleteUser }) => 
                     {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                   </div>
                 </td>
-                <td>
+              <td>
                   <div className="user-actions-dropdown">
-                    <button className="action-trigger">
+                    <button 
+                      className="action-trigger"
+                      disabled={loading}
+                    >
                       <MoreVertical size={16} />
                     </button>
                     <div className="action-menu">
-                      <button onClick={() => onUpdateUser(user._id, 'edit')}>
+                      <button 
+                        onClick={() => handleUserAction(user._id, 'edit')}
+                        disabled={loading}
+                      >
                         <Edit size={14} />
                         Edit User
                       </button>
-                      <button onClick={() => onUpdateUser(user._id, 'suspend')}>
+                      <button 
+                        onClick={() => handleUserAction(user._id, 'suspend')}
+                        disabled={loading || !user.isActive}
+                        className={!user.isActive ? 'disabled' : ''}
+                      >
                         <Ban size={14} />
-                        Suspend
+                        {user.isActive ? 'Suspend' : 'Already Suspended'}
                       </button>
-                      <button onClick={() => onUpdateUser(user._id, 'activate')}>
+                      <button 
+                        onClick={() => handleUserAction(user._id, 'activate')}
+                        disabled={loading || user.isActive}
+                        className={user.isActive ? 'disabled' : ''}
+                      >
                         <CheckCircle size={14} />
-                        Activate
+                        {user.isActive ? 'Already Active' : 'Activate'}
                       </button>
                     </div>
                   </div>

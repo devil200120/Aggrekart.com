@@ -6,15 +6,42 @@ import { toast } from 'react-hot-toast'
 
 const CartContext = createContext()
 
-// Cart reducer for local state management
+// Enhanced cart reducer with proper price handling
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'SET_CART': {
+      const items = action.payload.items || []
+      
+      // Ensure each item has proper price structure
+      const processedItems = items.map(item => ({
+        ...item,
+        // Map backend price fields to frontend expectations
+        price: item.priceAtTime || item.price || item.product?.pricing?.basePrice || 0,
+        product: {
+          ...item.product,
+          // Ensure product has price field
+          price: item.product?.pricing?.basePrice || item.product?.price || 0,
+          unit: item.product?.pricing?.unit || item.product?.unit || 'unit'
+        }
+      }))
+      
+      // Calculate totals with validation
+      const total = processedItems.reduce((sum, item) => {
+        const itemPrice = parseFloat(item.price) || 0
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + (itemPrice * itemQuantity)
+      }, 0)
+      
+      const itemCount = processedItems.reduce((sum, item) => {
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + itemQuantity
+      }, 0)
+      
       return {
         ...state,
-        items: action.payload.items || [],
-        total: action.payload.total || 0,
-        itemCount: action.payload.itemCount || 0,
+        items: processedItems,
+        total: parseFloat(total) || 0,
+        itemCount: parseFloat(itemCount) || 0,
         isLoading: false
       }
     }
@@ -27,63 +54,103 @@ const cartReducer = (state, action) => {
     }
     
     case 'OPTIMISTIC_ADD': {
-      const existingItem = state.items.find(item => item.product._id === action.payload.productId)
+      const existingItem = state.items.find(item => 
+        item.product._id === action.payload.productId || 
+        item.product.productId === action.payload.productId
+      )
+      
       let newItems
+      const productPrice = parseFloat(action.payload.product?.pricing?.basePrice || action.payload.product?.price || 0)
+      const addQuantity = parseFloat(action.payload.quantity) || 0
       
       if (existingItem) {
         newItems = state.items.map(item =>
-          item.product._id === action.payload.productId
-            ? { ...item, quantity: item.quantity + action.payload.quantity }
+          (item.product._id === action.payload.productId || item.product.productId === action.payload.productId)
+            ? { 
+                ...item, 
+                quantity: parseFloat(item.quantity) + addQuantity,
+                price: productPrice
+              }
             : item
         )
       } else {
         newItems = [...state.items, {
           _id: `temp-${Date.now()}`,
-          product: action.payload.product,
-          quantity: action.payload.quantity,
-          price: action.payload.product.price
+          product: {
+            ...action.payload.product,
+            price: productPrice,
+            unit: action.payload.product?.pricing?.unit || action.payload.product?.unit || 'unit'
+          },
+          quantity: addQuantity,
+          price: productPrice,
+          priceAtTime: productPrice
         }]
       }
       
-      const newTotal = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      const newItemCount = newItems.reduce((sum, item) => sum + item.quantity, 0)
+      const newTotal = newItems.reduce((sum, item) => {
+        const itemPrice = parseFloat(item.price) || 0
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + (itemPrice * itemQuantity)
+      }, 0)
+      
+      const newItemCount = newItems.reduce((sum, item) => {
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + itemQuantity
+      }, 0)
       
       return {
         ...state,
         items: newItems,
-        total: newTotal,
-        itemCount: newItemCount
+        total: parseFloat(newTotal) || 0,
+        itemCount: parseFloat(newItemCount) || 0
       }
     }
     
     case 'OPTIMISTIC_UPDATE': {
       const updatedItems = state.items.map(item =>
         item._id === action.payload.itemId
-          ? { ...item, quantity: action.payload.quantity }
+          ? { ...item, quantity: parseFloat(action.payload.quantity) || 0 }
           : item
       )
       
-      const updatedTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      const updatedItemCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+      const updatedTotal = updatedItems.reduce((sum, item) => {
+        const itemPrice = parseFloat(item.price) || 0
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + (itemPrice * itemQuantity)
+      }, 0)
+      
+      const updatedItemCount = updatedItems.reduce((sum, item) => {
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + itemQuantity
+      }, 0)
       
       return {
         ...state,
         items: updatedItems,
-        total: updatedTotal,
-        itemCount: updatedItemCount
+        total: parseFloat(updatedTotal) || 0,
+        itemCount: parseFloat(updatedItemCount) || 0
       }
     }
     
     case 'OPTIMISTIC_REMOVE': {
       const filteredItems = state.items.filter(item => item._id !== action.payload.itemId)
-      const filteredTotal = filteredItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      const filteredItemCount = filteredItems.reduce((sum, item) => sum + item.quantity, 0)
+      
+      const filteredTotal = filteredItems.reduce((sum, item) => {
+        const itemPrice = parseFloat(item.price) || 0
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + (itemPrice * itemQuantity)
+      }, 0)
+      
+      const filteredItemCount = filteredItems.reduce((sum, item) => {
+        const itemQuantity = parseFloat(item.quantity) || 0
+        return sum + itemQuantity
+      }, 0)
       
       return {
         ...state,
         items: filteredItems,
-        total: filteredTotal,
-        itemCount: filteredItemCount
+        total: parseFloat(filteredTotal) || 0,
+        itemCount: parseFloat(filteredItemCount) || 0
       }
     }
     
@@ -114,53 +181,68 @@ export const CartProvider = ({ children }) => {
   const queryClient = useQueryClient()
   const [cartState, dispatch] = useReducer(cartReducer, initialState)
 
-  // Fetch cart data
-  // Replace lines 115-130 with:
-
-  // Fetch cart data
-  const { data: cartData, isLoading } = useQuery(
+  // Fetch cart data with enhanced error handling
+  const { data: cartData, isLoading, error } = useQuery(
     'cart',
     cartAPI.getCart,
     {
       enabled: !!user && user.role === 'customer',
       onSuccess: (response) => {
-        // Extract cart data from nested response structure
-        const cartData = response.data?.cart || response.cart || {};
+        console.log('Cart response:', response)
+        
+        // Handle different response structures
+        const cartData = response?.data?.cart || response?.cart || response?.data || {}
+        
+        // Ensure we have items array
+        const items = cartData.items || []
+        
+        console.log('Processing cart items:', items)
         
         dispatch({ 
           type: 'SET_CART', 
           payload: {
-            items: cartData.items || [],
+            items: items,
             total: cartData.totalAmount || 0,
             itemCount: cartData.totalItems || 0
           }
-        });
+        })
       },
       onError: (error) => {
         console.error('Failed to fetch cart:', error)
         dispatch({ type: 'SET_LOADING', payload: false })
+        
+        // Don't show error toast for 404 (empty cart)
+        if (error?.response?.status !== 404) {
+          toast.error('Failed to load cart')
+        }
       },
       staleTime: 2 * 60 * 1000, // 2 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on 404 errors
+        if (error?.response?.status === 404) return false
+        return failureCount < 2
+      }
     }
   )
-  // Add to cart mutation
-  // Replace lines 135-150 with:
 
-  // Add to cart mutation
+  // Add to cart mutation with enhanced error handling
   const addToCartMutation = useMutation(
-    (data) => cartAPI.addToCart(data),
+    (data) => {
+      console.log('Adding to cart:', data)
+      return cartAPI.addToCart(data)
+    },
     {
       onMutate: async (variables) => {
-        // Optimistic update
+        console.log('Optimistic add:', variables)
         dispatch({
           type: 'OPTIMISTIC_ADD',
           payload: variables
         })
       },
-      // Replace the updateCartMutation onSuccess (around line 168):
-
       onSuccess: (response) => {
-        const cartData = response.data?.cart || response.cart || {};
+        console.log('Add to cart success:', response)
+        
+        const cartData = response?.data?.cart || response?.cart || response?.data || {}
         
         dispatch({ 
           type: 'SET_CART', 
@@ -169,33 +251,50 @@ export const CartProvider = ({ children }) => {
             total: cartData.totalAmount || 0,
             itemCount: cartData.totalItems || 0
           }
-        });
+        })
+        
         queryClient.invalidateQueries('cart')
+        toast.success('Item added to cart')
       },
       onError: (error) => {
-        // Revert optimistic update
+        console.error('Add to cart error:', error)
         queryClient.invalidateQueries('cart')
         toast.error(error.response?.data?.message || 'Failed to add item to cart')
       }
     }
   )
+
   // Update cart item mutation
   const updateCartMutation = useMutation(
-    ({ itemId, quantity }) => cartAPI.updateCartItem(itemId, { quantity }),
+    ({ itemId, quantity }) => {
+      console.log('Updating cart item:', { itemId, quantity })
+      return cartAPI.updateCartItem(itemId, { quantity })
+    },
     {
       onMutate: async (variables) => {
-        // Optimistic update
         dispatch({
           type: 'OPTIMISTIC_UPDATE',
           payload: variables
         })
       },
-      onSuccess: (data) => {
-        dispatch({ type: 'SET_CART', payload: data })
+      onSuccess: (response) => {
+        console.log('Update cart success:', response)
+        
+        const cartData = response?.data?.cart || response?.cart || response?.data || {}
+        
+        dispatch({ 
+          type: 'SET_CART', 
+          payload: {
+            items: cartData.items || [],
+            total: cartData.totalAmount || 0,
+            itemCount: cartData.totalItems || 0
+          }
+        })
+        
         queryClient.invalidateQueries('cart')
       },
       onError: (error) => {
-        // Revert optimistic update
+        console.error('Update cart error:', error)
         queryClient.invalidateQueries('cart')
         toast.error(error.response?.data?.message || 'Failed to update cart')
       }
@@ -204,22 +303,36 @@ export const CartProvider = ({ children }) => {
 
   // Remove from cart mutation
   const removeFromCartMutation = useMutation(
-    (itemId) => cartAPI.removeFromCart(itemId),
+    (itemId) => {
+      console.log('Removing from cart:', itemId)
+      return cartAPI.removeFromCart(itemId)
+    },
     {
       onMutate: async (itemId) => {
-        // Optimistic update
         dispatch({
           type: 'OPTIMISTIC_REMOVE',
           payload: { itemId }
         })
       },
-      onSuccess: (data) => {
-        dispatch({ type: 'SET_CART', payload: data })
+      onSuccess: (response) => {
+        console.log('Remove from cart success:', response)
+        
+        const cartData = response?.data?.cart || response?.cart || response?.data || {}
+        
+        dispatch({ 
+          type: 'SET_CART', 
+          payload: {
+            items: cartData.items || [],
+            total: cartData.totalAmount || 0,
+            itemCount: cartData.totalItems || 0
+          }
+        })
+        
         queryClient.invalidateQueries('cart')
         toast.success('Item removed from cart')
       },
       onError: (error) => {
-        // Revert optimistic update
+        console.error('Remove from cart error:', error)
         queryClient.invalidateQueries('cart')
         toast.error(error.response?.data?.message || 'Failed to remove item')
       }
@@ -251,7 +364,7 @@ export const CartProvider = ({ children }) => {
     }
   }, [user])
 
-  // Cart actions
+  // Cart actions with validation
   const addToCart = async (productData) => {
     if (!user) {
       toast.error('Please login to add items to cart')
@@ -263,14 +376,35 @@ export const CartProvider = ({ children }) => {
       return
     }
 
-    return addToCartMutation.mutateAsync(productData)
+    // Validate product data
+    if (!productData.productId && !productData.product?._id) {
+      toast.error('Invalid product data')
+      return
+    }
+
+    if (!productData.quantity || productData.quantity <= 0) {
+      toast.error('Invalid quantity')
+      return
+    }
+
+    const formattedData = {
+      productId: productData.productId || productData.product._id,
+      quantity: parseFloat(productData.quantity),
+      specifications: productData.specifications || {},
+      product: productData.product
+    }
+
+    return addToCartMutation.mutateAsync(formattedData)
   }
 
   const updateCartItem = async (itemId, quantity) => {
-    if (quantity <= 0) {
+    const parsedQuantity = parseFloat(quantity)
+    
+    if (parsedQuantity <= 0) {
       return removeFromCart(itemId)
     }
-    return updateCartMutation.mutateAsync({ itemId, quantity })
+    
+    return updateCartMutation.mutateAsync({ itemId, quantity: parsedQuantity })
   }
 
   const removeFromCart = async (itemId) => {
@@ -282,13 +416,38 @@ export const CartProvider = ({ children }) => {
   }
 
   const getCartItemByProductId = (productId) => {
-    return cartState.items.find(item => item.product._id === productId)
+    return cartState.items.find(item => 
+      item.product._id === productId || 
+      item.product.productId === productId
+    )
+  }
+
+  // Enhanced cart calculations
+  const getSubtotal = () => {
+    return cartState.items.reduce((sum, item) => {
+      const itemPrice = parseFloat(item.price) || 0
+      const itemQuantity = parseFloat(item.quantity) || 0
+      return sum + (itemPrice * itemQuantity)
+    }, 0)
+  }
+
+  const getItemCount = () => {
+    return cartState.items.reduce((sum, item) => {
+      const itemQuantity = parseFloat(item.quantity) || 0
+      return sum + itemQuantity
+    }, 0)
   }
 
   const value = {
     // State
-    ...cartState,
+    items: cartState.items || [],
+    total: parseFloat(cartState.total) || 0,
+    itemCount: parseFloat(cartState.itemCount) || 0,
     isLoading: isLoading || cartState.isLoading,
+    
+    // Enhanced calculations
+    subtotal: getSubtotal(),
+    calculatedItemCount: getItemCount(),
     
     // Actions
     addToCart,
@@ -302,6 +461,9 @@ export const CartProvider = ({ children }) => {
     isUpdating: updateCartMutation.isLoading,
     isRemoving: removeFromCartMutation.isLoading,
     isClearing: clearCartMutation.isLoading,
+    
+    // Error state
+    error: error
   }
 
   return (

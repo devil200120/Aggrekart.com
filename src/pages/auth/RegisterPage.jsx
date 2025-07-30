@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './AuthPages.css'
-
+import GoogleMapsAddressInput from '../../components/common/GoogleMapsAddressInput'
 const RegisterPage = () => {
   const { register: registerUser, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
@@ -19,7 +19,9 @@ const RegisterPage = () => {
     city: '',
     state: '',
     pincode: '',
-    gstNumber: ''
+    gstNumber: '',
+    coordinates: null  // ADD THIS LINE
+
   })
   const [errors, setErrors] = useState({})
 
@@ -45,6 +47,23 @@ const RegisterPage = () => {
       }))
     }
   }
+  // Handle Google Maps address selection
+const handleAddressSelect = (addressData) => {
+  setFormData(prev => ({
+    ...prev,
+    address: addressData.formattedAddress,
+    city: addressData.city || addressData.locality,
+    state: addressData.state,
+    pincode: addressData.pincode,
+    coordinates: addressData.coordinates
+  }))
+
+  // Clear address-related errors
+  setErrors(prev => ({
+    ...prev,
+    address: '', city: '', state: '', pincode: ''
+  }))
+}
 
   // Validate form
   const validateForm = () => {
@@ -130,7 +149,8 @@ const RegisterPage = () => {
         address: formData.address.trim(),
         city: formData.city.trim(),
         state: formData.state.trim(),
-        pincode: formData.pincode
+        pincode: formData.pincode,
+        coordinates: formData.coordinates  // ADD THIS LINE
       }
 
       // Add GST number if provided
@@ -322,23 +342,20 @@ const RegisterPage = () => {
             <div className="form-section">
               <h3>📍 Address Information</h3>
               
-              <div className="form-group">
-                <label className="form-label">Address</label>
-                <div className="input-wrapper">
-                  <span className="input-icon"></span>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="Enter your full address"
-                    className={`form-control ${errors.address ? 'error' : ''}`}
-                    disabled={isSubmitting}
-                  />
-                </div>
-                {errors.address && (
-                  <span className="error-message">⚠️ {errors.address}</span>
-                )}
+                            <div className="form-group">
+                <label className="form-label">
+                  Address *
+                  <span className="form-hint">Start typing to see suggestions</span>
+                </label>
+                <GoogleMapsAddressInput
+                  onAddressSelect={handleAddressSelect}
+                  defaultValue={formData.address}
+                  placeholder="Start typing your address..."
+                  required
+                  className={errors.address ? 'error' : ''}
+                  name="address"
+                />
+                {errors.address && <span className="error-message">⚠️ {errors.address}</span>}
               </div>
 
               <div className="form-row">

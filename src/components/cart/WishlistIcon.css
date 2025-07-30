@@ -1,0 +1,268 @@
+.wishlist-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #374151;
+  transition: all 0.2s ease;
+  padding: 8px;
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+}
+
+.wishlist-icon:hover {
+  color: #e11d48;
+  background-color: #fef2f2;
+  text-decoration: none;
+}
+
+.wishlist-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.wishlist-icon-symbol {
+  font-size: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.wishlist-icon:hover .wishlist-icon-symbol {
+  transform: scale(1.1);
+}
+
+.wishlist-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e11d48;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 20px;
+  padding: 0 2px;
+  animation: bounce 0.5s ease;
+}
+
+.wishlist-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.wishlist-loading-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e11d48;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Login Prompt Modal */
+.login-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.login-prompt-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+.login-prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.login-prompt-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.login-prompt-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.login-prompt-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.login-prompt-content p {
+  color: #6b7280;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.login-prompt-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn-login-prompt {
+  flex: 1;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-login-prompt:hover {
+  background: #2563EB;
+  transform: translateY(-1px);
+}
+
+.btn-signup-prompt {
+  flex: 1;
+  background: white;
+  color: #3B82F6;
+  border: 2px solid #3B82F6;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-signup-prompt:hover {
+  background: #3B82F6;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.login-prompt-note {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.login-prompt-note span {
+  color: #3B82F6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-prompt-note span:hover {
+  color: #2563EB;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: scale(1);
+  }
+  40%, 43% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .wishlist-icon {
+    padding: 6px;
+  }
+  
+  .wishlist-icon-symbol {
+    font-size: 1.25rem;
+  }
+  
+  .wishlist-label {
+    font-size: 0.7rem;
+  }
+  
+  .wishlist-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+  
+  .login-prompt-modal {
+    margin: 20px;
+    width: calc(100% - 40px);
+  }
+  
+  .login-prompt-actions {
+    flex-direction: column;
+  }
+}

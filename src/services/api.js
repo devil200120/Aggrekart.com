@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 
 // Create axios instance
 const api = axios.create({
-  baseURL: '/api', // Proxy configured in vite.config.js
+  baseURL: 'http://localhost:5000/api', // Proxy configured in vite.config.js
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -146,6 +146,8 @@ export const cartAPI = {
 export const wishlistAPI = {
   // GET /api/wishlist
   getWishlist: () => api.get('/wishlist'),
+    getCount: () => api.get('/wishlist/count'),
+
   
   // POST /api/wishlist/add
   addToWishlist: (productId) => api.post('/wishlist/add', { productId }),
@@ -242,7 +244,7 @@ export const usersAPI = {
   deleteAddress: (addressId) => api.delete(`/users/addresses/${addressId}`),
   
   // GET /api/users/dashboard
-  getDashboard: () => api.get('/users/dashboard'),
+  getDashboard: (params = {}) => api.get('/users/dashboard', { params }),
   
   // PUT /api/users/preferences - Enhanced for comprehensive settings
   updatePreferences: (data) => api.put('/users/preferences', data),
@@ -290,12 +292,12 @@ export const usersAPI = {
   terminateAllSessions: () => api.delete('/users/sessions/all'),
   
   // GET /api/users/membership
-  getMembershipDetails: () => api.get('/users/membership'),
+  getMembershipDetails: () => api.get('/users/membership-benefits'),
   
   // POST /api/users/membership/upgrade
   upgradeMembership: (data) => api.post('/users/membership/upgrade', data),
-  getAnalytics: (params) => api.get('/users/analytics', { params }),
-
+getAnalytics: (params) => api.get('/users/dashboard', { params }),
+  getOrderHistory: (params = {}) => api.get('/orders/history', { params }),
 }
 
 // Notifications API
@@ -327,8 +329,13 @@ export const notificationsAPI = {
 
 // Suppliers API - Following your backend routes
 export const suppliersAPI = {
+  setProductPricing: (productId, pricingData) => api.put(`/supplier/products/${productId}/pricing`, pricingData),
+  getBaseProducts: (params) => api.get('/supplier/products/base-products', { params }),
+
+
   register: (supplierData) => api.post('/suppliers/register-new', supplierData),
-  
+  getSalesData: (params) => api.get('/suppliers/analytics/sales-chart', { params }),
+
   // POST /api/suppliers/register (for existing users to become suppliers)
   registerExistingUser: (supplierData) => api.post('/suppliers/register', supplierData),
   
@@ -349,75 +356,87 @@ export const suppliersAPI = {
   
   // GET /api/suppliers/search
   searchSuppliers: (params) => api.get('/suppliers/search', { params }),
+  verifyGST: (data) => api.post('/suppliers/verify-gst', data),
+
 }
 
 // Supplier API - For authenticated suppliers
 export const supplierAPI = {
-  // Get supplier dashboard data
-  getProfile: () => api.get('/suppliers/profile'),
-  updateProfile: (data) => api.put('/suppliers/profile', data),
-  getDashboard: () => api.get('/suppliers/dashboard'),
-  getNearbySuppliers: (params) => api.get('/suppliers/nearby', { params }),
-  getSupplierDetails: (supplierId) => api.get(`/suppliers/${supplierId}/details`),
-  searchSuppliers: (params) => api.get('/suppliers/search', { params }),
+  // Registration & Authentication (from routes/suppliers.js)
   register: (supplierData) => api.post('/suppliers/register-new', supplierData),
   registerExistingUser: (supplierData) => api.post('/suppliers/register', supplierData),
 
-  
-  // Get supplier statistics
-  getStats: () => api.get('/supplier/stats'),
-  
-  // Get supplier's products with filtering
-  getProducts: (params) => api.get('/supplier/products', { params }),
-  
-  // Add a new product
-  addProduct: (productData) => api.post('/supplier/products', productData),
-  
-  // Update existing product
-  updateProduct: (productId, data) => api.put(`/supplier/products/${productId}`, data),
-  
-  // Delete a product
-  deleteProduct: (productId) => api.delete(`/supplier/products/${productId}`),
-  
-  // Get orders for this supplier
-  getOrders: (params) => api.get('/supplier/orders', { params }),
-  
-  // Update order status
-  updateOrderStatus: (orderId, status) => api.put(`/supplier/orders/${orderId}/status`, { status }),
-  
-  // Get sales analytics data
-  getSalesAnalytics: (params) => api.get('/supplier/sales-analytics', { params }),
-  
-  // Get supplier profile
-  getProfile: () => api.get('/supplier/profile'),
-  
-  // Update supplier profile
-  updateProfile: (data) => api.put('/supplier/profile', data),
-  
-  // Get performance metrics
-  getPerformance: (params) => api.get('/supplier/performance', { params }),
-  
-  // Upload product images
-  uploadProductImages: (productId, formData) => api.post(`/supplier/products/${productId}/images`, formData, {
+  // Profile Management (from routes/suppliers.js)
+  getProfile: () => api.get('/suppliers/profile'),
+  updateProfile: (data) => api.put('/suppliers/profile', data),
+  updateTransportRates: (data) => api.put('/suppliers/transport-rates', data),
+
+  // Dashboard (from routes/suppliers.js)
+  getDashboardData: (params = {}) => api.get('/suppliers/dashboard', { params }),
+
+  // Nearby Suppliers & Search (from routes/suppliers.js)
+  getNearbySuppliers: (params) => api.get('/suppliers/nearby', { params }),
+  getSupplierDetails: (supplierId) => api.get(`/suppliers/${supplierId}/details`),
+
+  // Document Management (from routes/suppliers.js)
+  uploadDocuments: (formData) => api.post('/suppliers/documents/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  
-  // Delete product image
-  deleteProductImage: (productId, imageId) => api.delete(`/supplier/products/${productId}/images/${imageId}`),
-  
-  // Get inventory data
-  getInventory: (params) => api.get('/supplier/inventory', { params }),
-  
-  // Update inventory
-  updateInventory: (productId, data) => api.put(`/supplier/inventory/${productId}`, data),
-  
-  // Get supplier settings
-  getSettings: () => api.get('/supplier/settings'),
-  
-  // Update supplier settings
-  updateSettings: (data) => api.put('/supplier/settings', data),
-}
 
+  // Onboarding (from routes/supplier-onboarding.js)
+  getOnboardingStatus: () => api.get('/supplier/onboarding/status'),
+  setupCategories: (data) => api.post('/supplier/onboarding/setup-categories', data),
+  getOnboardingChecklist: () => api.get('/supplier/onboarding/checklist'),
+  completeOnboarding: () => api.post('/supplier/onboarding/complete'),
+  getOnboardingGuide: () => api.get('/supplier/onboarding/guide'),
+
+  // Orders Management (from routes/supplier-orders.js)
+  getOrders: (params = {}) => api.get('/supplier/orders', { params }),
+  updateOrderStatus: (orderId, data) => api.put(`/supplier/orders/${orderId}/status`, data),
+  updateOrderInvoice: (orderId, formData) => api.put(`/supplier/orders/${orderId}/invoice`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  completeDelivery: (orderId, data) => api.post(`/supplier/orders/${orderId}/delivery-complete`, data),
+  getOrderAnalytics: () => api.get('/supplier/orders/analytics'),
+
+  // Products Management (from routes/products.js)
+  getProducts: (params = {}) => api.get('/products/supplier/my-products', { params }),
+  addProduct: (productData) => api.post('/products', productData),
+  updateProduct: (productId, data) => api.put(`/products/${productId}`, data),
+  deleteProduct: (productId) => api.delete(`/products/${productId}`),
+  getProduct: (productId) => api.get(`/products/${productId}`),
+  
+  // Product Images (from routes/products.js)
+  // Find the uploadProductImages method (around line 404) and update it:
+
+uploadProductImages: (productId, formData) => api.post(`/products/${productId}/images`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+  timeout: 60000 // 60 seconds for image uploads
+}),
+  deleteProductImage: (productId, imageId) => api.delete(`/products/${productId}/images/${imageId}`),
+  setPrimaryImage: (productId, imageId) => api.put(`/products/${productId}/images/${imageId}/primary`),
+
+  // Reports (from routes/reports.js - if accessible to suppliers)
+  getSalesReport: (params = {}) => api.get('/reports/sales', { params }),
+  getPerformanceReport: (params = {}) => api.get('/reports/supplier-performance', { params }),
+
+  // Analytics & Stats - These would need to be implemented in your backend
+  getStats: (params = {}) => api.get('/suppliers/stats', { params }),
+  getProductAnalytics: (params = {}) => api.get('/suppliers/analytics/products', { params }),
+  getSalesAnalytics: (params = {}) => api.get('/suppliers/analytics/sales', { params }),
+  getPerformance: (params = {}) => api.get('/suppliers/performance', { params }),
+
+  // Helper functions for the dashboard components
+  getDashboard: (params = {}) => api.get('/suppliers/dashboard', { params }),
+  getRecentOrders: (limit = 5) => api.get('/supplier/orders', { 
+    params: { limit, sort: '-createdAt' } 
+  }),
+
+  getBaseProducts: (params) => api.get('/suppliers/base-products', { params }),
+  setProductPricing: (productId, pricingData) => api.post(`/suppliers/products/${productId}/pricing`, pricingData),
+  updateProductPricing: (productId, pricingData) => api.put(`/suppliers/products/${productId}/pricing`, pricingData),
+
+}
 // Admin API - Administrative functions and dashboard
 export const adminAPI = {
   // Dashboard and Statistics
@@ -531,7 +550,17 @@ export const adminAPI = {
   // Performance Monitoring
   getPerformanceMetrics: (params) => api.get('/admin/performance/metrics', { params }),
   
-  getServerStatus: () => api.get('/admin/system/status'),
+// Replace the createBaseProduct function (around line 553) with this:
+
+createBaseProduct: (formData) => {
+  return api.post('/admin/products/create-base', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
+  uploadProductImage: (formData) => api.post('/admin/products/upload-image', formData),
+  getBaseProducts: () => api.get('/admin/products/base-products'),
 }
 // ...existing code...
 

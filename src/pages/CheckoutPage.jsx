@@ -24,6 +24,7 @@ const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [orderCreated, setOrderCreated] = useState(null)
   const [showPaymentGateway, setShowPaymentGateway] = useState(false)
+  const [orderError, setOrderError] = useState(null)
 
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
     defaultValues: {
@@ -55,17 +56,19 @@ const CheckoutPage = () => {
     }
   }, [user, navigate])
 
-  // ADD ADDRESS MUTATION
+  // ADD ADDRESS MUTATION - Enhanced error handling
   const addAddressMutation = useMutation(
     (addressData) => usersAPI.addAddress(addressData),
     {
-      onSuccess: (data) => {
-        console.log('✅ Address added successfully:', data)
+      onSuccess: (response) => {
+        console.log('✅ Address added successfully:', response)
       },
       onError: (error) => {
         console.error('❌ Failed to add address:', error)
-        toast.error('Failed to save address')
+        const errorMessage = error?.response?.data?.message || 'Failed to save address'
+        toast.error(errorMessage)
         setIsProcessing(false)
+        setOrderError(errorMessage)
       }
     }
   )
@@ -74,41 +77,58 @@ const CheckoutPage = () => {
   const checkoutMutation = useMutation(
     (orderData) => ordersAPI.checkout(orderData),
     {
-      onSuccess: (data) => {
-        console.log('✅ Order created successfully:', data)
-        setOrderCreated(data.order)
+      onSuccess: (response) => {
+        console.log('✅ Order created successfully:', response)
+        
+        // Handle different response structures
+        const orderData = response?.data?.order || response?.order || response?.data
+        
+        if (!orderData) {
+          throw new Error('Invalid order response structure')
+        }
+        
+        setOrderCreated(orderData)
         
         if (paymentData?.method === 'cod') {
           clearCart()
-          navigate(`/order-confirmation/${data.order.orderId}`)
+          navigate(`/order-confirmation/${orderData.orderId}`)
           toast.success('Order placed successfully!')
         } else {
           setShowPaymentGateway(true)
           toast.success('Order created! Please complete payment.')
         }
+        setIsProcessing(false)
       },
       onError: (error) => {
         console.error('❌ Checkout error:', error)
         
+        const errorResponse = error?.response?.data
+        let errorMessage = 'Failed to place order'
+        
         // Handle specific error types
-        if (error.response?.data?.requiresVerification) {
-          const verificationType = error.response.data.verificationType
+        if (errorResponse?.requiresVerification) {
+          const verificationType = errorResponse.verificationType
           
           if (verificationType === 'phone') {
-            toast.error('Please verify your phone number first')
+            errorMessage = 'Please verify your phone number first'
             navigate('/auth/verify-phone', { 
               state: { phoneNumber: user?.phoneNumber }
             })
           } else if (verificationType === 'account_activation') {
-            toast.error('Please activate your account first')
+            errorMessage = 'Please activate your account first'
             navigate('/auth/verify-email', { 
               state: { email: user?.email }
             })
           }
-        } else {
-          toast.error(error.response?.data?.message || 'Failed to place order')
+        } else if (errorResponse?.errors && Array.isArray(errorResponse.errors)) {
+          // Handle validation errors
+          errorMessage = errorResponse.errors.map(err => err.msg || err.message).join(', ')
+        } else if (errorResponse?.message) {
+          errorMessage = errorResponse.message
         }
         
+        toast.error(errorMessage)
+        setOrderError(errorMessage)
         setIsProcessing(false)
       }
     }
@@ -116,22 +136,33 @@ const CheckoutPage = () => {
 
   // PAYMENT SUCCESS HANDLER
   const handlePaymentSuccess = (paymentDetails) => {
-    clearCart()
-    navigate(`/payment/success/${orderCreated.orderId}`)
-    toast.success('Payment completed successfully!')
+    try {
+      clearCart()
+      navigate(`/payment/success/${orderCreated.orderId}`)
+      toast.success('Payment completed successfully!')
+    } catch (error) {
+      console.error('Error in payment success handler:', error)
+      toast.error('Payment successful but there was an issue. Please contact support.')
+    }
   }
 
   // PAYMENT ERROR HANDLER
   const handlePaymentError = (error) => {
     console.error('Payment failed:', error)
-    navigate(`/payment/failed/${orderCreated.orderId}`)
-    toast.error('Payment failed. Please try again.')
+    const errorMessage = error?.message || 'Payment failed. Please try again.'
+    toast.error(errorMessage)
+    
+    if (orderCreated?.orderId) {
+      navigate(`/payment/failed/${orderCreated.orderId}`)
+    } else {
+      setShowPaymentGateway(false)
+    }
   }
 
   // PAYMENT CANCEL HANDLER
   const handlePaymentCancel = () => {
     setShowPaymentGateway(false)
-    toast.info('Payment cancelled. You can retry payment later.')
+    toast.info('Payment cancelled. You can retry payment later from your orders page.')
   }
 
   const steps = [
@@ -142,13 +173,25 @@ const CheckoutPage = () => {
   ]
 
   const handleShippingSubmit = (data) => {
-    setShippingData(data)
-    setCurrentStep(2)
+    try {
+      setShippingData(data)
+      setCurrentStep(2)
+      setOrderError(null) // Clear any previous errors
+    } catch (error) {
+      console.error('Error in shipping submit:', error)
+      toast.error('Error processing shipping information')
+    }
   }
 
   const handlePaymentSubmit = (data) => {
-    setPaymentData(data)
-    setCurrentStep(3)
+    try {
+      setPaymentData(data)
+      setCurrentStep(3)
+      setOrderError(null) // Clear any previous errors
+    } catch (error) {
+      console.error('Error in payment submit:', error)
+      toast.error('Error processing payment information')
+    }
   }
 
   // ENHANCED - Better error handling and validation
@@ -158,7 +201,15 @@ const CheckoutPage = () => {
       return
     }
 
+    // Validate required fields
+    if (!shippingData.address || !shippingData.city || !shippingData.state || !shippingData.pincode) {
+      toast.error('Please fill in all required address fields')
+      setCurrentStep(1)
+      return
+    }
+
     setIsProcessing(true)
+    setOrderError(null)
 
     try {
       // Step 1: Save shipping address to user profile
@@ -173,24 +224,42 @@ const CheckoutPage = () => {
 
       console.log('📍 Adding address:', addressData)
       const addressResponse = await addAddressMutation.mutateAsync(addressData)
-      const newAddressId = addressResponse.data.address._id
+      
+      // Handle different response structures
+      const addressId = addressResponse?.data?.address?._id || 
+                       addressResponse?.address?._id || 
+                       addressResponse?.data?._id
 
-      console.log('✅ Address added with ID:', newAddressId)
+      if (!addressId) {
+        throw new Error('Failed to get address ID from response')
+      }
+
+      console.log('✅ Address added with ID:', addressId)
 
       // Step 2: Create order with address ID
       const orderData = {
-        deliveryAddressId: newAddressId,
+        deliveryAddressId: addressId,
         paymentMethod: paymentData.method,
         advancePercentage: paymentData.method === 'cod' ? 100 : 25,
         notes: shippingData.deliveryInstructions || ''
       }
 
       console.log('🛍️ Creating order with data:', orderData)
-      checkoutMutation.mutate(orderData)
+      await checkoutMutation.mutateAsync(orderData)
 
     } catch (error) {
       console.error('❌ Error in handlePlaceOrder:', error)
-      toast.error('Failed to process order. Please try again.')
+      
+      let errorMessage = 'Failed to process order. Please try again.'
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
+      setOrderError(errorMessage)
       setIsProcessing(false)
     }
   }
@@ -266,7 +335,13 @@ const CheckoutPage = () => {
     return (
       <div className="checkout-page">
         <div className="container">
-          <LoadingSpinner size="large" text="Loading checkout..." />
+          <div className="checkout-error">
+            <h2>Cart is Empty</h2>
+            <p>Add some items to your cart before checkout</p>
+            <button onClick={() => navigate('/products')} className="btn btn-primary">
+              Browse Products
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -305,6 +380,23 @@ const CheckoutPage = () => {
           <h1>Checkout</h1>
           <p>Complete your order in just a few steps</p>
         </div>
+
+        {/* Error Display */}
+        {orderError && (
+          <div className="checkout-error-banner">
+            <div className="error-content">
+              <span className="error-icon">⚠️</span>
+              <span className="error-message">{orderError}</span>
+              <button 
+                onClick={() => setOrderError(null)} 
+                className="error-close"
+                aria-label="Close error"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Checkout Steps */}
         <CheckoutSteps steps={steps} currentStep={currentStep} />
@@ -356,6 +448,7 @@ const CheckoutPage = () => {
                         <p>{shippingData?.address}</p>
                         <p>{shippingData?.city}, {shippingData?.state} - {shippingData?.pincode}</p>
                         <p>Phone: {shippingData?.phone}</p>
+                        {shippingData?.landmark && <p>Landmark: {shippingData.landmark}</p>}
                       </div>
                     </div>
                     <button 
@@ -451,9 +544,9 @@ const CheckoutPage = () => {
                   <div className="order-terms">
                     <p>
                       By placing this order, you agree to our{' '}
-                      <a href="/terms" target="_blank">Terms & Conditions</a>
+                      <a href="/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
                       {' '}and{' '}
-                      <a href="/privacy" target="_blank">Privacy Policy</a>
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
                     </p>
                   </div>
                 </div>

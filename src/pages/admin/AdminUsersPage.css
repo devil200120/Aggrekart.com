@@ -1,70 +1,85 @@
-/* Admin Users Page Styles */
+/* Add this to the existing CSS file or replace the user-actions-dropdown section: */
 
-.admin-users-page {
-  min-height: 100vh;
-  background: #f8fafc;
-  padding: 2rem 0;
+.user-actions-dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-.admin-page-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
+.action-trigger {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
 
-.admin-page-header {
-  margin-bottom: 2rem;
-  text-align: center;
+.action-trigger:hover {
+  background-color: #f3f4f6;
 }
 
-.admin-page-header h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 1rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.admin-page-header p {
-  font-size: 1.1rem;
-  color: #64748b;
-  margin: 0;
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-
-.admin-page-content {
+.action-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .admin-users-page {
-    padding: 1rem 0;
-  }
-  
-  .admin-page-container {
-    padding: 0 1rem;
-  }
-  
-  .admin-page-header h1 {
-    font-size: 2rem;
-  }
-  
-  .admin-page-header p {
-    font-size: 1rem;
-  }
+.user-actions-dropdown:hover .action-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
-@media (max-width: 480px) {
-  .admin-page-header h1 {
-    font-size: 1.75rem;
-  }
+.action-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  transition: background-color 0.2s;
+}
+
+.action-menu button:hover {
+  background-color: #f9fafb;
+}
+
+.action-menu button:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.action-menu button:last-child {
+  border-radius: 0 0 6px 6px;
+}
+
+.action-menu button svg {
+  flex-shrink: 0;
+}
+
+/* Loading state */
+.user-actions-dropdown.loading .action-trigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.user-actions-dropdown.loading .action-menu {
+  pointer-events: none;
 }

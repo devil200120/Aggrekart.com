@@ -7,104 +7,125 @@ import './UserAnalytics.css'
 const UserAnalytics = ({ user }) => {
   const [timeRange, setTimeRange] = useState('3months') // 1month, 3months, 6months, 1year, all
 
-  // Fetch user dashboard data
-  const { data: dashboardData, isLoading: dashboardLoading } = useQuery(
+  // Fetch user dashboard data with error handling
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery(
     ['userDashboard', timeRange],
     () => usersAPI.getDashboard({ timeRange }),
     {
       staleTime: 300000, // 5 minutes
+      retry: 2,
+      onError: (error) => {
+        console.warn('Dashboard API error:', error)
+      }
     }
   )
 
-  // Fetch order analytics
-  const { data: orderAnalytics, isLoading: ordersLoading } = useQuery(
+  // Fetch order analytics with error handling
+  const { data: orderAnalytics, isLoading: ordersLoading, error: ordersError } = useQuery(
     ['userOrderAnalytics', timeRange],
-    () => ordersAPI.getOrderHistory({ analytics: true, timeRange }),
+    () => ordersAPI.getOrderHistory({ analytics: true, timeRange, limit: 100 }),
     {
       staleTime: 300000,
+      retry: 2,
+      onError: (error) => {
+        console.warn('Order analytics API error:', error)
+      }
     }
   )
 
-  // Fetch loyalty data
-  const { data: loyaltyData, isLoading: loyaltyLoading } = useQuery(
+  // Fetch loyalty data with error handling
+  const { data: loyaltyData, isLoading: loyaltyLoading, error: loyaltyError } = useQuery(
     'userLoyaltyAnalytics',
     loyaltyAPI.getMyCoins,
     {
       staleTime: 60000, // 1 minute
+      retry: 2,
+      onError: (error) => {
+        console.warn('Loyalty API error:', error)
+      }
     }
   )
 
   const isLoading = dashboardLoading || ordersLoading || loyaltyLoading
 
-  // Calculate analytics from order data
+  // Calculate analytics from available data
   const analytics = useMemo(() => {
-    if (!orderAnalytics?.orders) return null
+    // Try to get data from multiple sources
+    const dashboardStats = dashboardData?.data?.stats || {};
+    const orderAnalyticsData = orderAnalytics?.data?.analytics || {};
+    const orders = orderAnalytics?.data?.orders || [];
 
-    const orders = orderAnalytics.orders
-    const totalSpent = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
-    const completedOrders = orders.filter(order => order.status === 'delivered')
-    const averageOrderValue = totalSpent / (orders.length || 1)
-    
-    // Monthly spending
-    const monthlySpending = {}
-    orders.forEach(order => {
-      const month = new Date(order.createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short' 
-      })
-      monthlySpending[month] = (monthlySpending[month] || 0) + order.totalAmount
-    })
+    // Use dashboard data as primary source, order analytics as secondary
+    const totalOrders = dashboardStats.totalOrders || orderAnalyticsData.totalOrders || orders.length || 0;
+    const totalSpent = dashboardStats.totalSpent || orderAnalyticsData.totalSpent || 0;
+    const completedOrders = dashboardStats.completedOrders || orderAnalyticsData.completedOrders || 0;
+    const averageOrderValue = dashboardStats.averageOrderValue || orderAnalyticsData.averageOrderValue || 
+                              (totalOrders > 0 ? totalSpent / totalOrders : 0);
 
-    // Top categories
-    const categorySpending = {}
-    orders.forEach(order => {
-      order.items?.forEach(item => {
-        const category = item.product?.category || 'Other'
-        categorySpending[category] = (categorySpending[category] || 0) + item.totalPrice
-      })
-    })
-
-    // Most bought products
-    const productCounts = {}
-    orders.forEach(order => {
-      order.items?.forEach(item => {
-        const productName = item.product?.name || 'Unknown'
-        productCounts[productName] = (productCounts[productName] || 0) + item.quantity
-      })
-    })
+    // Get other analytics data
+    const monthlySpending = orderAnalyticsData.monthlySpending || {};
+    const topCategories = orderAnalyticsData.topCategories || [];
+    const recentActivity = dashboardData?.data?.recentOrders || orders.slice(0, 5) || [];
 
     return {
-      totalOrders: orders.length,
-      completedOrders: completedOrders.length,
+      totalOrders,
       totalSpent,
       averageOrderValue,
-      monthlySpending: Object.entries(monthlySpending).slice(-6), // Last 6 months
-      topCategories: Object.entries(categorySpending)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5),
-      topProducts: Object.entries(productCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5),
-      savingsFromMembership: totalSpent * 0.05 * (user?.membershipTier === 'gold' ? 2 : user?.membershipTier === 'platinum' ? 3 : 1)
-    }
-  }, [orderAnalytics, user])
+      completedOrders,
+      monthlySpending,
+      topCategories,
+      recentActivity
+    };
+  }, [dashboardData, orderAnalytics])
 
   if (isLoading) {
     return (
-      <div className="analytics-loading">
-        <LoadingSpinner />
-        <p>Loading your analytics...</p>
+      <div className="user-analytics">
+        <div className="analytics-loading">
+          <LoadingSpinner />
+          <p>Loading analytics...</p>
+        </div>
       </div>
     )
   }
 
+  // Show analytics even if some APIs fail
+  const stats = [
+    {
+      label: 'Total Orders',
+      value: analytics.totalOrders,
+      icon: '📦',
+      color: '#667eea',
+      description: 'All time orders placed'
+    },
+    {
+      label: 'Total Spent',
+      value: `₹${analytics.totalSpent.toLocaleString()}`,
+      icon: '💰',
+      color: '#10b981',
+      description: 'Total amount spent'
+    },
+    {
+      label: 'Average Order',
+      value: `₹${Math.round(analytics.averageOrderValue).toLocaleString()}`,
+      icon: '📊',
+      color: '#f59e0b',
+      description: 'Average order value'
+    },
+    {
+      label: 'Completed Orders',
+      value: analytics.completedOrders,
+      icon: '✅',
+      color: '#06b6d4',
+      description: 'Successfully delivered orders'
+    }
+  ]
+
   return (
     <div className="user-analytics">
-      {/* Time Range Selector */}
       <div className="analytics-header">
-        <h2 className="analytics-title">📊 Your Analytics Dashboard</h2>
+        <h3>Analytics Overview</h3>
         <div className="time-range-selector">
-          <label>Time Period:</label>
           <select 
             value={timeRange} 
             onChange={(e) => setTimeRange(e.target.value)}
@@ -119,202 +140,101 @@ const UserAnalytics = ({ user }) => {
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="metrics-grid">
-        <div className="metric-card spending">
-          <div className="metric-icon">💰</div>
-          <div className="metric-content">
-            <h3>Total Spent</h3>
-            <div className="metric-value">₹{analytics?.totalSpent?.toLocaleString() || 0}</div>
-            <div className="metric-subtitle">Across {analytics?.totalOrders || 0} orders</div>
-          </div>
-        </div>
-
-        <div className="metric-card orders">
-          <div className="metric-icon">📦</div>
-          <div className="metric-content">
-            <h3>Orders Placed</h3>
-            <div className="metric-value">{analytics?.totalOrders || 0}</div>
-            <div className="metric-subtitle">
-              {analytics?.completedOrders || 0} completed
+      <div className="analytics-stats">
+        {stats.map((stat, index) => (
+          <div key={index} className="stat-card" style={{ borderLeftColor: stat.color }}>
+            <div className="stat-icon" style={{ backgroundColor: `${stat.color}20`, color: stat.color }}>
+              {stat.icon}
+            </div>
+            <div className="stat-content">
+              <div className="stat-value">{stat.value}</div>
+              <div className="stat-label">{stat.label}</div>
+              <div className="stat-description">{stat.description}</div>
             </div>
           </div>
-        </div>
-
-        <div className="metric-card average">
-          <div className="metric-icon">📈</div>
-          <div className="metric-content">
-            <h3>Avg Order Value</h3>
-            <div className="metric-value">₹{analytics?.averageOrderValue?.toLocaleString() || 0}</div>
-            <div className="metric-subtitle">Per order</div>
-          </div>
-        </div>
-
-        <div className="metric-card loyalty">
-          <div className="metric-icon">🏆</div>
-          <div className="metric-content">
-            <h3>AggreCoins</h3>
-            <div className="metric-value">{loyaltyData?.currentBalance || 0}</div>
-            <div className="metric-subtitle">
-              {user?.membershipTier || 'Silver'} Member
-            </div>
-          </div>
-        </div>
-
-        <div className="metric-card savings">
-          <div className="metric-icon">💎</div>
-          <div className="metric-content">
-            <h3>Membership Savings</h3>
-            <div className="metric-value">₹{analytics?.savingsFromMembership?.toLocaleString() || 0}</div>
-            <div className="metric-subtitle">From discounts</div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="charts-section">
-        {/* Monthly Spending Chart */}
-        <div className="chart-card">
-          <h3 className="chart-title">📊 Monthly Spending Trend</h3>
-          <div className="spending-chart">
-            {analytics?.monthlySpending?.map(([month, amount]) => (
-              <div key={month} className="spending-bar">
-                <div 
-                  className="bar"
-                  style={{
-                    height: `${(amount / Math.max(...analytics.monthlySpending.map(([,amt]) => amt))) * 100}%`
-                  }}
-                  title={`₹${amount.toLocaleString()}`}
-                ></div>
-                <div className="bar-label">{month}</div>
-                <div className="bar-value">₹{amount.toLocaleString()}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Categories */}
-        <div className="chart-card">
-          <h3 className="chart-title">🏗️ Top Categories</h3>
-          <div className="category-list">
-            {analytics?.topCategories?.map(([category, amount], index) => (
-              <div key={category} className="category-item">
-                <div className="category-info">
-                  <span className="category-rank">#{index + 1}</span>
-                  <span className="category-name">{category}</span>
+      {/* Recent Activity Section */}
+      {analytics.recentActivity && analytics.recentActivity.length > 0 && (
+        <div className="analytics-section">
+          <h4>Recent Orders</h4>
+          <div className="recent-orders">
+            {analytics.recentActivity.slice(0, 5).map((order, index) => (
+              <div key={index} className="order-item">
+                <div className="order-info">
+                  <span className="order-id">{order.orderId}</span>
+                  <span className="order-supplier">{order.supplier}</span>
                 </div>
-                <div className="category-amount">₹{amount.toLocaleString()}</div>
-                <div 
-                  className="category-bar"
-                  style={{
-                    width: `${(amount / analytics.topCategories[0][1]) * 100}%`
-                  }}
-                ></div>
+                <div className="order-details">
+                  <span className="order-amount">₹{(order.totalAmount || order.pricing?.totalAmount || 0).toLocaleString()}</span>
+                  <span className={`order-status status-${order.status}`}>{order.status}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Detailed Insights */}
-      <div className="insights-section">
-        {/* Most Bought Products */}
-        <div className="insight-card">
-          <h3 className="insight-title">🔥 Most Bought Products</h3>
-          <div className="product-list">
-            {analytics?.topProducts?.map(([product, quantity], index) => (
-              <div key={product} className="product-item">
-                <div className="product-rank">#{index + 1}</div>
-                <div className="product-name">{product}</div>
-                <div className="product-quantity">{quantity} units</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Membership Progress */}
-        <div className="insight-card">
-          <h3 className="insight-title">🏆 Membership Progress</h3>
-          <div className="membership-progress">
-            <div className="current-tier">
-              <div className="tier-badge">
-                {user?.membershipTier === 'platinum' ? '💎' : 
-                 user?.membershipTier === 'gold' ? '🥇' : '🥈'}
-              </div>
-              <div className="tier-info">
-                <h4>{user?.membershipTier?.toUpperCase() || 'SILVER'} MEMBER</h4>
-                <p>
-                  {user?.membershipTier === 'platinum' ? 'Maximum benefits unlocked!' :
-                   user?.membershipTier === 'gold' ? 'Upgrade to Platinum for maximum benefits' :
-                   'Keep spending to unlock Gold benefits'}
-                </p>
-              </div>
-            </div>
-            
-            {user?.membershipTier !== 'platinum' && (
-              <div className="next-tier-progress">
-                <div className="progress-bar">
+      {/* Top Categories Section */}
+      {analytics.topCategories && analytics.topCategories.length > 0 && (
+        <div className="analytics-section">
+          <h4>Top Categories</h4>
+          <div className="category-list">
+            {analytics.topCategories.map((category, index) => (
+              <div key={index} className="category-item">
+                <span className="category-name">{category.name}</span>
+                <span className="category-amount">₹{category.amount.toLocaleString()}</span>
+                <div className="category-bar">
                   <div 
-                    className="progress-fill"
-                    style={{
-                      width: `${Math.min((analytics?.totalSpent || 0) / (user?.membershipTier === 'silver' ? 50000 : 100000) * 100, 100)}%`
+                    className="category-fill" 
+                    style={{ 
+                      width: `${(category.amount / analytics.topCategories[0].amount) * 100}%`,
+                      backgroundColor: ['#667eea', '#10b981', '#f59e0b', '#06b6d4', '#8b5cf6'][index % 5]
                     }}
                   ></div>
                 </div>
-                <p className="progress-text">
-                  ₹{((user?.membershipTier === 'silver' ? 50000 : 100000) - (analytics?.totalSpent || 0)).toLocaleString()} more to {user?.membershipTier === 'silver' ? 'Gold' : 'Platinum'}
-                </p>
               </div>
-            )}
+            ))}
           </div>
         </div>
+      )}
 
-        {/* AggreCoins Activity */}
-        <div className="insight-card">
-          <h3 className="insight-title">🪙 AggreCoins Activity</h3>
-          <div className="coins-summary">
-            <div className="coins-stat">
-              <div className="coins-label">Current Balance</div>
-              <div className="coins-value">{loyaltyData?.currentBalance || 0}</div>
+      {/* Loyalty Overview Section */}
+      {loyaltyData?.data && !loyaltyError && (
+        <div className="analytics-section">
+          <h4>Loyalty Overview</h4>
+          <div className="loyalty-stats">
+            <div className="loyalty-item">
+              <span className="loyalty-label">AggreCoins Balance</span>
+              <span className="loyalty-value">{loyaltyData.data.balance || 0}</span>
             </div>
-            <div className="coins-stat">
-              <div className="coins-label">Total Earned</div>
-              <div className="coins-value">{loyaltyData?.totalEarned || 0}</div>
+            <div className="loyalty-item">
+              <span className="loyalty-label">Total Earned</span>
+              <span className="loyalty-value">{loyaltyData.data.totalEarned || 0}</span>
             </div>
-            <div className="coins-stat">
-              <div className="coins-label">Total Redeemed</div>
-              <div className="coins-value">{loyaltyData?.totalRedeemed || 0}</div>
+            <div className="loyalty-item">
+              <span className="loyalty-label">Total Redeemed</span>
+              <span className="loyalty-value">{loyaltyData.data.totalRedeemed || 0}</span>
             </div>
-          </div>
-          <div className="coins-actions">
-            <button className="btn btn-primary">Redeem Coins</button>
-            <button className="btn btn-outline">Refer Friends</button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <h3 className="actions-title">⚡ Quick Actions</h3>
-        <div className="actions-grid">
-          <button className="action-btn">
-            <span className="action-icon">🛍️</span>
-            <span className="action-text">Reorder Favorites</span>
-          </button>
-          <button className="action-btn">
-            <span className="action-icon">📊</span>
-            <span className="action-text">Download Report</span>
-          </button>
-          <button className="action-btn">
-            <span className="action-icon">🎯</span>
-            <span className="action-text">Set Budget Goals</span>
-          </button>
-          <button className="action-btn">
-            <span className="action-icon">💰</span>
-            <span className="action-text">Track Savings</span>
-          </button>
+      {/* Error States */}
+      {dashboardError && ordersError && (
+        <div className="analytics-section">
+          <div className="analytics-unavailable">
+            <div className="unavailable-message">
+              <h4>📊 Analytics Temporarily Unavailable</h4>
+              <p>We're working on bringing you detailed analytics. Your data will show here once you place some orders!</p>
+              {analytics.totalOrders === 0 && (
+                <p><strong>Start shopping to see your analytics!</strong></p>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

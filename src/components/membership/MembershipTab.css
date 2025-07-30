@@ -1,545 +1,776 @@
 .membership-tab {
-  max-width: 100%;
-  padding: 0;
-}
-
-.membership-overview {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding: 24px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-radius: 16px;
-  border: 1px solid #e9ecef;
-}
-
-.tier-status {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 2rem;
+}
+
+/* Membership Status */
+.membership-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.membership-tier {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
 .tier-badge {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .tier-icon {
-  font-size: 3rem;
-  line-height: 1;
-}
-
-.tier-details h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #212529;
-}
-
-.tier-details p {
-  margin: 0;
-  color: #6c757d;
-  font-size: 0.95rem;
-}
-
-.membership-stats {
-  display: flex;
-  gap: 24px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  min-width: 120px;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #212529;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-}
-
-.coins-balance {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%);
-  border: 2px solid #ffc107;
-  border-radius: 16px;
-  padding: 24px;
-  text-align: center;
-}
-
-.coins-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.coins-icon {
   font-size: 2.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-.coins-info h3 {
-  margin: 0;
+.tier-info h3 {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #212529;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
 }
 
-.coins-info p {
-  margin: 4px 0 0 0;
-  color: #6c757d;
+.tier-info p {
+  margin: 0;
+  opacity: 0.9;
   font-size: 0.9rem;
 }
 
-.coins-stats {
+.progress-section {
+  margin-top: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffed4e);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.membership-benefits {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid #f1f5f9;
+}
+
+.membership-benefits h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.benefits-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.coins-stat {
-  font-size: 0.85rem;
-  color: #495057;
-}
-
-.tier-benefits {
-  margin-bottom: 32px;
-  padding: 24px;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #e9ecef;
-}
-
-.tier-benefits h3 {
-  margin: 0 0 20px 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #212529;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  gap: 0.75rem;
 }
 
 .benefit-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 3px solid #28a745;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: #64748b;
 }
 
 .benefit-icon {
-  color: #28a745;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
-.benefit-text {
-  color: #495057;
-  font-size: 0.95rem;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-.action-card {
-  padding: 24px;
+/* AggreCoins Overview */
+.aggrecoins-overview {
   background: white;
+  padding: 2rem;
   border-radius: 16px;
-  border: 1px solid #e9ecef;
+  border: 2px solid #f1f5f9;
 }
 
-.action-card h4 {
-  margin: 0 0 8px 0;
+.coins-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.coins-info h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.coins-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.balance-amount {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #667eea;
+  line-height: 1;
+}
+
+.balance-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.balance-value {
+  margin-top: 0.5rem;
+}
+
+.balance-value small {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.coins-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coins-stats .stat-item {
+  text-align: right;
+}
+
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.error-message h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.error-message p {
+  margin: 0.25rem 0;
+}
+
+/* Redemption Section - Always Visible */
+.redemption-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid #f1f5f9;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.section-header h4 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+/* Active Redemption */
+.redemption-active {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.redemption-options {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.quick-redeem h5,
+.custom-redeem h5 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #212529;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
 }
 
-.action-card p {
-  margin: 0 0 20px 0;
-  color: #6c757d;
-  font-size: 0.9rem;
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
 }
 
-.input-group {
+.quick-redeem-btn {
   display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.input-group input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.input-group input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.input-group .btn {
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-  border: 1px solid #007bff;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #0056b3;
-  border-color: #0056b3;
+.quick-redeem-btn:hover {
+  border-color: #667eea;
+  background: #f1f5f9;
+  transform: translateY(-2px);
 }
 
-.btn-primary:disabled {
-  background: #6c757d;
-  border-color: #6c757d;
-  cursor: not-allowed;
+.quick-redeem-btn .coins {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 0.9rem;
 }
 
-.redeem-form small,
-.refer-form small {
-  color: #6c757d;
+.quick-redeem-btn .cash {
   font-size: 0.8rem;
-}
-
-.referral-code {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-top: 12px;
-}
-
-.referral-code strong {
-  color: #007bff;
-  font-family: monospace;
-  font-size: 1.1rem;
-}
-
-.copy-btn {
-  padding: 6px 12px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.copy-btn:hover {
-  background: #0056b3;
-}
-
-.recent-transactions,
-.referrals-section {
-  padding: 24px;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #e9ecef;
-  margin-bottom: 24px;
-}
-
-.recent-transactions h3,
-.referrals-section h3 {
-  margin: 0 0 20px 0;
-  font-size: 1.25rem;
+  color: #10b981;
   font-weight: 600;
-  color: #212529;
 }
 
-.transactions-list,
-.referrals-list {
+.custom-redeem {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.transaction-item,
-.referral-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 3px solid transparent;
-}
-
-.transaction-item {
-  border-left-color: #28a745;
-}
-
-.transaction-item.redeemed {
-  border-left-color: #dc3545;
-}
-
-.transaction-type {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.type-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.type-icon.earned {
-  background: #d4edda;
-  color: #155724;
-}
-
-.type-icon.redeemed {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.transaction-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.transaction-desc {
-  font-weight: 500;
-  color: #212529;
-  font-size: 0.95rem;
-}
-
-.transaction-date {
-  color: #6c757d;
-  font-size: 0.8rem;
-}
-
-.transaction-amount {
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.transaction-amount.earned {
-  color: #28a745;
-}
-
-.transaction-amount.redeemed {
-  color: #dc3545;
-}
-
-.referral-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.referral-email {
-  font-weight: 500;
-  color: #212529;
-}
-
-.referral-status {
-  font-size: 0.8rem;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  font-weight: 500;
-}
-
-.referral-status.pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.referral-status.completed {
-  background: #d4edda;
-  color: #155724;
-}
-
-.referral-reward {
-  font-weight: 600;
-  color: #28a745;
-}
-
-.no-transactions {
+  align-items: center;
   text-align: center;
-  color: #6c757d;
-  font-style: italic;
-  padding: 24px;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .membership-overview {
-    grid-template-columns: 1fr;
-  }
-  
-  .quick-actions {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .membership-overview {
-    padding: 16px;
-  }
-  
-  .tier-badge {
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
-  }
-  
-  .membership-stats {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .coins-balance {
-    padding: 16px;
-  }
-  
-  .benefits-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .input-group {
-    flex-direction: column;
-  }
-  
-  .referral-code {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-/* ...existing CSS... */
-
-/* Progress Details */
-.progress-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-}
-
-.progress-details small {
-  color: #6c757d;
-  font-size: 0.8rem;
-}
-
-/* Progress Breakdown Section */
-.progress-breakdown {
-  background: white;
+.redemption-info {
+  background: #f8fafc;
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid #e2e8f0;
+}
+
+.redemption-info h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.redemption-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.redemption-info li {
+  padding: 0.25rem 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Inactive Redemption */
+.redemption-inactive {
+  text-align: center;
+}
+
+.redemption-locked {
+  background: #f8fafc;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
   margin-bottom: 2rem;
 }
 
-.progress-breakdown h3 {
+.locked-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.redemption-locked h5 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0 0 1rem 0;
-  color: #2c3e50;
-  font-size: 1.25rem;
+}
+
+.redemption-locked p {
+  color: #64748b;
+  margin: 0.5rem 0;
+}
+
+.earn-more-tips h6 {
+  font-size: 1.1rem;
   font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
 }
 
-.requirements-grid {
+.tips-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  text-align: left;
 }
 
-.requirement-item {
+.tip-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.tip-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.tip-item strong {
+  display: block;
+  color: #1e293b;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.tip-item small {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+/* Referral Section */
+.referral-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid #f1f5f9;
+}
+
+.referral-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.referral-header h4 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.referral-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+.referral-code {
+  margin-bottom: 2rem;
+}
+
+.referral-code label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.code-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.code {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #667eea;
+  flex: 1;
+}
+
+.refer-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.refer-form input {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.refer-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Recent Transactions */
+.recent-transactions {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid #f1f5f9;
+}
+
+.recent-transactions h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+}
+
+.transactions-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.requirement-header {
+.transaction-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 500;
-  color: #2c3e50;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.requirement-bar {
-  height: 8px;
-  background: #f8f9fa;
+.transaction-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.transaction-type {
+  font-size: 1.2rem;
+}
+
+.transaction-desc {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.transaction-amount {
+  font-weight: 700;
+}
+
+.transaction-amount .positive {
+  color: #10b981;
+}
+
+.transaction-amount .negative {
+  color: #dc2626;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
   border-radius: 4px;
-  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.requirement-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+.modal-close:hover {
+  background-color: #e2e8f0;
+  color: #374151;
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+.redeem-info {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.redeem-info p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.conversion-display {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #e0f2fe;
   border-radius: 4px;
-  transition: width 0.3s ease;
+  text-align: center;
+  font-weight: 600;
+  color: #0369a1;
+  font-size: 0.9rem;
 }
 
-.requirement-item small {
-  color: #6c757d;
-  font-size: 0.85rem;
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
 }
 
-/* Responsive adjustments */
+/* Form Elements */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.btn-primary:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #e2e8f0;
+}
+
+.btn-outline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Stats Grid */
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .membership-status {
+    grid-template-columns: 1fr;
+  }
+  
+  .coins-header {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .redemption-options {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .requirements-grid {
+  .membership-tab {
+    gap: 1.5rem;
+  }
+  
+  .membership-tier,
+  .membership-benefits,
+  .aggrecoins-overview,
+  .redemption-section,
+  .referral-section,
+  .recent-transactions {
+    padding: 1.5rem;
+  }
+  
+  .tier-badge {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .quick-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .refer-form .form-row {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
   
-  .progress-details {
-    text-align: center;
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tips-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-/* ...rest of existing CSS... */
+@media (max-width: 480px) {
+  .membership-tier,
+  .membership-benefits,
+  .aggrecoins-overview,
+  .redemption-section,
+  .referral-section,
+  .recent-transactions {
+    padding: 1rem;
+  }
+  
+  .balance-amount {
+    font-size: 2rem;
+  }
+  
+  .quick-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+}

@@ -1,7 +1,7 @@
+// Enhanced VerifyPhonePage.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'  // Add this import
-
+import { useAuth } from '../../context/AuthContext'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import './AuthPages.css'
@@ -9,8 +9,7 @@ import './AuthPages.css'
 const VerifyPhonePage = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { verifyPhone } = useAuth()  // Add this line
-
+  const { verifyPhone } = useAuth()
   
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -22,11 +21,15 @@ const VerifyPhonePage = () => {
   const phoneNumber = location.state?.phoneNumber
   const email = location.state?.email
   const devOtps = location.state?.devOtps
+
+  // Auto-fill OTP in development
   useEffect(() => {
     if (import.meta.env.MODE === 'development' && devOtps?.phoneOTP) {
       console.log('🔧 Development mode: Auto-filling phone OTP:', devOtps.phoneOTP)
-      const otpArray = devOtps.phoneOTP.split('')
+      const otpString = String(devOtps.phoneOTP)
+      const otpArray = otpString.padStart(6, '0').split('')
       setOtp(otpArray)
+      toast.success(`Development: Auto-filled OTP: ${devOtps.phoneOTP}`, { duration: 5000 })
     }
   }, [devOtps])
 
@@ -50,8 +53,8 @@ const VerifyPhonePage = () => {
   }, [phoneNumber, navigate])
 
   const handleOtpChange = (index, value) => {
-    if (value.length > 1) return // Prevent multiple characters
-    
+    if (value.length > 1) return
+
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
@@ -59,6 +62,11 @@ const VerifyPhonePage = () => {
     // Move to next input
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus()
+    }
+
+    // Auto-submit when all fields are filled
+    if (value && newOtp.every(digit => digit)) {
+      setTimeout(() => handleVerifyOtp(), 100)
     }
   }
 
@@ -70,68 +78,69 @@ const VerifyPhonePage = () => {
 
   const handlePaste = (e) => {
     e.preventDefault()
-    const pastedData = e.clipboardData.getData('text/plain').slice(0, 6)
-    const newOtp = pastedData.split('').concat(Array(6).fill('')).slice(0, 6)
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6)
+    const newOtp = pastedData.padEnd(6, '').split('')
     setOtp(newOtp)
     
-    // Focus on the next empty input or last input
     const nextIndex = Math.min(pastedData.length, 5)
     otpRefs.current[nextIndex]?.focus()
+
+    // Auto-submit if paste fills all fields
+    if (pastedData.length === 6) {
+      setTimeout(() => handleVerifyOtp(), 100)
+    }
   }
 
-  // Replace the handleVerifyOtp function (around line 68-95):
+  const handleVerifyOtp = async () => {
+    const otpString = otp.join('')
+    
+    if (otpString.length !== 6) {
+      toast.error('Please enter a complete 6-digit OTP')
+      return
+    }
 
-const handleVerifyOtp = async () => {
-  const otpString = otp.join('')
-  
-  if (otpString.length !== 6) {
-    toast.error('Please enter a complete 6-digit OTP')
-    return
-  }
+    setIsSubmitting(true)
+    
+    try {
+      const result = await verifyPhone({
+        phoneNumber,
+        otp: otpString
+      })
 
-  setIsSubmitting(true)
-  
-  try {
-    const result = await verifyPhone({
-      phoneNumber,
-      otp: otpString
-    })
-
-    if (result.success) {
-      if (result.fullyVerified) {
-        // User is fully verified, redirect to home
-        toast.success('Phone number verified successfully! Welcome to Aggrekart!')
-        navigate('/', { replace: true })
+      if (result.success) {
+        if (result.fullyVerified) {
+          toast.success('Phone verified successfully! Welcome to Aggrekart!')
+          navigate('/', { replace: true })
+        } else {
+          toast.success('Phone verified! Please verify your email.')
+          navigate('/auth/verify-email', { 
+            state: { 
+              email: email || location.state?.email,
+              phoneNumber,
+              fromLogin: location.state?.fromLogin,
+              verificationStatus: {
+                phoneVerified: true,
+                emailVerified: false
+              }
+            },
+            replace: true 
+          })
+        }
       } else {
-        // Phone verified but email verification needed
-        toast.success('Phone verified! Please verify your email.')
-        navigate('/auth/verify-email', { 
-          state: { 
-            email: email || location.state?.email,
-            phoneNumber,
-            fromLogin: location.state?.fromLogin,
-            verificationStatus: {
-              phoneVerified: true,
-              emailVerified: false
-            }
-          },
-          replace: true 
-        })
+        toast.error(result.message || 'Invalid OTP. Please try again.')
+        setOtp(['', '', '', '', '', ''])
+        otpRefs.current[0]?.focus()
       }
-    } else {
-      toast.error(result.message || 'Invalid OTP. Please try again.')
+    } catch (error) {
+      console.error('OTP verification error:', error)
+      toast.error('Verification failed. Please try again.')
       setOtp(['', '', '', '', '', ''])
       otpRefs.current[0]?.focus()
+    } finally {
+      setIsSubmitting(false)
     }
-  } catch (error) {
-    console.error('OTP verification error:', error)
-    toast.error('Verification failed. Please try again.')
-    setOtp(['', '', '', '', '', ''])
-    otpRefs.current[0]?.focus()
-  } finally {
-    setIsSubmitting(false)
   }
-}
+
   const handleResendOtp = async () => {
     setIsResending(true)
     
@@ -139,8 +148,8 @@ const handleVerifyOtp = async () => {
       const response = await authAPI.resendOtp({ phoneNumber })
       
       if (response.success) {
-        toast.success('OTP sent successfully!')
-        setTimer(300) // Reset timer
+        toast.success('New OTP sent successfully!')
+        setTimer(300)
         setCanResend(false)
         setOtp(['', '', '', '', '', ''])
         otpRefs.current[0]?.focus()
@@ -161,115 +170,142 @@ const handleVerifyOtp = async () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const getTimerProgress = () => {
+    return ((300 - timer) / 300) * 100
+  }
+
   if (!phoneNumber) {
-    return null // Will redirect to register
+    return null
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <div className="auth-logo">
+    <div className="otp-verification-page">
+      <div className="otp-container">
+        {/* Header */}
+        <div className="otp-header">
+          <div className="otp-logo">
             <span className="logo-icon">🏗️</span>
-            <span className="logo-text">Aggrekart</span>
+            Aggrekart
           </div>
-          <h1 className="auth-title">Verify Phone Number</h1>
-          <p className="auth-subtitle">
-            We've sent a 6-digit OTP to <strong>+91 {phoneNumber}</strong>
+          
+          <div className="otp-icon">
+            📱
+          </div>
+          
+          <h1 className="otp-title">Verify Phone Number</h1>
+          <p className="otp-subtitle">
+            We've sent a 6-digit verification code to
+            <br />
+            <span className="phone-display">+91 {phoneNumber}</span>
           </p>
         </div>
 
-        <div className="auth-card">
-          <div className="verify-phone-content">
-            <div className="phone-icon">
-              📱
-            </div>
-            
-            <div className="otp-input-container">
-              <label className="otp-label">Enter OTP</label>
-              <div className="otp-inputs">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={(el) => (otpRefs.current[index] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={index === 0 ? handlePaste : undefined}
-                    className="otp-input"
-                    disabled={isSubmitting}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="otp-timer">
-              {!canResend ? (
-                <p>
-                  <span className="timer-icon">⏱️</span>
-                  Resend OTP in {formatTime(timer)}
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={isResending}
-                  className="resend-button"
-                >
-                  {isResending ? (
-                    <>
-                      <span className="spinner-small"></span>
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      🔄 Resend OTP
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleVerifyOtp}
-              disabled={isSubmitting || otp.join('').length !== 6}
-              className="btn btn-primary verify-button"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="spinner-small"></span>
-                  Verifying...
-                </>
-              ) : (
-                <>
-                  ✅ Verify & Continue
-                </>
-              )}
-            </button>
-
-            <div className="verify-help">
-              <p>Didn't receive the OTP?</p>
-              <ul>
-                <li>Check your SMS inbox</li>
-                <li>Ensure you have network coverage</li>
-                <li>Wait for the timer to expire and resend</li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/auth/register')}
-              className="btn btn-secondary back-button"
-            >
-              ← Back to Registration
-            </button>
+        {/* OTP Input Section */}
+        <div className="otp-input-section">
+          <label className="otp-input-label">Enter verification code</label>
+          <div className="otp-inputs-container">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => (otpRefs.current[index] = el)}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={index === 0 ? handlePaste : undefined}
+                className={`otp-input ${digit ? 'filled' : ''}`}
+                disabled={isSubmitting}
+                autoFocus={index === 0}
+              />
+            ))}
           </div>
         </div>
+
+        {/* Timer and Resend Section */}
+        <div className="otp-timer">
+          {!canResend ? (
+            <>
+              <div className="timer-display">
+                <span className="timer-icon">⏱️</span>
+                Code expires in {formatTime(timer)}
+              </div>
+              <div className="timer-progress">
+                <div 
+                  className="timer-progress-bar" 
+                  style={{ width: `${getTimerProgress()}%` }}
+                />
+              </div>
+              <p className="resend-text">Didn't receive the code?</p>
+            </>
+          ) : (
+            <div className="resend-section">
+              <p className="resend-text">Didn't receive the code?</p>
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={isResending}
+                className="resend-button"
+              >
+                {isResending ? (
+                  <span className="spinner-container">
+                    <span className="spinner-small"></span>
+                    Sending...
+                  </span>
+                ) : (
+                  '🔄 Resend Code'
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="otp-actions">
+          <button
+            type="button"
+            onClick={handleVerifyOtp}
+            disabled={isSubmitting || otp.join('').length !== 6}
+            className="verify-button"
+          >
+            {isSubmitting ? (
+              <span className="spinner-container">
+                <span className="spinner-small"></span>
+                Verifying...
+              </span>
+            ) : (
+              '✅ Verify & Continue'
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/auth/register')}
+            className="back-button"
+          >
+            ← Back to Registration
+          </button>
+        </div>
+
+        {/* Help Section */}
+        <div className="otp-help">
+          <h4>💡 Having trouble?</h4>
+          <ul>
+            <li>Check your SMS inbox and spam folder</li>
+            <li>Ensure you have good network coverage</li>
+            <li>Wait for the timer to expire and request a new code</li>
+            <li>Make sure your phone number is correct</li>
+          </ul>
+        </div>
+
+        {/* Development Info */}
+        {import.meta.env.MODE === 'development' && devOtps?.phoneOTP && (
+          <div className="dev-info">
+            🔧 Development Mode - OTP: {devOtps.phoneOTP}
+          </div>
+        )}
       </div>
     </div>
   )

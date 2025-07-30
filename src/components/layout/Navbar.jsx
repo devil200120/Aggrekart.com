@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import CartIcon from '../cart/CartIcon'
+import WishlistIcon from '../cart/WishlistIcon'
+import AuthDropdown from '../auth/AuthDropdown'
 import './Navbar.css'
+import SearchBar from '../common/SearchBar'
+
 // Import the logo image
 import logoImage from '../../image.png'
 
@@ -90,9 +94,8 @@ const Navbar = () => {
         ...baseItems,
         { type: 'divider' },
         { path: '/auth/login', label: 'Login', icon: '🔐' },
-        { path: '/auth/whatsapp-register', label: 'Quick Register', icon: '📱', className: 'whatsapp' },
-        { path: '/auth/register', label: 'Email Register', icon: '✉️' },
-        { path: '/auth/supplier-register', label: 'Join as Supplier', icon: '🏪', className: 'supplier' },
+        { path: '/auth/register', label: 'Customer Registration', icon: '👤' },
+        { path: '/auth/supplier-register', label: 'Supplier Registration', icon: '🏪', className: 'supplier' },
       ]
     }
   }
@@ -101,31 +104,47 @@ const Navbar = () => {
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="container">
         <div className="navbar-content">
-          {/* Logo - Updated with image */}
+          {/* Logo */}
           <Link to="/" className="navbar-logo" onClick={closeMenu}>
             <img 
               src={logoImage} 
               alt="Aggrekart Logo" 
               className="logo-image"
             />
-            
           </Link>
+           <div className="navbar-search desktop-search">
+    <SearchBar />
+  </div>
 
-          {/* Desktop Navigation - REMOVED Home and Products */}
-          <div className="navbar-nav">
-            {/* Only show customer orders link in desktop nav if needed */}
+          {/* Desktop Navigation Links */}
+          <div className="navbar-nav desktop-nav">
             
+            {user?.role === 'customer' && (
+              <Link to="/orders" className={`nav-link ${isActivePage('/orders') ? 'active' : ''}`}>
+                My Orders
+              </Link>
+            )}
           </div>
 
           {/* Right Actions */}
           <div className="navbar-actions">
-            {/* Cart Icon for customers */}
-            {user?.role === 'customer' && <CartIcon />}
+            {/* User Actions for Customers */}
+            <div className="user-actions">
+  <WishlistIcon />
+  <CartIcon />
+</div>
 
             {/* User Avatar */}
             {user && (
-              <div className="user-avatar">
+              <div className="user-avatar" title={user.name}>
                 {user.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            
+            {/* Authentication Dropdown for non-logged in users */}
+            {!user && (
+              <div className="auth-buttons desktop-auth">
+                <AuthDropdown />
               </div>
             )}
 
@@ -133,15 +152,17 @@ const Navbar = () => {
             <button 
               className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
             >
               <span></span>
               <span></span>
               <span></span>
             </button>
+            
           </div>
         </div>
 
-        {/* Hamburger Menu - KEEPS all items including Home and Products */}
+        {/* Mobile Hamburger Menu */}
         {isMenuOpen && (
           <div className="hamburger-menu">
             {/* User Info */}
@@ -157,6 +178,9 @@ const Navbar = () => {
                 </div>
               </div>
             )}
+            <div className="mobile-search">
+      <SearchBar />
+    </div>
 
             {/* Menu Items */}
             <div className="menu-items">

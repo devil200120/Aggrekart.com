@@ -103,6 +103,33 @@ const CoolingPeriodManager = ({ orderId, onCoolingComplete }) => {
     
     return elapsedPercentage <= 50 ? 1 : 2
   }
+  // Add these functions after line 102 (after the getCurrentDeduction function):
+
+// Check if order can start material loading
+const canStartMaterialLoading = () => {
+  return order?.coolingPeriod?.isActive && 
+         ['pending', 'confirmed'].includes(order?.status) &&
+         !timeLeft.expired;
+};
+
+// Add new function for material loading
+const startMaterialLoading = () => {
+  if (!canStartMaterialLoading()) {
+    toast.error('Cannot start material loading at this time');
+    return;
+  }
+  
+  // Call API to update status to material_loading
+  ordersAPI.updateOrderStatus(orderId, { 
+    status: 'material_loading',
+    note: 'Material loading started within cooling period'
+  }).then(() => {
+    toast.success('Material loading started');
+    queryClient.invalidateQueries(['order', orderId]);
+  }).catch((error) => {
+    toast.error('Failed to start material loading');
+  });
+};
 
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
@@ -162,14 +189,25 @@ const CoolingPeriodManager = ({ orderId, onCoolingComplete }) => {
         </div>
 
         <div className="cooling-actions">
-          <button 
-            onClick={() => setShowCancelModal(true)}
-            className="btn btn-outline btn-danger"
-            disabled={cancelOrderMutation.isLoading}
-          >
-            Cancel Order
-          </button>
-        </div>
+  {canStartMaterialLoading() && user?.role === 'supplier' && (
+    <button
+      onClick={startMaterialLoading}
+      className="btn btn-success btn-sm"
+      disabled={timeLeft.expired}
+    >
+      📦 Start Material Loading
+    </button>
+  )}
+  
+  <button 
+    onClick={() => setShowCancelModal(true)}
+    className="btn btn-outline btn-danger"
+    disabled={cancelOrderMutation.isLoading}
+  >
+    Cancel Order
+  </button>
+</div>
+
       </div>
 
       {/* Cancel Modal */}

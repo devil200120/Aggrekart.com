@@ -10,51 +10,86 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState('idle'); // idle, processing, success, failed
+  const [scriptLoaded, setScriptLoaded] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     loadPaymentMethods();
+    loadRazorpayScript();
   }, []);
 
   const loadPaymentMethods = async () => {
     try {
       const response = await paymentsAPI.getPaymentMethods();
-      setPaymentMethods(response.data.methods);
+      if (response?.data?.methods) {
+        setPaymentMethods(response.data.methods);
+      }
     } catch (error) {
       console.error('Failed to load payment methods:', error);
-      toast.error('Failed to load payment methods');
+      // Continue with default methods if API fails
+      setPaymentMethods([
+        { id: 'card', name: 'Credit/Debit Card', enabled: true },
+        { id: 'upi', name: 'UPI', enabled: true },
+        { id: 'netbanking', name: 'Net Banking', enabled: true },
+        { id: 'wallet', name: 'Digital Wallet', enabled: true }
+      ]);
     }
   };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+      // Check if script is already loaded
+      if (window.Razorpay) {
+        setScriptLoaded(true);
+        resolve(true);
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
+      script.onload = () => {
+        setScriptLoaded(true);
+        resolve(true);
+      };
+      script.onerror = () => {
+        setScriptLoaded(false);
+        resolve(false);
+      };
       document.body.appendChild(script);
     });
   };
 
   const handlePayment = async () => {
+    if (!order) {
+      toast.error('Order information is missing');
+      return;
+    }
+
+    if (!scriptLoaded) {
+      toast.error('Payment gateway is not ready. Please try again.');
+      return;
+    }
+
     try {
       setIsProcessing(true);
       setPaymentStatus('processing');
 
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error('Failed to load Razorpay SDK');
-      }
-
       // Create payment order
       const paymentOrderResponse = await paymentsAPI.createPaymentOrder({
         orderId: order.orderId,
-        amount: order.payment.advanceAmount,
+        amount: order.payment?.advanceAmount || order.pricing?.totalAmount,
         currency: 'INR'
       });
 
+      if (!paymentOrderResponse?.success) {
+        throw new Error(paymentOrderResponse?.message || 'Failed to create payment order');
+      }
+
       const { razorpayOrderId, amount, currency, key } = paymentOrderResponse.data;
+
+      if (!razorpayOrderId || !key) {
+        throw new Error('Invalid payment order response');
+      }
 
       // Razorpay payment options
       const options = {
@@ -65,9 +100,9 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
         description: `Payment for Order ${order.orderId}`,
         order_id: razorpayOrderId,
         prefill: {
-          name: user.name,
-          email: user.email,
-          contact: user.phoneNumber
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phoneNumber || ''
         },
         theme: {
           color: '#667eea'
@@ -80,6 +115,8 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
         },
         handler: async (response) => {
           try {
+            console.log('Payment successful, verifying...', response);
+            
             // Verify payment
             const verificationResponse = await paymentsAPI.verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
@@ -88,16 +125,23 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
               orderId: order.orderId
             });
 
-            setPaymentStatus('success');
-            toast.success('Payment completed successfully!');
-            
-            if (onSuccess) {
-              onSuccess(verificationResponse.data);
+            if (verificationResponse?.success) {
+              setPaymentStatus('success');
+              toast.success('Payment completed successfully!');
+              
+              if (onSuccess) {
+                onSuccess(verificationResponse.data);
+              }
+            } else {
+              throw new Error(verificationResponse?.message || 'Payment verification failed');
             }
           } catch (verificationError) {
             console.error('Payment verification failed:', verificationError);
             setPaymentStatus('failed');
-            toast.error('Payment verification failed');
+            const errorMessage = verificationError?.response?.data?.message || 
+                               verificationError?.message || 
+                               'Payment verification failed';
+            toast.error(errorMessage);
             
             if (onError) {
               onError(verificationError);
@@ -108,6 +152,7 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
           ondismiss: () => {
             setIsProcessing(false);
             setPaymentStatus('idle');
+            toast.info('Payment cancelled');
             
             if (onCancel) {
               onCancel();
@@ -116,15 +161,35 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
         }
       };
 
-      // Open Razorpay checkout
+      // Create Razorpay instance and open payment modal
       const razorpay = new window.Razorpay(options);
+      
+      razorpay.on('payment.failed', (response) => {
+        console.error('Payment failed:', response);
+        setIsProcessing(false);
+        setPaymentStatus('failed');
+        
+        const errorMessage = response?.error?.description || 
+                             response?.error?.reason || 
+                             'Payment failed';
+        toast.error(errorMessage);
+        
+        if (onError) {
+          onError(response.error);
+        }
+      });
+
       razorpay.open();
 
     } catch (error) {
       console.error('Payment initiation failed:', error);
-      setPaymentStatus('failed');
       setIsProcessing(false);
-      toast.error('Failed to initiate payment');
+      setPaymentStatus('failed');
+      
+      const errorMessage = error?.response?.data?.message || 
+                           error?.message || 
+                           'Failed to initiate payment';
+      toast.error(errorMessage);
       
       if (onError) {
         onError(error);
@@ -132,7 +197,7 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
     }
   };
 
-  const getMethodIcon = (method) => {
+  const getPaymentMethodIcon = (method) => {
     switch (method) {
       case 'card':
         return <CreditCard className="payment-method-icon" />;
@@ -147,130 +212,117 @@ const RazorpayPayment = ({ order, onSuccess, onError, onCancel }) => {
     }
   };
 
-  const getStatusIcon = () => {
-    switch (paymentStatus) {
-      case 'processing':
-        return <Loader2 className="status-icon processing" />;
-      case 'success':
-        return <CheckCircle className="status-icon success" />;
-      case 'failed':
-        return <XCircle className="status-icon failed" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusMessage = () => {
-    switch (paymentStatus) {
-      case 'processing':
-        return 'Processing your payment...';
-      case 'success':
-        return 'Payment completed successfully!';
-      case 'failed':
-        return 'Payment failed. Please try again.';
-      default:
-        return '';
-    }
-  };
+  if (!order) {
+    return (
+      <div className="payment-error">
+        <XCircle className="error-icon" />
+        <h3>Order Information Missing</h3>
+        <p>Unable to process payment. Order details are required.</p>
+        <button onClick={onCancel} className="btn btn-secondary">
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="razorpay-payment">
-      <div className="payment-header">
-        <h3>Complete Your Payment</h3>
-        <div className="payment-amount">
-          <span className="amount-label">Amount to Pay:</span>
-          <span className="amount-value">₹{order.payment.advanceAmount?.toLocaleString()}</span>
-        </div>
-      </div>
-
-      <div className="order-summary">
-        <h4>Order Summary</h4>
-        <div className="order-details">
-          <div className="order-detail">
-            <span>Order ID:</span>
-            <span>{order.orderId}</span>
-          </div>
-          <div className="order-detail">
-            <span>Advance Payment ({order.payment.advancePercentage}%):</span>
-            <span>₹{order.payment.advanceAmount?.toLocaleString()}</span>
-          </div>
-          <div className="order-detail">
-            <span>Remaining Amount:</span>
-            <span>₹{order.payment.remainingAmount?.toLocaleString()}</span>
-          </div>
-          <div className="order-detail total">
-            <span>Total Order Value:</span>
-            <span>₹{order.pricing.totalAmount?.toLocaleString()}</span>
+      <div className="payment-container">
+        <div className="payment-header">
+          <h2>Complete Your Payment</h2>
+          <div className="order-details">
+            <p><strong>Order ID:</strong> {order.orderId}</p>
+            <p><strong>Amount:</strong> ₹{(order.payment?.advanceAmount || order.pricing?.totalAmount || 0).toLocaleString()}</p>
           </div>
         </div>
-      </div>
 
-      <div className="payment-methods">
-        <h4>Select Payment Method</h4>
-        <div className="methods-grid">
-          {paymentMethods.map((method) => (
-            <div
-              key={method.id}
-              className={`payment-method ${selectedMethod === method.id ? 'selected' : ''} ${!method.enabled ? 'disabled' : ''}`}
-              onClick={() => method.enabled && setSelectedMethod(method.id)}
-            >
-              {getMethodIcon(method.id)}
-              <div className="method-info">
-                <span className="method-name">{method.name}</span>
-                <span className="method-description">{method.description}</span>
+        {!scriptLoaded && (
+          <div className="payment-loading">
+            <Loader2 className="loading-icon" />
+            <p>Loading payment gateway...</p>
+          </div>
+        )}
+
+        {scriptLoaded && (
+          <>
+            <div className="payment-methods">
+              <h3>Select Payment Method</h3>
+              <div className="method-grid">
+                {paymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={`payment-method ${selectedMethod === method.id ? 'selected' : ''} ${!method.enabled ? 'disabled' : ''}`}
+                    onClick={() => method.enabled && setSelectedMethod(method.id)}
+                  >
+                    {getPaymentMethodIcon(method.id)}
+                    <span>{method.name}</span>
+                    {!method.enabled && <span className="disabled-badge">Coming Soon</span>}
+                  </div>
+                ))}
               </div>
-              {selectedMethod === method.id && (
-                <div className="method-selected">
-                  <CheckCircle size={20} />
+            </div>
+
+            <div className="payment-info">
+              <div className="security-info">
+                <CheckCircle className="security-icon" />
+                <div>
+                  <h4>Secure Payment</h4>
+                  <p>Your payment information is encrypted and secure. We use industry-standard security measures to protect your data.</p>
+                </div>
+              </div>
+
+              {order.payment?.advanceAmount && order.payment?.remainingAmount > 0 && (
+                <div className="payment-breakdown">
+                  <h4>Payment Breakdown</h4>
+                  <div className="breakdown-item">
+                    <span>Advance Payment (25%)</span>
+                    <span>₹{order.payment.advanceAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="breakdown-item">
+                    <span>Remaining (On Delivery)</span>
+                    <span>₹{order.payment.remainingAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="breakdown-total">
+                    <span>Total Order Value</span>
+                    <span>₹{(order.payment.advanceAmount + order.payment.remainingAmount).toLocaleString()}</span>
+                  </div>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      </div>
 
-      {paymentStatus !== 'idle' && (
-        <div className={`payment-status ${paymentStatus}`}>
-          {getStatusIcon()}
-          <span>{getStatusMessage()}</span>
-        </div>
-      )}
+            <div className="payment-actions">
+              <button
+                onClick={handlePayment}
+                disabled={isProcessing || !scriptLoaded}
+                className="btn btn-primary btn-lg pay-now-btn"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="loading-spinner" />
+                    Processing Payment...
+                  </>
+                ) : (
+                  `Pay ₹${(order.payment?.advanceAmount || order.pricing?.totalAmount || 0).toLocaleString()}`
+                )}
+              </button>
 
-      <div className="payment-actions">
-        <button
-          className="pay-button"
-          onClick={handlePayment}
-          disabled={isProcessing || paymentStatus === 'success'}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="button-icon processing" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <CreditCard className="button-icon" />
-              Pay ₹{order.payment.advanceAmount?.toLocaleString()}
-            </>
-          )}
-        </button>
-      </div>
+              <button
+                onClick={onCancel}
+                disabled={isProcessing}
+                className="btn btn-secondary cancel-btn"
+              >
+                Cancel Payment
+              </button>
+            </div>
 
-      <div className="payment-security">
-        <div className="security-badges">
-          <div className="security-badge">
-            <span>🔒 256-bit SSL Encrypted</span>
-          </div>
-          <div className="security-badge">
-            <span>🛡️ PCI DSS Compliant</span>
-          </div>
-          <div className="security-badge">
-            <span>⚡ Powered by Razorpay</span>
-          </div>
-        </div>
-        <p className="security-note">
-          Your payment information is secure and encrypted. We don't store your card details.
-        </p>
+            {paymentStatus === 'failed' && (
+              <div className="payment-status failed">
+                <XCircle className="status-icon" />
+                <p>Payment failed. Please try again or contact support.</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
