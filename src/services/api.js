@@ -4,7 +4,7 @@ import Cookies from 'js-cookie'
 // Create axios instance
 const api = axios.create({
   baseURL: 'http://localhost:5000/api', // Proxy configured in vite.config.js
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -466,8 +466,7 @@ export const adminAPI = {
   
   rejectSupplier: (supplierId, data) => api.put(`/admin/suppliers/${supplierId}/reject`, data),
   
-  suspendSupplier: (supplierId, reason) => api.put(`/admin/suppliers/${supplierId}/suspend`, { reason }),
-  
+suspendSupplier: (supplierId, data) => api.put(`/admin/suppliers/${supplierId}/suspend`, data),
   // Order Management
   getAllOrders: (params) => api.get('/admin/orders', { params }),
   

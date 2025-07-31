@@ -1,7 +1,7 @@
 /* 
 FILE: c:\Users\KIIT0001\Desktop\builder_website using mern\front-end\app\src\components\admin\OrderManagement.jsx
-LINES: 1-250
-PURPOSE: Component for admin to manage all platform orders
+LINES: 1-450
+PURPOSE: Component for admin to manage all platform orders - FIXED VERSION
 */
 
 import React, { useState, useMemo } from 'react'
@@ -20,21 +20,29 @@ import {
   Clock,
   Truck,
   CheckCircle,
-  XCircle
+  XCircle,
+  AlertCircle
 } from 'lucide-react'
 import { adminAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import './OrderManagement.css'
 
-const OrderManagement = ({ orders = [], loading }) => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterDateRange, setFilterDateRange] = useState('all')
-  const [sortBy, setSortBy] = useState('createdAt')
-  const [sortOrder, setSortOrder] = useState('desc')
+const OrderManagement = ({ 
+  orders = [], 
+  pagination = {}, 
+  filters = {}, 
+  onFilterChange, 
+  onPageChange, 
+  onOrderAction, 
+  onRefresh,
+  loading = false 
+}) => {
+  const [searchTerm, setSearchTerm] = useState(filters.search || '')
+  const [filterStatus, setFilterStatus] = useState(filters.status || 'all')
   const [showFilters, setShowFilters] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
+  const [actionLoading, setActionLoading] = useState({})
   const queryClient = useQueryClient()
 
   // Update order status mutation
@@ -44,6 +52,7 @@ const OrderManagement = ({ orders = [], loading }) => {
       onSuccess: () => {
         toast.success('Order status updated successfully!')
         queryClient.invalidateQueries('admin-orders')
+        if (onRefresh) onRefresh()
       },
       onError: (error) => {
         toast.error(error.response?.data?.message || 'Failed to update order')
@@ -51,89 +60,37 @@ const OrderManagement = ({ orders = [], loading }) => {
     }
   )
 
-  // Refund order mutation
-  const refundOrderMutation = useMutation(
-    ({ orderId, data }) => adminAPI.refundOrder(orderId, data),
-    {
-      onSuccess: () => {
-        toast.success('Order refund processed successfully!')
-        queryClient.invalidateQueries('admin-orders')
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to process refund')
-      }
-    }
-  )
-
-  // Filtered and sorted orders
+  // Filtered orders based on search
   const filteredOrders = useMemo(() => {
-    let filtered = orders.filter(order => {
-      const matchesSearch = 
-        order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      const matchesStatus = filterStatus === 'all' || order.status === filterStatus
-      
-      let matchesDate = true
-      if (filterDateRange !== 'all') {
-        const orderDate = new Date(order.createdAt)
-        const now = new Date()
-        const days = {
-          'today': 1,
-          'week': 7,
-          'month': 30,
-          'quarter': 90
-        }
-        const daysAgo = days[filterDateRange]
-        if (daysAgo) {
-          const filterDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000))
-          matchesDate = orderDate >= filterDate
-        }
-      }
-      
-      return matchesSearch && matchesStatus && matchesDate
-    })
+    if (!searchTerm) return orders
 
-    // Sort orders
-    filtered.sort((a, b) => {
-      let aValue = a[sortBy]
-      let bValue = b[sortBy]
-      
-      if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
-        aValue = new Date(aValue)
-        bValue = new Date(bValue)
-      } else if (sortBy === 'total') {
-        aValue = parseFloat(aValue)
-        bValue = parseFloat(bValue)
-      }
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
-      }
+    return orders.filter(order => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        order.orderId?.toLowerCase().includes(searchLower) ||
+        order.customer?.name?.toLowerCase().includes(searchLower) ||
+        order.customer?.email?.toLowerCase().includes(searchLower) ||
+        order.supplier?.companyName?.toLowerCase().includes(searchLower)
+      )
     })
-
-    return filtered
-  }, [orders, searchTerm, filterStatus, filterDateRange, sortBy, sortOrder])
+  }, [orders, searchTerm])
 
   const getStatusBadge = (status) => {
     const badges = {
-      pending: { label: 'Pending', className: 'status-pending', icon: Clock },
-      confirmed: { label: 'Confirmed', className: 'status-confirmed', icon: CheckCircle },
-      processing: { label: 'Processing', className: 'status-processing', icon: Package },
-      shipped: { label: 'Shipped', className: 'status-shipped', icon: Truck },
-      delivered: { label: 'Delivered', className: 'status-delivered', icon: CheckCircle },
-      cancelled: { label: 'Cancelled', className: 'status-cancelled', icon: XCircle },
-      refunded: { label: 'Refunded', className: 'status-refunded', icon: RefreshCw }
+      pending: { label: 'Pending', className: 'status-pending', icon: Clock, color: '#f59e0b' },
+      confirmed: { label: 'Confirmed', className: 'status-confirmed', icon: CheckCircle, color: '#10b981' },
+      processing: { label: 'Processing', className: 'status-processing', icon: Package, color: '#3b82f6' },
+      shipped: { label: 'Shipped', className: 'status-shipped', icon: Truck, color: '#8b5cf6' },
+      delivered: { label: 'Delivered', className: 'status-delivered', icon: CheckCircle, color: '#059669' },
+      cancelled: { label: 'Cancelled', className: 'status-cancelled', icon: XCircle, color: '#ef4444' },
+      refunded: { label: 'Refunded', className: 'status-refunded', icon: RefreshCw, color: '#6b7280' }
     }
     
     const badge = badges[status] || badges.pending
     const IconComponent = badge.icon
     
     return (
-      <span className={`status-badge ${badge.className}`}>
+      <span className={`status-badge ${badge.className}`} style={{ color: badge.color }}>
         <IconComponent size={12} />
         {badge.label}
       </span>
@@ -141,47 +98,99 @@ const OrderManagement = ({ orders = [], loading }) => {
   }
 
   const formatCurrency = (amount) => {
+    // Handle NaN and undefined values
+    const numAmount = Number(amount)
+    if (isNaN(numAmount) || !isFinite(numAmount)) {
+      return '₹0'
+    }
+    
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount)
+    }).format(numAmount)
   }
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  const handleStatusUpdate = (order, newStatus) => {
-    const notes = prompt(`Add notes for status change to ${newStatus}:`)
-    if (notes !== null) {
-      updateOrderMutation.mutate({
-        orderId: order._id,
-        status: newStatus,
-        notes
+    if (!dateString) return 'N/A'
+    
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       })
+    } catch (error) {
+      return 'Invalid Date'
     }
   }
 
-  const handleRefund = (order) => {
-    const reason = prompt('Enter refund reason:')
-    if (reason) {
-      refundOrderMutation.mutate({
-        orderId: order._id,
-        data: { reason, amount: order.total }
-      })
+  const handleSearchChange = (value) => {
+    setSearchTerm(value)
+  }
+
+  const handleFilterStatusChange = (status) => {
+    setFilterStatus(status)
+    if (onFilterChange) {
+      onFilterChange({ ...filters, status })
     }
+  }
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order)
+    setShowOrderModal(true)
+    console.log('Viewing order:', order)
+  }
+
+  const handleConfirmOrder = async (order) => {
+    if (!order || !order._id) {
+      toast.error('Invalid order data')
+      return
+    }
+
+    const confirmMessage = `Are you sure you want to confirm order ${order.orderId}?`
+    if (!window.confirm(confirmMessage)) return
+
+    try {
+      setActionLoading(prev => ({ ...prev, [order._id]: 'confirming' }))
+      
+      if (onOrderAction) {
+        await onOrderAction('confirm', order._id, { status: 'confirmed' })
+      } else {
+        // Fallback direct API call
+        await updateOrderMutation.mutateAsync({
+          orderId: order._id,
+          status: 'confirmed',
+          notes: 'Order confirmed by admin'
+        })
+      }
+      
+      toast.success(`Order ${order.orderId} confirmed successfully!`)
+    } catch (error) {
+      console.error('Error confirming order:', error)
+      toast.error(error.message || 'Failed to confirm order')
+    } finally {
+      setActionLoading(prev => ({ ...prev, [order._id]: null }))
+    }
+  }
+
+  const getOrderTotal = (order) => {
+    // Try different possible total fields
+    return order.pricing?.totalAmount || 
+           order.total || 
+           order.totalAmount || 
+           order.pricing?.subtotal || 
+           0
+  }
+
+  const getItemCount = (order) => {
+    return order.items?.length || 0
   }
 
   const exportOrders = () => {
-    // This would trigger CSV/Excel export
     toast.success('Export functionality coming soon!')
   }
 
@@ -208,6 +217,12 @@ const OrderManagement = ({ orders = [], loading }) => {
             <Download size={16} />
             Export
           </button>
+          {onRefresh && (
+            <button className="btn btn-outline" onClick={onRefresh}>
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+          )}
         </div>
       </div>
 
@@ -217,9 +232,9 @@ const OrderManagement = ({ orders = [], loading }) => {
           <Search size={20} />
           <input
             type="text"
-            placeholder="Search by order number, customer name, or email..."
+            placeholder="Search by order ID, customer name, or email..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
         
@@ -237,7 +252,10 @@ const OrderManagement = ({ orders = [], loading }) => {
         <div className="filter-panel">
           <div className="filter-group">
             <label>Status</label>
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <select 
+              value={filterStatus} 
+              onChange={(e) => handleFilterStatusChange(e.target.value)}
+            >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
               <option value="confirmed">Confirmed</option>
@@ -246,35 +264,6 @@ const OrderManagement = ({ orders = [], loading }) => {
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
               <option value="refunded">Refunded</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Date Range</label>
-            <select value={filterDateRange} onChange={(e) => setFilterDateRange(e.target.value)}>
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">Last 3 Months</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Sort By</label>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="createdAt">Order Date</option>
-              <option value="total">Total Amount</option>
-              <option value="status">Status</option>
-              <option value="customer.name">Customer Name</option>
-            </select>
-          </div>
-          
-          <div className="filter-group">
-            <label>Order</label>
-            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-              <option value="desc">Descending</option>
-              <option value="asc">Ascending</option>
             </select>
           </div>
         </div>
@@ -294,24 +283,28 @@ const OrderManagement = ({ orders = [], loading }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map((order) => (
+            {filteredOrders.length > 0 ? filteredOrders.map((order) => (
               <tr key={order._id}>
                 <td>
                   <div className="order-info">
-                    <div className="order-number">#{order.orderNumber}</div>
+                    <div className="order-number">#{order.orderId || 'N/A'}</div>
                     <div className="order-items">
-                      {order.items?.length} items
+                      {getItemCount(order)} items
                     </div>
                   </div>
                 </td>
                 <td>
                   <div className="customer-info">
-                    <div className="customer-name">{order.customer?.name}</div>
-                    <div className="customer-email">{order.customer?.email}</div>
-                    {order.shippingAddress && (
+                    <div className="customer-name">
+                      {order.customer?.name || 'Unknown Customer'}
+                    </div>
+                    <div className="customer-email">
+                      {order.customer?.email || 'No email'}
+                    </div>
+                    {order.deliveryAddress && (
                       <div className="customer-location">
                         <MapPin size={12} />
-                        {order.shippingAddress.city}, {order.shippingAddress.state}
+                        {order.deliveryAddress.city}, {order.deliveryAddress.state}
                       </div>
                     )}
                   </div>
@@ -319,8 +312,12 @@ const OrderManagement = ({ orders = [], loading }) => {
                 <td>{getStatusBadge(order.status)}</td>
                 <td>
                   <div className="order-total">
-                    <div className="total-amount">{formatCurrency(order.total)}</div>
-                    <div className="payment-method">{order.paymentMethod}</div>
+                    <div className="total-amount">
+                      {formatCurrency(getOrderTotal(order))}
+                    </div>
+                    <div className="payment-method">
+                      {order.paymentMethod || 'N/A'}
+                    </div>
                   </div>
                 </td>
                 <td>
@@ -333,59 +330,138 @@ const OrderManagement = ({ orders = [], loading }) => {
                   <div className="order-actions">
                     <button 
                       className="btn btn-outline btn-sm"
-                      onClick={() => {
-                        setSelectedOrder(order)
-                        setShowOrderModal(true)
-                      }}
+                      onClick={() => handleViewOrder(order)}
+                      disabled={actionLoading[order._id]}
                     >
                       <Eye size={14} />
-                      View
+                      {actionLoading[order._id] === 'viewing' ? 'Loading...' : 'VIEW'}
                     </button>
                     
                     {order.status === 'pending' && (
                       <button 
                         className="btn btn-success btn-sm"
-                        onClick={() => handleStatusUpdate(order, 'confirmed')}
+                        onClick={() => handleConfirmOrder(order)}
+                        disabled={actionLoading[order._id] || updateOrderMutation.isLoading}
                       >
-                        Confirm
+                        {actionLoading[order._id] === 'confirming' ? (
+                          <>
+                            <RefreshCw size={14} className="animate-spin" />
+                            Confirming...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={14} />
+                            CONFIRM
+                          </>
+                        )}
                       </button>
                     )}
                     
                     {order.status === 'confirmed' && (
                       <button 
                         className="btn btn-primary btn-sm"
-                        onClick={() => handleStatusUpdate(order, 'processing')}
+                        onClick={() => {
+                          if (onOrderAction) {
+                            onOrderAction('process', order._id, { status: 'processing' })
+                          }
+                        }}
+                        disabled={actionLoading[order._id]}
                       >
+                        <Package size={14} />
                         Process
-                      </button>
-                    )}
-                    
-                    {(order.status === 'delivered' || order.status === 'processing') && (
-                      <button 
-                        className="btn btn-warning btn-sm"
-                        onClick={() => handleRefund(order)}
-                        disabled={refundOrderMutation.isLoading}
-                      >
-                        Refund
                       </button>
                     )}
                   </div>
                 </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan="6" className="no-data-cell">
+                  <div className="no-orders">
+                    <div className="no-orders-icon">📦</div>
+                    <h4>No orders found</h4>
+                    <p>
+                      {searchTerm 
+                        ? 'Try adjusting your search criteria.' 
+                        : 'No orders available at the moment.'}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {filteredOrders.length === 0 && (
-        <div className="no-orders">
-          <div className="no-orders-icon">📦</div>
-          <h4>No orders found</h4>
-          <p>Try adjusting your search or filter criteria.</p>
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="pagination">
+          <button 
+            className="btn btn-outline"
+            onClick={() => onPageChange && onPageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage <= 1}
+          >
+            Previous
+          </button>
+          
+          <span className="pagination-info">
+            Page {pagination.currentPage} of {pagination.totalPages}
+            ({pagination.totalItems} total orders)
+          </span>
+          
+          <button 
+            className="btn btn-outline"
+            onClick={() => onPageChange && onPageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage >= pagination.totalPages}
+          >
+            Next
+          </button>
         </div>
       )}
 
-      {/* Order Details Modal would go here */}
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Order Details - #{selectedOrder.orderId}</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowOrderModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="order-details-grid">
+                <div className="detail-section">
+                  <h4>Customer Information</h4>
+                  <p><strong>Name:</strong> {selectedOrder.customer?.name}</p>
+                  <p><strong>Email:</strong> {selectedOrder.customer?.email}</p>
+                  <p><strong>Phone:</strong> {selectedOrder.customer?.phoneNumber}</p>
+                </div>
+                
+                <div className="detail-section">
+                  <h4>Order Information</h4>
+                  <p><strong>Status:</strong> {getStatusBadge(selectedOrder.status)}</p>
+                  <p><strong>Total:</strong> {formatCurrency(getOrderTotal(selectedOrder))}</p>
+                  <p><strong>Date:</strong> {formatDate(selectedOrder.createdAt)}</p>
+                </div>
+                
+                <div className="detail-section">
+                  <h4>Items ({getItemCount(selectedOrder)})</h4>
+                  {selectedOrder.items?.map((item, index) => (
+                    <div key={index} className="order-item">
+                      <p><strong>{item.productSnapshot?.name || 'Product'}</strong></p>
+                      <p>Quantity: {item.quantity} | Price: {formatCurrency(item.totalPrice)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

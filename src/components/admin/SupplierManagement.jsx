@@ -233,15 +233,19 @@ const SupplierManagement = ({
                 </div>
               )}
               
-              {(actionType === 'reject' || actionType === 'suspend') && (
+                            {(actionType === 'reject' || actionType === 'suspend') && (
                 <div className="form-group">
-                  <label>Reason *:</label>
+                  <label>Reason * (minimum 5 characters):</label>
                   <textarea
                     value={actionData.reason}
                     onChange={(e) => setActionData({...actionData, reason: e.target.value})}
-                    placeholder="Please provide a reason..."
+                    placeholder="Please provide a reason (minimum 5 characters)..."
                     required
+                    minLength={5}
                   />
+                  {actionData.reason.length > 0 && actionData.reason.length < 5 && (
+                    <small style={{color: 'red'}}>Reason must be at least 5 characters</small>
+                  )}
                 </div>
               )}
             </div>
@@ -253,8 +257,9 @@ const SupplierManagement = ({
               <button 
                 onClick={handleAction} 
                 className={`btn-confirm ${actionType}`}
-                disabled={
-                  (actionType === 'reject' || actionType === 'suspend') && !actionData.reason.trim()
+                                disabled={
+                  (actionType === 'reject' || actionType === 'suspend') && 
+                  (!actionData.reason.trim() || actionData.reason.trim().length < 5)
                 }
               >
                 {actionType === 'approve' && 'Approve'}

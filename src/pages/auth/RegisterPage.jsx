@@ -48,13 +48,53 @@ const RegisterPage = () => {
     }
   }
   // Handle Google Maps address selection
+// Handle Google Maps address selection
 const handleAddressSelect = (addressData) => {
+  console.log('📍 Address data received:', addressData)
+  
+  let city = '', state = '', pincode = ''
+  
+  // Parse address components from Google Places API
+  if (addressData.addressComponents && addressData.addressComponents.length > 0) {
+    addressData.addressComponents.forEach(component => {
+      const types = component.types
+      
+      // Extract city (locality or sublocality)
+      if (types.includes('locality') || types.includes('sublocality') || types.includes('sublocality_level_1')) {
+        city = component.long_name
+      }
+      // Fallback to district if no locality found
+      else if (types.includes('administrative_area_level_2') && !city) {
+        city = component.long_name
+      }
+      
+      // Extract state
+      if (types.includes('administrative_area_level_1')) {
+        state = component.long_name
+      }
+      
+      // Extract pincode
+      if (types.includes('postal_code')) {
+        pincode = component.long_name
+      }
+    })
+  }
+  
+  // Fallback: Extract from formatted address if components parsing failed
+  if (!pincode && addressData.address) {
+    const pincodeMatch = addressData.address.match(/\b\d{6}\b/)
+    if (pincodeMatch) {
+      pincode = pincodeMatch[0]
+    }
+  }
+  
+  // Update form data
   setFormData(prev => ({
     ...prev,
-    address: addressData.formattedAddress,
-    city: addressData.city || addressData.locality,
-    state: addressData.state,
-    pincode: addressData.pincode,
+    address: addressData.address,
+    city: city,
+    state: state,
+    pincode: pincode,
     coordinates: addressData.coordinates
   }))
 
@@ -63,9 +103,9 @@ const handleAddressSelect = (addressData) => {
     ...prev,
     address: '', city: '', state: '', pincode: ''
   }))
-}
-
-  // Validate form
+  
+  console.log('✅ Extracted:', { city, state, pincode })
+}  // Validate form
   const validateForm = () => {
     const newErrors = {}
 

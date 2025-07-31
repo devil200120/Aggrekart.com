@@ -398,7 +398,7 @@ const HomePage = () => {
                     />
                   </div>
                   <div className="small-product-title">
-                    <h4>Concrete Bricks</h4>
+                    <h4>Sand</h4>
                   </div>
                 </div>
               </Link>
@@ -452,7 +452,7 @@ const HomePage = () => {
                     />
                   </div>
                   <div className="small-product-title">
-                    <h4>Clay Bricks</h4>
+                    <h4> BRICKS <br /> (CONCRETE /CLAY) </h4>
                   </div>
                 </div>
               </Link>

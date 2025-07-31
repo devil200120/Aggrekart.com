@@ -9,7 +9,6 @@ const SupplierRegisterPage = () => {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [gstValidationIssues, setGstValidationIssues] = useState([]);
   const [formData, setFormData] = useState({
     // Business Information
     businessName: "",
@@ -128,39 +127,43 @@ const SupplierRegisterPage = () => {
     { code: "38", name: "Ladakh", gstCode: "38" },
   ];
 
-  // Handle GST auto-fill data
+  // Handle GST auto-fill data - FIXED FUNCTION NAME AND LOGIC
   const handleGSTAutoFill = (autoFillData) => {
+    console.log('🔄 Applying GST auto-fill data:', autoFillData);
+    
     setFormData((prev) => ({
       ...prev,
-      gstNumber: autoFillData.gstNumber,
-      businessName: autoFillData.businessName,
-      businessAddress: autoFillData.businessAddress,
-      city: autoFillData.city,
-      state: autoFillData.state,
-      pincode: autoFillData.pincode,
-      // Apply suggestions only if fields are empty
-      contactPersonName:
-        prev.contactPersonName || autoFillData.contactPersonName,
-      email: prev.email || autoFillData.email,
-      accountHolderName:
-        prev.accountHolderName || autoFillData.accountHolderName,
+      // Core GST data
+      gstNumber: autoFillData.gstNumber || prev.gstNumber,
+      businessName: autoFillData.businessName || prev.businessName,
+      
+      // Address data
+      businessAddress: autoFillData.businessAddress || prev.businessAddress,
+      city: autoFillData.city || prev.city,
+      state: autoFillData.state || prev.state,
+      pincode: autoFillData.pincode || prev.pincode,
+      
+      // Optional fields - only fill if empty
+      contactPersonName: prev.contactPersonName || autoFillData.legalName || "",
+      accountHolderName: prev.accountHolderName || autoFillData.legalName || "",
     }));
 
-    // Clear related errors
-    setErrors((prev) => ({
-      ...prev,
-      gstNumber: "",
-      businessName: "",
-      businessAddress: "",
-      city: "",
-      state: "",
-      pincode: "",
-      contactPersonName: "",
-      email: "",
-      accountHolderName: "",
-    }));
+    // Clear related validation errors
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      
+      // Clear errors for fields that were auto-filled
+      if (autoFillData.gstNumber) delete newErrors.gstNumber;
+      if (autoFillData.businessName) delete newErrors.businessName;
+      if (autoFillData.businessAddress) delete newErrors.businessAddress;
+      if (autoFillData.city) delete newErrors.city;
+      if (autoFillData.state) delete newErrors.state;
+      if (autoFillData.pincode) delete newErrors.pincode;
+      
+      return newErrors;
+    });
 
-    toast.success("Business details filled automatically from GST records!");
+    toast.success("✅ Business details filled from verified GST records!");
   };
 
   // Handle form input changes
@@ -170,6 +173,7 @@ const SupplierRegisterPage = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
@@ -198,15 +202,6 @@ const SupplierRegisterPage = () => {
   // Validate form
   const validateForm = () => {
     const newErrors = {};
-
-    // Check for GST validation issues
-    const hasGSTErrors = gstValidationIssues.some(
-      (issue) => issue.type === "error"
-    );
-    if (hasGSTErrors) {
-      newErrors.gstNumber =
-        "Please resolve GST validation errors before submitting";
-    }
 
     // Business Information
     if (!formData.businessName.trim()) {
@@ -274,8 +269,7 @@ const SupplierRegisterPage = () => {
 
     // Product Categories
     if (formData.productCategories.length === 0) {
-      newErrors.productCategories =
-        "Please select at least one product category";
+      newErrors.productCategories = "Please select at least one product category";
     }
 
     // Banking Information
@@ -354,11 +348,13 @@ const SupplierRegisterPage = () => {
         annualTurnover: formData.annualTurnover,
       };
 
+      console.log('📤 Submitting supplier registration:', submissionData);
+
       const response = await supplierAPI.register(submissionData);
 
       if (response.success) {
         toast.success(
-          "Registration successful! Please check your email and phone for verification."
+          "🎉 Registration successful! Please check your email and phone for verification."
         );
         navigate("/auth/verify-phone", {
           state: {
@@ -369,7 +365,7 @@ const SupplierRegisterPage = () => {
         });
       }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("❌ Registration error:", error);
       toast.error(
         error.response?.data?.message ||
           "Registration failed. Please try again."
@@ -386,30 +382,28 @@ const SupplierRegisterPage = () => {
           <div className="col-lg-8">
             <div className="auth-card">
               <div className="auth-header">
-                <h2>Supplier Registration</h2>
+                <h2>🏢 Supplier Registration</h2>
                 <p>
-                  Join Aggrekart as a supplier partner and grow your business
+                  Join Aggrekart as a supplier partner and grow your business with us
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="auth-form">
-                {/* GST Auto-fill Section */}
+                {/* GST Auto-fill Section - FIXED PROPS */}
                 <div className="form-section">
                   <div className="section-header">
                     <h4>
                       <i className="fas fa-file-invoice me-2"></i>
-                      Business Verification
+                      GST Verification & Auto-Fill
                     </h4>
                     <p className="text-muted">
-                      Enter your GST number to auto-fill business details
+                      Enter your GST number to automatically verify and fill business details
                     </p>
                   </div>
 
                   <GSTAutoFill
-                    onDataFilled={handleGSTAutoFill}
-                    initialGST={formData.gstNumber}
+                    onDataFill={handleGSTAutoFill}
                     formData={formData}
-                    onValidationChange={setGstValidationIssues}
                   />
                 </div>
 
@@ -465,7 +459,33 @@ const SupplierRegisterPage = () => {
                     </div>
                   </div>
 
+                  {/* GST Number Display (Read-only if auto-filled) */}
                   <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label className="form-label required">GST Number</label>
+                        <input
+                          type="text"
+                          name="gstNumber"
+                          className={`form-control ${errors.gstNumber ? "is-invalid" : ""}`}
+                          value={formData.gstNumber}
+                          onChange={handleInputChange}
+                          placeholder="GST Number (auto-filled from verification)"
+                          maxLength="15"
+                        />
+                        {errors.gstNumber && (
+                          <div className="invalid-feedback">
+                            {errors.gstNumber}
+                          </div>
+                        )}
+                        {formData.gstNumber && (
+                          <small className="text-muted">
+                            ✅ This GST number was verified and auto-filled
+                          </small>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="col-md-6">
                       <div className="form-group">
                         <label className="form-label">PAN Number</label>
@@ -480,8 +500,10 @@ const SupplierRegisterPage = () => {
                         />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="col-md-6">
+                  <div className="row">
+                    <div className="col-md-12">
                       <div className="form-group">
                         <label className="form-label">
                           Business Registration Number
@@ -492,7 +514,7 @@ const SupplierRegisterPage = () => {
                           className="form-control"
                           value={formData.businessRegistrationNumber}
                           onChange={handleInputChange}
-                          placeholder="Enter registration number"
+                          placeholder="Enter business registration number"
                         />
                       </div>
                     </div>
@@ -615,6 +637,11 @@ const SupplierRegisterPage = () => {
                       <div className="invalid-feedback">
                         {errors.businessAddress}
                       </div>
+                    )}
+                    {formData.businessAddress && formData.gstNumber && (
+                      <small className="text-muted">
+                        ✅ Address auto-filled from GST records
+                      </small>
                     )}
                   </div>
 
@@ -800,16 +827,14 @@ const SupplierRegisterPage = () => {
 
                     <div className="col-md-4">
                       <div className="form-group">
-                        <label className="form-label">
-                          Number of Employees
-                        </label>
+                        <label className="form-label">Number of Employees</label>
                         <select
                           name="numberOfEmployees"
                           className="form-control"
                           value={formData.numberOfEmployees}
                           onChange={handleInputChange}
                         >
-                          <option value="">Select range</option>
+                          <option value="">Select Range</option>
                           {employeeRanges.map((range) => (
                             <option key={range.value} value={range.value}>
                               {range.label}
@@ -828,7 +853,7 @@ const SupplierRegisterPage = () => {
                           value={formData.annualTurnover}
                           onChange={handleInputChange}
                         >
-                          <option value="">Select range</option>
+                          <option value="">Select Range</option>
                           {turnoverRanges.map((range) => (
                             <option key={range.value} value={range.value}>
                               {range.label}
@@ -852,6 +877,27 @@ const SupplierRegisterPage = () => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="form-group">
+                        <label className="form-label required">
+                          Bank Account Number
+                        </label>
+                        <input
+                          type="text"
+                          name="bankAccountNumber"
+                          className={`form-control ${errors.bankAccountNumber ? "is-invalid" : ""}`}
+                          value={formData.bankAccountNumber}
+                          onChange={handleInputChange}
+                          placeholder="Enter bank account number"
+                        />
+                        {errors.bankAccountNumber && (
+                          <div className="invalid-feedback">
+                            {errors.bankAccountNumber}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="form-group">
                         <label className="form-label required">Bank Name</label>
                         <input
                           type="text"
@@ -868,7 +914,9 @@ const SupplierRegisterPage = () => {
                         )}
                       </div>
                     </div>
+                  </div>
 
+                  <div className="row">
                     <div className="col-md-6">
                       <div className="form-group">
                         <label className="form-label required">IFSC Code</label>
@@ -878,35 +926,12 @@ const SupplierRegisterPage = () => {
                           className={`form-control ${errors.ifscCode ? "is-invalid" : ""}`}
                           value={formData.ifscCode}
                           onChange={handleInputChange}
-                          placeholder="e.g., SBIN0001234"
+                          placeholder="ABCD0123456"
                           maxLength="11"
                         />
                         {errors.ifscCode && (
                           <div className="invalid-feedback">
                             {errors.ifscCode}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Account Number
-                        </label>
-                        <input
-                          type="text"
-                          name="bankAccountNumber"
-                          className={`form-control ${errors.bankAccountNumber ? "is-invalid" : ""}`}
-                          value={formData.bankAccountNumber}
-                          onChange={handleInputChange}
-                          placeholder="Enter account number"
-                        />
-                        {errors.bankAccountNumber && (
-                          <div className="invalid-feedback">
-                            {errors.bankAccountNumber}
                           </div>
                         )}
                       </div>
@@ -939,12 +964,12 @@ const SupplierRegisterPage = () => {
                 <div className="form-section">
                   <div className="section-header">
                     <h4>
-                      <i className="fas fa-file-contract me-2"></i>
+                      <i className="fas fa-handshake me-2"></i>
                       Terms and Agreements
                     </h4>
                   </div>
 
-                  <div className="form-check">
+                  <div className="form-check mb-3">
                     <input
                       type="checkbox"
                       className={`form-check-input ${errors.agreeToTerms ? "is-invalid" : ""}`}
@@ -955,8 +980,12 @@ const SupplierRegisterPage = () => {
                     />
                     <label className="form-check-label" htmlFor="agreeToTerms">
                       I agree to the{" "}
-                      <Link to="/terms" target="_blank">
+                      <Link to="/terms" target="_blank" className="text-primary">
                         Terms and Conditions
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy" target="_blank" className="text-primary">
+                        Privacy Policy
                       </Link>
                     </label>
                     {errors.agreeToTerms && (
@@ -966,7 +995,7 @@ const SupplierRegisterPage = () => {
                     )}
                   </div>
 
-                  <div className="form-check">
+                  <div className="form-check mb-3">
                     <input
                       type="checkbox"
                       className={`form-check-input ${errors.agreeToCommission ? "is-invalid" : ""}`}
@@ -975,11 +1004,9 @@ const SupplierRegisterPage = () => {
                       checked={formData.agreeToCommission}
                       onChange={handleInputChange}
                     />
-                    <label
-                      className="form-check-label"
-                      htmlFor="agreeToCommission"
-                    >
-                      I agree to the commission structure and payment terms
+                    <label className="form-check-label" htmlFor="agreeToCommission">
+                      I agree to the commission structure and payment terms as
+                      outlined in the supplier agreement
                     </label>
                     {errors.agreeToCommission && (
                       <div className="invalid-feedback d-block">
@@ -991,30 +1018,29 @@ const SupplierRegisterPage = () => {
 
                 {/* Submit Button */}
                 <div className="form-section">
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-lg w-100"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
-                        Registering...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-user-plus me-2"></i>
-                        Register as Supplier
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                <div className="auth-footer">
-                  <p>
-                    Already have an account?{" "}
-                    <Link to="/auth/login">Login here</Link>
-                  </p>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <Link to="/auth/login" className="text-primary">
+                      Already have an account? Login here
+                    </Link>
+                    
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn btn-primary btn-lg px-5"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Registering...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-user-plus me-2"></i>
+                          Register as Supplier
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>

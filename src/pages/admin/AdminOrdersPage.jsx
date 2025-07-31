@@ -27,14 +27,13 @@ const AdminOrdersPage = () => {
     dateTo: ''
   })
 
-  // Replace the fetchOrders function with this corrected version:
-
+  // Fixed fetchOrders function with better error handling
   const fetchOrders = async (page = 1, newFilters = filters) => {
     try {
       setLoading(true)
       setError(null)
       
-      // Create params object instead of query string
+      // Create params object
       const params = {
         page: page.toString(),
         limit: '10',
@@ -48,14 +47,25 @@ const AdminOrdersPage = () => {
         }
       })
 
+      console.log('Fetching orders with params:', params)
+
       const response = await adminAPI.getAllOrders(params)
       
+      console.log('Orders API response:', response)
+
       if (response.success) {
-        setOrders(response.data.orders)
-        setPagination(response.data.pagination)
-        setSummary(response.data.summary)
+        setOrders(response.data.orders || [])
+        setPagination(response.data.pagination || pagination)
+        
+        // Handle summary with NaN protection
+        const summaryData = response.data.summary || {}
+        setSummary({
+          totalValue: Number(summaryData.totalValue) || 0,
+          totalCommission: Number(summaryData.totalCommission) || 0,
+          averageOrderValue: Number(summaryData.averageOrderValue) || 0
+        })
       } else {
-        setError('Failed to fetch orders')
+        setError(response.message || 'Failed to fetch orders')
       }
     } catch (err) {
       console.error('Error fetching orders:', err)
@@ -64,31 +74,64 @@ const AdminOrdersPage = () => {
       setLoading(false)
     }
   }
+
   useEffect(() => {
     fetchOrders()
   }, [])
 
   const handleFilterChange = (newFilters) => {
+    console.log('Filter change:', newFilters)
     setFilters(newFilters)
     fetchOrders(1, newFilters)
   }
 
   const handlePageChange = (page) => {
+    console.log('Page change:', page)
     fetchOrders(page)
   }
 
   const handleOrderAction = async (action, orderId, data = {}) => {
     try {
-      // Implement order actions if needed
-      // This would depend on what order management actions are available
       console.log(`Order action: ${action} on order ${orderId}`, data)
+      
+      switch (action) {
+        case 'confirm':
+          await adminAPI.updateOrderStatus(orderId, 'confirmed', data.notes || 'Order confirmed by admin')
+          break
+        case 'process':
+          await adminAPI.updateOrderStatus(orderId, 'processing', data.notes || 'Order processing started')
+          break
+        case 'ship':
+          await adminAPI.updateOrderStatus(orderId, 'shipped', data.notes || 'Order shipped')
+          break
+        case 'deliver':
+          await adminAPI.updateOrderStatus(orderId, 'delivered', data.notes || 'Order delivered')
+          break
+        default:
+          console.warn('Unknown order action:', action)
+      }
       
       // Refresh orders after action
       fetchOrders(pagination.currentPage)
     } catch (err) {
       console.error(`Error performing ${action} on order:`, err)
-      setError(err.response?.data?.message || `Failed to ${action} order`)
+      throw new Error(err.response?.data?.message || `Failed to ${action} order`)
     }
+  }
+
+  // Format currency with NaN protection
+  const formatCurrency = (amount) => {
+    const numAmount = Number(amount)
+    if (isNaN(numAmount) || !isFinite(numAmount)) {
+      return '₹0'
+    }
+    
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numAmount)
   }
 
   if (loading) {
@@ -142,15 +185,15 @@ const AdminOrdersPage = () => {
           <div className="order-summary">
             <div className="summary-card">
               <h3>Total Orders Value</h3>
-              <p>₹{summary.totalValue.toLocaleString()}</p>
+              <p>{formatCurrency(summary.totalValue)}</p>
             </div>
             <div className="summary-card">
               <h3>Total Commission</h3>
-              <p>₹{summary.totalCommission.toLocaleString()}</p>
+              <p>{formatCurrency(summary.totalCommission)}</p>
             </div>
             <div className="summary-card">
               <h3>Average Order Value</h3>
-              <p>₹{summary.averageOrderValue.toLocaleString()}</p>
+              <p>{formatCurrency(summary.averageOrderValue)}</p>
             </div>
           </div>
 
@@ -162,6 +205,7 @@ const AdminOrdersPage = () => {
             onPageChange={handlePageChange}
             onOrderAction={handleOrderAction}
             onRefresh={() => fetchOrders(pagination.currentPage)}
+            loading={loading}
           />
         </div>
       </div>

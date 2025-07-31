@@ -971,3 +971,79 @@ select.form-control {
     gap: 1rem;
   }
 }
+/* Add these styles to your existing AuthPages.css file */
+
+/* Auto-fill hint styling */
+.auto-fill-hint {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* Auto-filled field styling */
+.form-control.auto-filled {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Form hint styling */
+.form-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 8px;
+  font-style: italic;
+}
+
+/* Enhanced input icons */
+.input-wrapper .input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Address section enhancements */
+.form-section h3 {
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Success state for auto-filled fields */
+.google-maps-address-input.success .address-input {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Loading state improvements */
+.form-control:disabled {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  cursor: not-allowed;
+}
+
+/* Mobile responsiveness for address fields */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-row .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .auto-fill-hint {
+    display: block;
+    margin-top: 2px;
+    margin-left: 0;
+  }
+}

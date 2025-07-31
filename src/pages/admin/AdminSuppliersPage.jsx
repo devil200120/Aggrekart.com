@@ -69,6 +69,7 @@ const AdminSuppliersPage = () => {
     fetchSuppliers(page)
   }
 
+  // ...existing code...
   const handleSupplierAction = async (action, supplierId, data = {}) => {
     try {
       let response
@@ -80,7 +81,16 @@ const AdminSuppliersPage = () => {
           response = await adminAPI.rejectSupplier(supplierId, data)
           break
         case 'suspend':
-          response = await adminAPI.suspendSupplier(supplierId, data)
+          response = await adminAPI.suspendSupplier(supplierId, { 
+            action: 'suspend', 
+            reason: data.reason 
+          })
+          break
+        case 'unsuspend':
+          response = await adminAPI.suspendSupplier(supplierId, { 
+            action: 'unsuspend', 
+            reason: data.reason || 'Supplier reactivated by admin' 
+          })
           break
         default:
           return
@@ -95,6 +105,7 @@ const AdminSuppliersPage = () => {
       setError(err.response?.data?.message || `Failed to ${action} supplier`)
     }
   }
+// ...existing code...
 
   if (loading) {
     return (
