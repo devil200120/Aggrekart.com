@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 
 // Create axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Proxy configured in vite.config.js
+  baseURL: 'https://aggrekart-com-backend.onrender.com/api', // Proxy configured in vite.config.js
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
