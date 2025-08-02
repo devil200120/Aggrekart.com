@@ -1,0 +1,568 @@
+/* ===============================================
+   PHONE VERIFICATION - CLEAN MINIMAL STYLE
+   Swiggy/Amazon inspired - No excessive shadows
+   =============================================== */
+
+/* Reset and Base */
+* {
+  box-sizing: border-box;
+}
+
+/* Main Page Container */
+.verify-phone-page {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+/* Main Container Card */
+.verify-phone-container {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Section */
+.verify-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Brand Section */
+.brand-section {
+  margin-bottom: 1.5rem;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+  color: #fc8019;
+}
+
+.brand-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fc8019;
+  margin: 0;
+}
+
+.brand-tagline {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Verification Hero Section */
+.verification-hero {
+  margin-bottom: 1.5rem;
+}
+
+.hero-icon {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.phone-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: #fc8019;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.verification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 1rem;
+  height: 1rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+.hero-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.hero-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.phone-display {
+  display: inline-block;
+  font-size: 0.875rem;
+  color: #111827;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.country-code {
+  color: #fc8019;
+}
+
+.phone-number {
+  margin-left: 0.25rem;
+}
+
+.edit-phone-btn {
+  background: none;
+  border: none;
+  color: #fc8019;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.edit-phone-btn:hover {
+  color: #e67317;
+}
+
+/* OTP Input Section */
+.otp-section {
+  margin-bottom: 2rem;
+}
+
+.otp-input-container {
+  margin-bottom: 1.5rem;
+}
+
+.otp-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.otp-input-wrapper {
+  position: relative;
+}
+
+.otp-input {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: #fc8019;
+  box-shadow: 0 0 0 1px #fc8019;
+}
+
+.otp-input.filled {
+  border-color: #10b981;
+  background: #f0fdf4;
+  color: #065f46;
+}
+
+.otp-input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Timer Section */
+.timer-section {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.timer-active {
+  background: #fef3e2;
+  border: 1px solid #fed7aa;
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.timer-icon {
+  font-size: 0.875rem;
+  color: #f59e0b;
+}
+
+.timer-text {
+  font-size: 0.75rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.timer-countdown {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #92400e;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.timer-progress {
+  display: none; /* Hide for cleaner look */
+}
+
+.resend-section {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.resend-info {
+  font-size: 0.75rem;
+  color: #065f46;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.resend-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.resend-btn:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.resend-icon {
+  font-size: 0.75rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.verify-btn {
+  background: #fc8019;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #e67317;
+}
+
+.verify-btn:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.back-btn {
+  background: white;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.btn-arrow {
+  font-size: 0.875rem;
+}
+
+/* Loading States */
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Help Section */
+.help-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.help-icon {
+  font-size: 0.875rem;
+  color: #fc8019;
+}
+
+.help-header h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.help-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.help-list li:last-child {
+  border-bottom: none;
+}
+
+.help-item-icon {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+/* Development Info */
+.dev-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #1e40af;
+}
+
+.dev-badge {
+  background: #3b82f6;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .verify-phone-page {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  .verify-phone-container {
+    padding: 1.5rem 1rem;
+    margin-top: 2rem;
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .otp-inputs {
+    gap: 0.375rem;
+  }
+
+  .otp-input {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.875rem;
+  }
+
+  .verify-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-phone-container {
+    padding: 1rem 0.75rem;
+    margin: 0.5rem;
+  }
+
+  .brand-name {
+    font-size: 1.25rem;
+  }
+
+  .hero-title {
+    font-size: 1.125rem;
+  }
+
+  .otp-inputs {
+    gap: 0.25rem;
+  }
+
+  .otp-input {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.8125rem;
+  }
+
+  .phone-display {
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .action-buttons {
+    gap: 0.5rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.otp-input:focus,
+.verify-btn:focus,
+.back-btn:focus,
+.resend-btn:focus,
+.edit-phone-btn:focus {
+  outline: 2px solid #fc8019;
+  outline-offset: 1px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .verify-phone-container {
+    border: 2px solid #000;
+  }
+  
+  .otp-input {
+    border: 2px solid #000;
+  }
+  
+  .verify-btn {
+    border: 2px solid #000;
+  }
+}

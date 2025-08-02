@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { Link } from 'react-router-dom'
 import { supplierAPI } from '../../services/api'
@@ -29,15 +29,14 @@ const SupplierProductsPage = () => {
     () => supplierAPI.getBaseProducts(),
     {
       enabled: !!user && user.role === 'supplier',
-      staleTime: 5 * 60 * 1000 // 5 minutes
+      staleTime: 5 * 60 * 1000
     }
   )
 
-  // Fetch supplier products (existing logic)
+  // Fetch supplier products
   const { data: productsData, isLoading, error } = useQuery(
     ['supplier-products', user?.id, filters, currentPage],
     () => {
-      // Clean parameters - remove empty strings
       const cleanParams = {}
       
       if (filters.search && filters.search.trim() !== '') {
@@ -51,7 +50,7 @@ const SupplierProductsPage = () => {
       if (filters.status && filters.status !== '') {
         cleanParams.status = filters.status
       } else {
-        cleanParams.status = 'all' // Default to 'all' if empty
+        cleanParams.status = 'all'
       }
       
       if (filters.sortBy && filters.sortBy.trim() !== '') {
@@ -60,31 +59,22 @@ const SupplierProductsPage = () => {
       
       cleanParams.page = currentPage
       cleanParams.limit = 12
-
-      console.log('Sending clean params:', cleanParams) // Debug log
       
       return supplierAPI.getProducts(cleanParams)
     },
     {
       enabled: !!user && user.role === 'supplier' && activeTab === 'my-products',
       keepPreviousData: true,
-      staleTime: 5 * 60 * 1000,
-      onSuccess: (data) => {
-        console.log('Frontend: API Response received:', data)
-        console.log('Frontend: Products data:', data?.data?.products)
-      },
-      onError: (error) => {
-        console.error('Frontend: Query error:', error.response?.data || error.message)
-      }
+      staleTime: 5 * 60 * 1000
     }
   )
 
-  // Set pricing for base product mutation
+  // Mutations (keeping existing logic)
   const setPricingMutation = useMutation(
     ({ productId, pricingData }) => supplierAPI.setProductPricing(productId, pricingData),
     {
       onSuccess: () => {
-        toast.success('Pricing set successfully! Product is now pending approval.')
+        toast.success('🎉 Pricing set successfully! Product pending approval.')
         setShowPricingModal(false)
         setSelectedBaseProduct(null)
         queryClient.invalidateQueries('supplier-base-products')
@@ -96,12 +86,11 @@ const SupplierProductsPage = () => {
     }
   )
 
-  // Update product pricing mutation
   const updatePricingMutation = useMutation(
     ({ productId, pricingData }) => supplierAPI.updateProductPricing(productId, pricingData),
     {
       onSuccess: () => {
-        toast.success('Product pricing updated successfully!')
+        toast.success('✅ Product pricing updated successfully!')
         queryClient.invalidateQueries(['supplier-products'])
         setShowEditModal(false)
         setSelectedProduct(null)
@@ -112,89 +101,20 @@ const SupplierProductsPage = () => {
     }
   )
 
-  // Delete product mutation
-  const deleteProductMutation = useMutation(
-    (productId) => supplierAPI.deleteProduct(productId),
-    {
-      onSuccess: () => {
-        toast.success('Product deleted successfully')
-        // Clear all supplier product queries and force refresh
-        queryClient.removeQueries('supplier-products')
-        queryClient.removeQueries(['supplier-products'])
-        // Force immediate refetch
-        queryClient.refetchQueries(['supplier-products', user?.id, filters, currentPage])
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to delete product')
-      }
-    }
-  )
-
-  // Toggle product status mutation
-  const toggleStatusMutation = useMutation(
-    ({ productId, currentStatus }) => {
-      console.log('🔄 Toggle Status Input:', { productId, currentStatus });
-      
-      // CORRECT LOGIC: 
-      // If current status is 'inactive', we want to ACTIVATE (set isActive = true)
-      // If current status is 'active', we want to DEACTIVATE (set isActive = false)
-      const isActive = currentStatus !== 'active';
-      
-      console.log('🔄 Setting isActive to:', isActive);
-      console.log(`🔄 Action: ${currentStatus === 'active' ? 'DEACTIVATING' : 'ACTIVATING'} product`);
-      
-      return supplierAPI.updateProduct(productId, { isActive });
-    },
-    {
-      onSuccess: (data) => {
-        console.log('✅ Status update successful:', data);
-        toast.success('Product status updated successfully');
-        // Clear cache and refetch
-        queryClient.removeQueries('supplier-products');
-        queryClient.refetchQueries(['supplier-products', user?.id, filters, currentPage]);
-      },
-      onError: (error) => {
-        console.error('❌ Status toggle error:', error.response?.data);
-        toast.error(error.response?.data?.message || 'Failed to update product status');
-      }
-    }
-  );
-
+  // Event handlers
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }))
     setCurrentPage(1)
   }
 
-  const handleDeleteProduct = (productId, productName) => {
-    if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
-      deleteProductMutation.mutate(productId)
-    }
-  }
-
-  const handleToggleStatus = (productId, currentStatus) => {
-    console.log('Toggling status for product:', productId, 'current status:', currentStatus)
-    toggleStatusMutation.mutate({ productId, currentStatus })
-  }
-
-  // New handlers for base products
   const handleSetPricing = (baseProduct) => {
     setSelectedBaseProduct(baseProduct)
     setShowPricingModal(true)
   }
 
-  // Handler for editing existing product pricing
   const handleEditPricing = (product) => {
     setSelectedProduct(product)
     setShowEditModal(true)
-  }
-
-  const handleEditPricingSubmit = (pricingData) => {
-    if (!selectedProduct) return
-    
-    updatePricingMutation.mutate({
-      productId: selectedProduct._id,
-      pricingData
-    })
   }
 
   const handlePricingSubmit = (pricingData) => {
@@ -206,6 +126,16 @@ const SupplierProductsPage = () => {
     })
   }
 
+  const handleEditPricingSubmit = (pricingData) => {
+    if (!selectedProduct) return
+    
+    updatePricingMutation.mutate({
+      productId: selectedProduct._id,
+      pricingData
+    })
+  }
+
+  // Utility functions
   const formatCurrency = (price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -229,11 +159,15 @@ const SupplierProductsPage = () => {
 
   if (!user || user.role !== 'supplier') {
     return (
-      <div className="supplier-products-page">
-        <div className="container">
-          <div className="access-denied">
+      <div className="swiggy-products-page">
+        <div className="swiggy-container">
+          <div className="swiggy-access-denied">
+            <div className="access-icon">🚫</div>
             <h2>Access Denied</h2>
             <p>Only suppliers can access this page</p>
+            <Link to="/auth/login" className="swiggy-btn swiggy-btn-primary">
+              Login as Supplier
+            </Link>
           </div>
         </div>
       </div>
@@ -241,78 +175,155 @@ const SupplierProductsPage = () => {
   }
 
   return (
-    <div className="supplier-products-page">
-      <div className="container">
-        {/* Page Header */}
-        <div className="products-header">
-          <div className="header-content">
-            <h1>📦 Product Management</h1>
-            <p>Add pricing to base products created by admin</p>
+    <div className="swiggy-products-page">
+      <div className="swiggy-container">
+        {/* Swiggy-style Header */}
+        <div className="swiggy-page-header">
+          <div className="header-main">
+            <div className="header-icon">📦</div>
+            <div className="header-content">
+              <h1>Product Management</h1>
+              <p>Manage your product catalog and pricing</p>
+            </div>
           </div>
           
-          {/* Tab Navigation */}
-          <div className="products-tabs">
+          {/* Stats Overview */}
+          <div className="header-stats">
+            <div className="stat-item">
+              <div className="stat-number">{baseProducts.length}</div>
+              <div className="stat-label">Available</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">{products.length}</div>
+              <div className="stat-label">My Products</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">{stats.active || 0}</div>
+              <div className="stat-label">Active</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Swiggy-style Tab Navigation */}
+        <div className="swiggy-tabs-container">
+          <div className="swiggy-tabs">
             <button 
-              className={`tab-btn ${activeTab === 'available' ? 'active' : ''}`}
+              className={`swiggy-tab ${activeTab === 'available' ? 'active' : ''}`}
               onClick={() => setActiveTab('available')}
             >
-              🛍️ Available Base Products ({baseProducts.length})
+              <span className="tab-icon">🛍️</span>
+              <span className="tab-content">
+                <span className="tab-title">Available Products</span>
+                <span className="tab-count">{baseProducts.length} products</span>
+              </span>
             </button>
+            
             <button 
-              className={`tab-btn ${activeTab === 'my-products' ? 'active' : ''}`}
+              className={`swiggy-tab ${activeTab === 'my-products' ? 'active' : ''}`}
               onClick={() => setActiveTab('my-products')}
             >
-              📋 My Products ({products.length})
+              <span className="tab-icon">💰</span>
+              <span className="tab-content">
+                <span className="tab-title">My Products</span>
+                <span className="tab-count">{products.length} products</span>
+              </span>
             </button>
           </div>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'available' && (
-          <div className="available-products">
-            <div className="section-header">
-              <h2>Available Base Products</h2>
-              <p>⚠️ Admin creates products with images. You can only set pricing and delivery time.</p>
+          <div className="swiggy-tab-content">
+            {/* Info Banner */}
+            <div className="swiggy-info-banner">
+              <div className="banner-icon">💡</div>
+              <div className="banner-content">
+                <strong>How it works:</strong>
+                <p>Admin creates products with images. You can set pricing, delivery time, and stock levels to start selling.</p>
+              </div>
             </div>
 
+            {/* Available Products Section */}
             {loadingBase ? (
-              <LoadingSpinner text="Loading available products..." />
+              <div className="swiggy-loading-section">
+                <div className="swiggy-spinner"></div>
+                <h3>Loading available products...</h3>
+                <p>Please wait while we fetch the latest products</p>
+              </div>
             ) : baseProducts.length === 0 ? (
-              <div className="no-products">
-                <div className="no-products-icon">🏪</div>
-                <h3>No Products Available</h3>
-                <p>No base products are currently available for pricing. Check back later!</p>
+              <div className="swiggy-empty-state">
+                <div className="empty-illustration">
+                  <div className="empty-icon">🏪</div>
+                  <div className="empty-waves">
+                    <div className="wave"></div>
+                    <div className="wave"></div>
+                    <div className="wave"></div>
+                  </div>
+                </div>
+                <div className="empty-content">
+                  <h3>No Products Available</h3>
+                  <p>No base products are currently available for pricing. Check back later or contact admin.</p>
+                  <div className="empty-actions">
+                    <button 
+                      onClick={() => queryClient.invalidateQueries('supplier-base-products')}
+                      className="swiggy-btn swiggy-btn-outline"
+                    >
+                      <span className="btn-icon">🔄</span>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="base-products-grid">
+              <div className="swiggy-products-grid">
                 {baseProducts.map(product => (
-                  <div key={product._id} className="base-product-card">
-                    <div className="product-image">
+                  <div key={product._id} className="swiggy-product-card available-product">
+                    <div className="product-image-container">
                       <img 
                         src={product.images?.[0]?.url || '/placeholder-product.jpg'} 
                         alt={product.name}
+                        className="product-image"
                         onError={(e) => { e.target.src = '/placeholder-product.jpg'; }}
                       />
-                      <div className="admin-badge">👑 Admin Created</div>
-                    </div>
-                    
-                    <div className="product-content">
-                      <h3>{product.name}</h3>
-                      <p className="product-description">{product.description}</p>
-                      <div className="product-meta">
-                        <span className="category">{product.category}</span>
-                        {product.subcategory && <span className="subcategory">{product.subcategory}</span>}
-                        <span className="hsn">HSN: {product.hsnCode}</span>
+                      <div className="admin-badge">
+                        <span className="badge-icon">👑</span>
+                        Admin Created
                       </div>
-                      
-                      <div className="product-actions">
+                      <div className="product-overlay">
                         <button 
-                          className="btn btn-primary"
+                          className="swiggy-btn swiggy-btn-primary"
                           onClick={() => handleSetPricing(product)}
                           disabled={setPricingMutation.isLoading}
                         >
-                          💰 Set My Pricing
+                          <span className="btn-icon">💰</span>
+                          Set Pricing
                         </button>
+                      </div>
+                    </div>
+                    
+                    <div className="product-content">
+                      <div className="product-header">
+                        <h3 className="product-name">{product.name}</h3>
+                        <div className="product-category">{product.category}</div>
+                      </div>
+                      
+                      <p className="product-description">{product.description}</p>
+                      
+                      <div className="product-meta">
+                        <div className="meta-item">
+                          <span className="meta-icon">🏷️</span>
+                          <span>{product.subcategory}</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className="meta-icon">📋</span>
+                          <span>HSN: {product.hsnCode}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="product-footer">
+                        <div className="footer-text">
+                          Ready to add your pricing and start selling?
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -323,166 +334,198 @@ const SupplierProductsPage = () => {
         )}
 
         {activeTab === 'my-products' && (
-          <div className="my-products">
-            <div className="section-header">
-              <h2>My Products</h2>
-              <p>Manage pricing and stock for your products (images controlled by admin)</p>
+          <div className="swiggy-tab-content">
+            {/* Filters Section */}
+            <div className="swiggy-filters-section">
+              <div className="filters-header">
+                <h3>Filter & Search</h3>
+                <p>Find and manage your products</p>
+              </div>
               
-              {/* Filters */}
-              <div className="products-filters">
-                <div className="filters-row">
-                  <div className="search-box">
+              <div className="filters-grid">
+                <div className="filter-group">
+                  <label>Search Products</label>
+                  <div className="search-input-container">
+                    <span className="search-icon">🔍</span>
                     <input
                       type="text"
-                      placeholder="Search my products..."
+                      placeholder="Search by product name..."
                       value={filters.search}
                       onChange={(e) => handleFilterChange('search', e.target.value)}
-                      className="search-input"
+                      className="swiggy-input"
                     />
-                  </div>
-
-                  <div className="filter-selects">
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="filter-select"
-                    >
-                      <option value="">All Categories</option>
-                      <option value="aggregate">Aggregate</option>
-                      <option value="sand">Sand</option>
-                      <option value="tmt_steel">TMT Steel</option>
-                      <option value="bricks_blocks">Bricks & Blocks</option>
-                      <option value="cement">Cement</option>
-                    </select>
-
-                    <select
-                      value={filters.status}
-                      onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className="filter-select"
-                    >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="pending">Pending Approval</option>
-                      <option value="approved">Approved</option>
-                    </select>
-
-                    <select
-                      value={filters.sortBy}
-                      onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                      className="filter-select"
-                    >
-                      <option value="newest">Newest First</option>
-                      <option value="oldest">Oldest First</option>
-                      <option value="name">Name A-Z</option>
-                      <option value="price-low">Price: Low to High</option>
-                      <option value="price-high">Price: High to Low</option>
-                    </select>
                   </div>
                 </div>
 
-                <div className="results-info">
-                  <span className="results-count">
-                    {pagination?.totalItems || 0} products found
-                  </span>
+                <div className="filter-group">
+                  <label>Category</label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    className="swiggy-select"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="aggregate">Aggregate</option>
+                    <option value="sand">Sand</option>
+                    <option value="tmt_steel">TMT Steel</option>
+                    <option value="bricks_blocks">Bricks & Blocks</option>
+                    <option value="cement">Cement</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Status</label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    className="swiggy-select"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Sort By</label>
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    className="swiggy-select"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name">Name A-Z</option>
+                    <option value="price">Price Low-High</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* Products Grid */}
+            {/* My Products Section */}
             {isLoading ? (
-              <LoadingSpinner text="Loading your products..." />
+              <div className="swiggy-loading-section">
+                <div className="swiggy-spinner"></div>
+                <h3>Loading your products...</h3>
+                <p>Fetching your product catalog</p>
+              </div>
             ) : error ? (
-              <div className="products-error">
-                <h3>Error Loading Products</h3>
-                <p>Unable to load your products. Please try again.</p>
+              <div className="swiggy-error-state">
+                <div className="error-icon">⚠️</div>
+                <h3>Unable to Load Products</h3>
+                <p>There was an error loading your products. Please try again.</p>
+                <button 
+                  onClick={() => queryClient.invalidateQueries(['supplier-products'])}
+                  className="swiggy-btn swiggy-btn-primary"
+                >
+                  <span className="btn-icon">🔄</span>
+                  Retry
+                </button>
               </div>
             ) : products.length === 0 ? (
-              <div className="no-products">
-                <div className="no-products-icon">📦</div>
-                <h3>No Products Yet</h3>
-                <p>You haven't added pricing to any base products yet. Check the "Available Products" tab to get started!</p>
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => setActiveTab('available')}
-                >
-                  Browse Available Products
-                </button>
+              <div className="swiggy-empty-state">
+                <div className="empty-illustration">
+                  <div className="empty-icon">📦</div>
+                  <div className="empty-waves">
+                    <div className="wave"></div>
+                    <div className="wave"></div>
+                    <div className="wave"></div>
+                  </div>
+                </div>
+                <div className="empty-content">
+                  <h3>No Products Found</h3>
+                  <p>You haven't added any products yet. Set pricing on available base products to start selling.</p>
+                  <div className="empty-actions">
+                    <button 
+                      onClick={() => setActiveTab('available')}
+                      className="swiggy-btn swiggy-btn-primary"
+                    >
+                      <span className="btn-icon">🛍️</span>
+                      Browse Available Products
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <>
-                <div className="products-grid">
-                  {products.map((product) => (
-                    <div key={product._id} className="product-card">
-                      <div className="product-image">
+                <div className="swiggy-products-grid">
+                  {products.map(product => (
+                    <div key={product._id} className="swiggy-product-card my-product">
+                      <div className="product-image-container">
                         <img 
                           src={product.primaryImage || product.images?.[0]?.url || '/placeholder-product.jpg'} 
                           alt={product.name}
+                          className="product-image"
                           onError={(e) => { e.target.src = '/placeholder-product.jpg'; }}
                         />
-                        <div className="product-status-overlay">
-                          <span className={`status-badge ${product.status}`}>
-                            {product.status === 'active' ? 'Active' :
-                             product.status === 'inactive' ? 'Inactive' :
-                             product.status === 'pending' ? 'Pending Approval' : 
-                             product.status}
+                        <div className={`status-badge ${product.status}`}>
+                          <span className="status-icon">
+                            {product.status === 'active' ? '✅' :
+                             product.status === 'pending' ? '⏳' : '❌'}
                           </span>
+                          {product.status === 'active' ? 'Active' :
+                           product.status === 'pending' ? 'Pending' : 'Inactive'}
                         </div>
-                        <div className="pricing-only-badge">💰 Pricing Only</div>
+                        <div className="pricing-badge">
+                          <span className="badge-icon">💰</span>
+                          Pricing Set
+                        </div>
                       </div>
 
                       <div className="product-content">
-                        <h3 className="product-name">{product.name}</h3>
-                        <div className="product-category">{product.category}</div>
-                        
-                        <div className="product-details">
-                          <div className="product-price">
-                            {formatCurrency(product.price || product.pricing?.basePrice || 0)}/{product.unit || product.pricing?.unit || 'unit'}
+                        <div className="product-header">
+                          <h3 className="product-name">{product.name}</h3>
+                          <div className="product-category">{product.category}</div>
+                        </div>
+
+                        <div className="product-pricing">
+                          <div className="price-main">
+                            {formatCurrency(product.price || product.pricing?.basePrice || 0)}
+                            <span className="price-unit">/{product.unit || product.pricing?.unit || 'unit'}</span>
                           </div>
-                          <div className="product-stock">
-                            Stock: {product.stockQuantity || product.stock?.available || 0} {product.unit || product.pricing?.unit || 'units'}
-                          </div>
-                          <div className="delivery-time">
-                            🚚 {product.deliveryTime || 'Not set'}
+                          <div className="price-details">
+                            <span>Min: {product.pricing?.minimumQuantity || 1} {product.unit || 'units'}</span>
                           </div>
                         </div>
 
-                        <div className="product-meta">
-                          <div className="meta-item">
-                            <span>Added: {formatDate(product.createdAt)}</span>
+                        <div className="product-stats">
+                          <div className="stat">
+                            <span className="stat-icon">📦</span>
+                            <span>Stock: {product.stockQuantity || product.stock?.available || 0}</span>
                           </div>
-                          <div className="meta-item">
-                            <span>Views: {product.viewCount || 0}</span>
+                          <div className="stat">
+                            <span className="stat-icon">🚚</span>
+                            <span>{product.deliveryTime || 'Not set'}</span>
+                          </div>
+                          <div className="stat">
+                            <span className="stat-icon">👀</span>
+                            <span>{product.viewCount || 0} views</span>
                           </div>
                         </div>
 
                         <div className="product-actions">
                           <button
                             onClick={() => handleEditPricing(product)}
-                            className="btn btn-outline btn-sm"
+                            className="swiggy-btn swiggy-btn-outline"
+                            disabled={updatePricingMutation.isLoading}
                           >
-                            💰 Edit Pricing
+                            <span className="btn-icon">✏️</span>
+                            Edit Pricing
                           </button>
                           
                           <button
-                            onClick={() => handleToggleStatus(product._id, product.status)}
-                            disabled={toggleStatusMutation.isLoading}
-                            className={`btn btn-sm ${product.status === 'active' ? 'btn-warning' : 'btn-success'}`}
+                            className="swiggy-btn swiggy-btn-secondary"
                           >
-                            {product.status === 'active' ? 'Deactivate' : 'Activate'}
-                          </button>
-                          
-                          <button
-                            onClick={() => handleDeleteProduct(product._id, product.name)}
-                            disabled={deleteProductMutation.isLoading}
-                            className="btn btn-danger btn-sm"
-                          >
-                            Delete
+                            <span className="btn-icon">📊</span>
+                            View Details
                           </button>
                         </div>
-                        
-                        <div className="admin-note">
-                          ⚠️ Images managed by admin. You can only update pricing, stock & delivery time.
+
+                        <div className="product-footer">
+                          <div className="footer-date">
+                            Added: {formatDate(product.createdAt)}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -491,7 +534,7 @@ const SupplierProductsPage = () => {
 
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (
-                  <div className="pagination">
+                  <div className="swiggy-pagination">
                     <button 
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
@@ -500,7 +543,7 @@ const SupplierProductsPage = () => {
                       ← Previous
                     </button>
                     
-                    <div className="pagination-pages">
+                    <div className="pagination-numbers">
                       {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
                         .filter(page => 
                           page === 1 || 
@@ -536,41 +579,23 @@ const SupplierProductsPage = () => {
           </div>
         )}
 
-        {/* Edit Pricing Modal */}
-        {showEditModal && selectedProduct && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h3>Edit Pricing for {selectedProduct.name}</h3>
-                <button 
-                  onClick={() => setShowEditModal(false)}
-                  className="modal-close"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <EditPricingForm 
-                product={selectedProduct}
-                onSubmit={handleEditPricingSubmit}
-                onCancel={() => setShowEditModal(false)}
-                isLoading={updatePricingMutation.isLoading}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Pricing Modal */}
+        {/* Pricing Modal - keeping existing modals but with Swiggy styling */}
         {showPricingModal && selectedBaseProduct && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h3>Set Pricing for {selectedBaseProduct.name}</h3>
+          <div className="swiggy-modal-overlay">
+            <div className="swiggy-modal">
+              <div className="swiggy-modal-header">
+                <div className="modal-title">
+                  <span className="modal-icon">💰</span>
+                  <div>
+                    <h3>Set Pricing for {selectedBaseProduct.name}</h3>
+                    <p>Configure your pricing and delivery options</p>
+                  </div>
+                </div>
                 <button 
                   onClick={() => setShowPricingModal(false)}
                   className="modal-close"
                 >
-                  ×
+                  ✕
                 </button>
               </div>
               
@@ -583,12 +608,42 @@ const SupplierProductsPage = () => {
             </div>
           </div>
         )}
+
+        {/* Edit Modal */}
+        {showEditModal && selectedProduct && (
+          <div className="swiggy-modal-overlay">
+            <div className="swiggy-modal">
+              <div className="swiggy-modal-header">
+                <div className="modal-title">
+                  <span className="modal-icon">✏️</span>
+                  <div>
+                    <h3>Edit Pricing for {selectedProduct.name}</h3>
+                    <p>Update your pricing and delivery options</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowEditModal(false)}
+                  className="modal-close"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <EditPricingForm 
+                product={selectedProduct}
+                onSubmit={handleEditPricingSubmit}
+                onCancel={() => setShowEditModal(false)}
+                isLoading={updatePricingMutation.isLoading}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-// Enhanced Pricing Form Component with category-specific fields
+// Enhanced Pricing Form Component
 const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
     pricing: {
@@ -606,18 +661,13 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
       available: '',
       lowStockThreshold: 10
     },
-    // Add category-specific fields
     brand: '',
     specifications: {
-      // TMT Steel fields
       grade: '',
       diameter: '',
-      // Cement fields
       cementGrade: '',
       cementType: '',
-      // Bricks & Blocks fields
       size: '',
-      // General fields
       weight: '',
       dimensions: {
         length: '',
@@ -629,248 +679,92 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    
+    const category = baseProduct.category
+    const submissionData = {
+      pricing: {
+        basePrice: parseFloat(formData.pricing.basePrice),
+        unit: formData.pricing.unit,
+        minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
+        includesGST: formData.pricing.includesGST,
+        gstRate: formData.pricing.gstRate || 18,
+        transportCost: formData.pricing.transportCost
+      },
+      stock: {
+        available: parseInt(formData.stock.available),
+        lowStockThreshold: formData.stock.lowStockThreshold || 10
+      },
+      deliveryTime: formData.deliveryTime,
+      specifications: {}
+    }
+    
+    // Add category-specific required fields
+    switch (category) {
+      case 'tmt_steel':
+        submissionData.specifications.grade = formData.specifications.grade
+        submissionData.specifications.diameter = formData.specifications.diameter
+        submissionData.brand = formData.brand
+        break
+      case 'cement':
+        submissionData.specifications.cementGrade = formData.specifications.cementGrade
+        submissionData.specifications.cementType = formData.specifications.cementType
+        submissionData.brand = formData.brand
+        break
+      case 'bricks_blocks':
+        submissionData.specifications.size = formData.specifications.size
+        submissionData.brand = formData.brand
+        break
+    }
+    
+    onSubmit(submissionData)
   }
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (path, value) => {
+    const keys = path.split('.')
     setFormData(prev => {
-      const keys = field.split('.')
       const newData = { ...prev }
       let current = newData
-      
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] }
         current = current[keys[i]]
       }
-      
       current[keys[keys.length - 1]] = value
       return newData
     })
   }
 
-  // Helper function to check if field is required for current category
-  const isFieldRequired = (fieldName) => {
-    const category = baseProduct.category
-    switch (fieldName) {
-      case 'brand':
-        return ['tmt_steel', 'bricks_blocks', 'cement'].includes(category)
-      case 'grade':
-      case 'diameter':
-        return category === 'tmt_steel'
-      case 'cementGrade':
-      case 'cementType':
-        return category === 'cement'
-      case 'size':
-        return category === 'bricks_blocks'
-      default:
-        return false
-    }
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="pricing-form">
+    <form onSubmit={handleSubmit} className="swiggy-form">
       <div className="form-section">
-        <h4>Product Information</h4>
-        <div className="product-info">
-          <img 
-            src={baseProduct.images?.[0]?.url || '/placeholder-product.jpg'} 
-            alt={baseProduct.name}
-            className="product-thumbnail"
-          />
-          <div>
-            <h5>{baseProduct.name}</h5>
-            <p>{baseProduct.description}</p>
-            <p><strong>Category:</strong> {baseProduct.category}</p>
-            <p><strong>HSN:</strong> {baseProduct.hsnCode}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Brand field for applicable categories */}
-      {isFieldRequired('brand') && (
-        <div className="form-section">
-          <h4>Brand Information</h4>
-          <div className="form-group">
-            <label>Brand Name *</label>
-            <input
-              type="text"
-              value={formData.brand}
-              onChange={(e) => handleInputChange('brand', e.target.value)}
-              placeholder="Enter brand name"
-              required={isFieldRequired('brand')}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* TMT Steel specific fields */}
-      {baseProduct.category === 'tmt_steel' && (
-        <div className="form-section">
-          <h4>TMT Steel Specifications</h4>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Grade *</label>
-              <select
-                value={formData.specifications.grade}
-                onChange={(e) => handleInputChange('specifications.grade', e.target.value)}
-                required={isFieldRequired('grade')}
-              >
-                <option value="">Select Grade</option>
-                <option value="FE-415">FE-415</option>
-                <option value="FE-500">FE-500</option>
-                <option value="FE-550">FE-550</option>
-                <option value="FE-600">FE-600</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Diameter *</label>
-              <select
-                value={formData.specifications.diameter}
-                onChange={(e) => handleInputChange('specifications.diameter', e.target.value)}
-                required={isFieldRequired('diameter')}
-              >
-                <option value="">Select Diameter</option>
-                <option value="6mm">6mm</option>
-                <option value="8mm">8mm</option>
-                <option value="10mm">10mm</option>
-                <option value="12mm">12mm</option>
-                <option value="16mm">16mm</option>
-                <option value="20mm">20mm</option>
-                <option value="25mm">25mm</option>
-                <option value="32mm">32mm</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cement specific fields */}
-      {baseProduct.category === 'cement' && (
-        <div className="form-section">
-          <h4>Cement Specifications</h4>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Cement Grade *</label>
-              <select
-                value={formData.specifications.cementGrade}
-                onChange={(e) => handleInputChange('specifications.cementGrade', e.target.value)}
-                required={isFieldRequired('cementGrade')}
-              >
-                <option value="">Select Grade</option>
-                <option value="33_grade">33 Grade</option>
-                <option value="43_grade">43 Grade</option>
-                <option value="53_grade">53 Grade</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Cement Type *</label>
-              <select
-                value={formData.specifications.cementType}
-                onChange={(e) => handleInputChange('specifications.cementType', e.target.value)}
-                required={isFieldRequired('cementType')}
-              >
-                <option value="">Select Type</option>
-                <option value="OPC">OPC (Ordinary Portland Cement)</option>
-                <option value="PPC">PPC (Portland Pozzolana Cement)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bricks & Blocks specific fields */}
-      {baseProduct.category === 'bricks_blocks' && (
-        <div className="form-section">
-          <h4>Bricks & Blocks Specifications</h4>
-          <div className="form-group">
-            <label>Size *</label>
-            <input
-              type="text"
-              value={formData.specifications.size}
-              onChange={(e) => handleInputChange('specifications.size', e.target.value)}
-              placeholder="e.g., 230x110x70mm"
-              required={isFieldRequired('size')}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* General specifications for all categories */}
-      <div className="form-section">
-        <h4>General Specifications (Optional)</h4>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Weight (kg)</label>
-            <input
-              type="number"
-              value={formData.specifications.weight}
-              onChange={(e) => handleInputChange('specifications.weight', e.target.value)}
-              placeholder="Weight in kg"
-              step="0.01"
-            />
-          </div>
+        <div className="section-header">
+          <h4>💰 Pricing Information</h4>
+          <p>Set your competitive pricing</p>
         </div>
         
-        <div className="form-row">
+        <div className="form-grid">
           <div className="form-group">
-            <label>Length (mm)</label>
-            <input
-              type="number"
-              value={formData.specifications.dimensions.length}
-              onChange={(e) => handleInputChange('specifications.dimensions.length', e.target.value)}
-              placeholder="Length"
-            />
-          </div>
-          <div className="form-group">
-            <label>Width (mm)</label>
-            <input
-              type="number"
-              value={formData.specifications.dimensions.width}
-              onChange={(e) => handleInputChange('specifications.dimensions.width', e.target.value)}
-              placeholder="Width"
-            />
-          </div>
-          <div className="form-group">
-            <label>Height (mm)</label>
-            <input
-              type="number"
-              value={formData.specifications.dimensions.height}
-              onChange={(e) => handleInputChange('specifications.dimensions.height', e.target.value)}
-              placeholder="Height"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>Pricing Details</h4>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Base Price *</label>
+            <label>Base Price (₹) *</label>
             <input
               type="number"
               value={formData.pricing.basePrice}
               onChange={(e) => handleInputChange('pricing.basePrice', e.target.value)}
-              placeholder="Enter price"
+              placeholder="Enter price per unit"
               step="0.01"
               min="0"
               required
+              className="swiggy-input"
             />
           </div>
+          
           <div className="form-group">
             <label>Unit</label>
-            <select
-              value={formData.pricing.unit}
-              onChange={(e) => handleInputChange('pricing.unit', e.target.value)}
-            >
-              <option value="MT">MT (Metric Tons)</option>
-              <option value="bags">Bags</option>
-              <option value="numbers">Numbers</option>
-            </select>
+            <div className="unit-display">
+              <span className="unit-icon">📏</span>
+              {baseProduct.pricing?.unit || 'MT'}
+            </div>
           </div>
         </div>
 
-        <div className="form-row">
+        <div className="form-grid">
           <div className="form-group">
             <label>Minimum Quantity *</label>
             <input
@@ -881,14 +775,275 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               step="0.1"
               min="0.1"
               required
+              className="swiggy-input"
             />
           </div>
+          
+          <div className="form-group">
+            <label>GST Rate (%)</label>
+            <input
+              type="number"
+              value={formData.pricing.gstRate || 18}
+              onChange={(e) => handleInputChange('pricing.gstRate', e.target.value)}
+              placeholder="GST percentage"
+              step="0.1"
+              min="0"
+              max="100"
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+
+        <div className="checkbox-group">
+          <label className="swiggy-checkbox">
+            <input
+              type="checkbox"
+              checked={formData.pricing.includesGST}
+              onChange={(e) => handleInputChange('pricing.includesGST', e.target.checked)}
+            />
+            <span className="checkmark"></span>
+            Price includes GST
+          </label>
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="section-header">
+          <h4>📦 Stock & Delivery</h4>
+          <p>Manage inventory and delivery options</p>
+        </div>
+        
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Available Stock *</label>
+            <input
+              type="number"
+              value={formData.stock.available}
+              onChange={(e) => handleInputChange('stock.available', e.target.value)}
+              placeholder="Available quantity"
+              min="0"
+              required
+              className="swiggy-input"
+            />
+          </div>
+          
           <div className="form-group">
             <label>Delivery Time *</label>
             <select
               value={formData.deliveryTime}
               onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
               required
+              className="swiggy-select"
+            >
+              <option value="">Select delivery time</option>
+              <option value="same_day">Same Day</option>
+              <option value="next_day">Next Day</option>
+              <option value="2_3_days">2-3 Days</option>
+              <option value="3_7_days">3-7 Days</option>
+              <option value="1_2_weeks">1-2 Weeks</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Category-specific fields */}
+      {baseProduct.category === 'tmt_steel' && (
+        <div className="form-section">
+          <div className="section-header">
+            <h4>🔩 TMT Steel Specifications</h4>
+            <p>Required specifications for TMT Steel</p>
+          </div>
+          
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Grade *</label>
+              <select
+                value={formData.specifications.grade}
+                onChange={(e) => handleInputChange('specifications.grade', e.target.value)}
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select grade</option>
+                <option value="Fe415">Fe415</option>
+                <option value="Fe500">Fe500</option>
+                <option value="Fe550">Fe550</option>
+                <option value="Fe600">Fe600</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Diameter (mm) *</label>
+              <select
+                value={formData.specifications.diameter}
+                onChange={(e) => handleInputChange('specifications.diameter', e.target.value)}
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select diameter</option>
+                <option value="8">8mm</option>
+                <option value="10">10mm</option>
+                <option value="12">12mm</option>
+                <option value="16">16mm</option>
+                <option value="20">20mm</option>
+                <option value="25">25mm</option>
+                <option value="32">32mm</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label>Brand *</label>
+            <input
+              type="text"
+              value={formData.brand}
+              onChange={(e) => handleInputChange('brand', e.target.value)}
+              placeholder="Enter brand name"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="form-actions">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="swiggy-btn swiggy-btn-outline"
+          disabled={isLoading}
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          className="swiggy-btn swiggy-btn-primary" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <span className="btn-spinner">⏳</span>
+              Setting Pricing...
+            </>
+          ) : (
+            <>
+              <span className="btn-icon">💰</span>
+              Set Pricing
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+// Edit Pricing Form Component (similar structure)
+const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
+  const [formData, setFormData] = useState({
+    pricing: {
+      basePrice: product.pricing?.basePrice || '',
+      minimumQuantity: product.pricing?.minimumQuantity || '',
+      includesGST: product.pricing?.includesGST || false,
+      gstRate: product.pricing?.gstRate || 18
+    },
+    deliveryTime: product.deliveryTime || '',
+    stock: {
+      available: product.stock?.available || '',
+      lowStockThreshold: product.stock?.lowStockThreshold || 10
+    }
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    
+    const submissionData = {
+      pricing: {
+        basePrice: parseFloat(formData.pricing.basePrice),
+        minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
+        includesGST: formData.pricing.includesGST,
+        gstRate: formData.pricing.gstRate
+      },
+      stock: {
+        available: parseInt(formData.stock.available),
+        lowStockThreshold: formData.stock.lowStockThreshold
+      },
+      deliveryTime: formData.deliveryTime
+    }
+    
+    onSubmit(submissionData)
+  }
+
+  const handleInputChange = (path, value) => {
+    const keys = path.split('.')
+    setFormData(prev => {
+      const newData = { ...prev }
+      let current = newData
+      for (let i = 0; i < keys.length - 1; i++) {
+        current = current[keys[i]]
+      }
+      current[keys[keys.length - 1]] = value
+      return newData
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="swiggy-form">
+      <div className="form-section">
+        <div className="section-header">
+          <h4>💰 Update Pricing</h4>
+          <p>Modify your pricing information</p>
+        </div>
+        
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Base Price (₹) *</label>
+            <input
+              type="number"
+              value={formData.pricing.basePrice}
+              onChange={(e) => handleInputChange('pricing.basePrice', e.target.value)}
+              placeholder="Enter price per unit"
+              step="0.01"
+              min="0"
+              required
+              className="swiggy-input"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Minimum Quantity *</label>
+            <input
+              type="number"
+              value={formData.pricing.minimumQuantity}
+              onChange={(e) => handleInputChange('pricing.minimumQuantity', e.target.value)}
+              placeholder="Minimum order quantity"
+              step="0.1"
+              min="0.1"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Available Stock *</label>
+            <input
+              type="number"
+              value={formData.stock.available}
+              onChange={(e) => handleInputChange('stock.available', e.target.value)}
+              placeholder="Available quantity"
+              min="0"
+              required
+              className="swiggy-input"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Delivery Time *</label>
+            <select
+              value={formData.deliveryTime}
+              onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
+              required
+              className="swiggy-select"
             >
               <option value="">Select delivery time</option>
               <option value="same_day">Same Day</option>
@@ -900,377 +1055,44 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Available Stock *</label>
-          <input
-            type="number"
-            value={formData.stock.available}
-            onChange={(e) => handleInputChange('stock.available', e.target.value)}
-            placeholder="Available quantity"
-            min="0"
-            required
-          />
-        </div>
-
         <div className="checkbox-group">
-          <label>
+          <label className="swiggy-checkbox">
             <input
               type="checkbox"
               checked={formData.pricing.includesGST}
               onChange={(e) => handleInputChange('pricing.includesGST', e.target.checked)}
             />
+            <span className="checkmark"></span>
             Price includes GST
           </label>
         </div>
       </div>
 
-      <div className="modal-footer">
-        <button type="button" onClick={onCancel} className="btn btn-outline">
+      <div className="form-actions">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="swiggy-btn swiggy-btn-outline"
+          disabled={isLoading}
+        >
           Cancel
         </button>
-        <button type="submit" className="btn btn-primary" disabled={isLoading}>
-          {isLoading ? 'Setting Pricing...' : 'Set Pricing'}
-        </button>
-      </div>
-    </form>
-  )
-}
-
-// Edit Pricing Form Component for existing products
-const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
-  const [formData, setFormData] = useState({
-    pricing: {
-      basePrice: product.pricing?.basePrice || '',
-      minimumQuantity: product.pricing?.minimumQuantity || '',
-      includesGST: product.pricing?.includesGST || false,
-      gstRate: product.pricing?.gstRate || 18,
-      transportCost: {
-        included: product.pricing?.transportCost?.included || true,
-        costPerKm: product.pricing?.transportCost?.costPerKm || 0
-      }
-    },
-    deliveryTime: product.deliveryTime || '',
-    stock: {
-      available: product.stock?.available || '',
-      lowStockThreshold: product.stock?.lowStockThreshold || 10
-    }
-  })
-// Replace the validateForm function:
-
-  const validateForm = () => {
-    const errors = []
-    const category = baseProduct.category
-    
-    // Check basic pricing fields
-    if (!formData.pricing.basePrice || formData.pricing.basePrice <= 0) {
-      errors.push('Base price is required and must be greater than 0')
-    }
-    if (!formData.pricing.minimumQuantity || formData.pricing.minimumQuantity <= 0) {
-      errors.push('Minimum quantity is required and must be greater than 0')
-    }
-    if (!formData.deliveryTime) {
-      errors.push('Delivery time is required')
-    }
-    if (!formData.stock.available || formData.stock.available < 0) {
-      errors.push('Available stock is required and cannot be negative')
-    }
-    
-    // Check category-specific required fields
-    switch (category) {
-      case 'tmt_steel':
-        if (!formData.specifications.grade) {
-          errors.push('Grade is required for TMT Steel products')
-        }
-        if (!formData.specifications.diameter) {
-          errors.push('Diameter is required for TMT Steel products')
-        }
-        if (!formData.brand?.trim()) {
-          errors.push('Brand is required for TMT Steel products')
-        }
-        break
-        
-      case 'cement':
-        if (!formData.specifications.cementGrade) {
-          errors.push('Cement grade is required for Cement products')
-        }
-        if (!formData.specifications.cementType) {
-          errors.push('Cement type is required for Cement products')
-        }
-        if (!formData.brand?.trim()) {
-          errors.push('Brand is required for Cement products')
-        }
-        break
-        
-      case 'bricks_blocks':
-        if (!formData.specifications.size?.trim()) {
-          errors.push('Size is required for Bricks & Blocks products')
-        }
-        if (!formData.brand?.trim()) {
-          errors.push('Brand is required for Bricks & Blocks products')
-        }
-        break
-        
-      case 'aggregate':
-      case 'sand':
-        // No specific required fields for these categories
-        break
-        
-      default:
-        errors.push(`Unknown product category: ${category}`)
-    }
-    
-    return errors
-  }
-  // Replace the entire handleSubmit function in the PricingForm component:
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    
-    // Validate form first
-    const validationErrors = validateForm()
-    if (validationErrors.length > 0) {
-      alert('Please fix the following errors:\n' + validationErrors.join('\n'))
-      return
-    }
-    
-    // Create the submission data with proper structure
-    const category = baseProduct.category
-    const submissionData = {
-      // Include category for backend validation
-      category: category,
-      
-      // Pricing information (always required)
-      pricing: {
-        basePrice: parseFloat(formData.pricing.basePrice),
-        unit: formData.pricing.unit,
-        minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
-        includesGST: formData.pricing.includesGST,
-        gstRate: formData.pricing.gstRate || 18,
-        transportCost: formData.pricing.transportCost
-      },
-      
-      // Stock information
-      stock: {
-        available: parseInt(formData.stock.available),
-        lowStockThreshold: formData.stock.lowStockThreshold || 10
-      },
-      
-      // Delivery time
-      deliveryTime: formData.deliveryTime,
-      
-      // Specifications - only include relevant fields
-      specifications: {}
-    }
-    
-    // Add category-specific required fields
-    switch (category) {
-      case 'tmt_steel':
-        submissionData.specifications.grade = formData.specifications.grade
-        submissionData.specifications.diameter = formData.specifications.diameter
-        submissionData.brand = formData.brand
-        break
-        
-      case 'cement':
-        submissionData.specifications.cementGrade = formData.specifications.cementGrade
-        submissionData.specifications.cementType = formData.specifications.cementType
-        submissionData.brand = formData.brand
-        break
-        
-      case 'bricks_blocks':
-        submissionData.specifications.size = formData.specifications.size
-        submissionData.brand = formData.brand
-        break
-        
-      case 'aggregate':
-      case 'sand':
-        // For aggregate and sand, no specific fields required
-        // Only general specifications if provided
-        break
-    }
-    
-    // Add optional general specifications if they have values
-    if (formData.specifications.weight) {
-      submissionData.specifications.weight = parseFloat(formData.specifications.weight)
-    }
-    
-    // Add dimensions if any are provided
-    const dimensions = formData.specifications.dimensions
-    if (dimensions.length || dimensions.width || dimensions.height) {
-      submissionData.specifications.dimensions = {}
-      if (dimensions.length) submissionData.specifications.dimensions.length = parseFloat(dimensions.length)
-      if (dimensions.width) submissionData.specifications.dimensions.width = parseFloat(dimensions.width)
-      if (dimensions.height) submissionData.specifications.dimensions.height = parseFloat(dimensions.height)
-    }
-    
-    console.log('Final submission data:', submissionData)
-    onSubmit(submissionData)
-  }
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => {
-      const keys = field.split('.')
-      const newData = { ...prev }
-      let current = newData
-      
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] }
-        current = current[keys[i]]
-      }
-      
-      current[keys[keys.length - 1]] = value
-      return newData
-    })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="pricing-form">
-      <div className="form-section">
-        <h4>Product Information</h4>
-        <div className="product-info">
-          <img 
-            src={product.images?.[0]?.url || '/placeholder-product.jpg'} 
-            alt={product.name}
-            className="product-thumbnail"
-          />
-          <div>
-            <h5>{product.name}</h5>
-            <p>{product.description}</p>
-            <p><strong>Category:</strong> {product.category}</p>
-            <p><strong>Current Status:</strong> {product.status}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section">
-        <h4>Pricing Details</h4>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Base Price *</label>
-            <input
-              type="number"
-              value={formData.pricing.basePrice}
-              onChange={(e) => handleInputChange('pricing.basePrice', e.target.value)}
-              placeholder="Enter price"
-              step="0.01"
-              min="0"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Unit</label>
-            <span className="unit-display">{product.pricing?.unit || 'MT'}</span>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Minimum Quantity *</label>
-            <input
-              type="number"
-              value={formData.pricing.minimumQuantity}
-              onChange={(e) => handleInputChange('pricing.minimumQuantity', e.target.value)}
-              placeholder="Minimum order quantity"
-              step="0.1"
-              min="0.1"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>GST Rate (%)</label>
-            <input
-              type="number"
-              value={formData.pricing.gstRate}
-              onChange={(e) => handleInputChange('pricing.gstRate', e.target.value)}
-              placeholder="GST rate"
-              min="0"
-              max="28"
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label>Delivery Time *</label>
-          <select
-            value={formData.deliveryTime}
-            onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
-            required
-          >
-            <option value="">Select delivery time</option>
-            <option value="same_day">Same Day</option>
-            <option value="next_day">Next Day</option>
-            <option value="2_3_days">2-3 Days</option>
-            <option value="3_7_days">3-7 Days</option>
-            <option value="1_2_weeks">1-2 Weeks</option>
-          </select>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Available Stock *</label>
-            <input
-              type="number"
-              value={formData.stock.available}
-              onChange={(e) => handleInputChange('stock.available', e.target.value)}
-              placeholder="Available quantity"
-              min="0"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Low Stock Threshold</label>
-            <input
-              type="number"
-              value={formData.stock.lowStockThreshold}
-              onChange={(e) => handleInputChange('stock.lowStockThreshold', e.target.value)}
-              placeholder="Low stock alert"
-              min="0"
-            />
-          </div>
-        </div>
-
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.pricing.includesGST}
-              onChange={(e) => handleInputChange('pricing.includesGST', e.target.checked)}
-            />
-            Price includes GST
-          </label>
-        </div>
-
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.pricing.transportCost.included}
-              onChange={(e) => handleInputChange('pricing.transportCost.included', e.target.checked)}
-            />
-            Transport cost included in price
-          </label>
-        </div>
-
-        {!formData.pricing.transportCost.included && (
-          <div className="form-group">
-            <label>Transport Cost per KM</label>
-            <input
-              type="number"
-              value={formData.pricing.transportCost.costPerKm}
-              onChange={(e) => handleInputChange('pricing.transportCost.costPerKm', e.target.value)}
-              placeholder="Cost per kilometer"
-              step="0.01"
-              min="0"
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="modal-footer">
-        <button type="button" onClick={onCancel} className="btn btn-outline">
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary" disabled={isLoading}>
-          {isLoading ? 'Updating...' : 'Update Pricing'}
+        <button 
+          type="submit" 
+          className="swiggy-btn swiggy-btn-primary" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <span className="btn-spinner">⏳</span>
+              Updating...
+            </>
+          ) : (
+            <>
+              <span className="btn-icon">✅</span>
+              Update Pricing
+            </>
+          )}
         </button>
       </div>
     </form>

@@ -70,8 +70,12 @@ const AdminSuppliersPage = () => {
   }
 
   // ...existing code...
+  // ...existing code...
+
   const handleSupplierAction = async (action, supplierId, data = {}) => {
     try {
+      console.log('Performing supplier action:', { action, supplierId, data })
+      
       let response
       switch (action) {
         case 'approve':
@@ -93,18 +97,27 @@ const AdminSuppliersPage = () => {
           })
           break
         default:
-          return
+          throw new Error(`Unknown action: ${action}`)
       }
 
-      if (response.success) {
-        // Refresh the current page
-        fetchSuppliers(pagination.currentPage)
+      console.log('Action response:', response)
+
+      if (response && response.success) {
+        // Refresh the current page to see updated data
+        await fetchSuppliers(pagination.currentPage)
+        
+        // Show success message
+        console.log(`✅ Supplier ${action} successful`)
+      } else {
+        throw new Error(response?.message || `Failed to ${action} supplier`)
       }
     } catch (err) {
       console.error(`Error performing ${action} on supplier:`, err)
-      setError(err.response?.data?.message || `Failed to ${action} supplier`)
+      setError(err.response?.data?.message || err.message || `Failed to ${action} supplier`)
     }
   }
+
+// ...existing code...
 // ...existing code...
 
   if (loading) {

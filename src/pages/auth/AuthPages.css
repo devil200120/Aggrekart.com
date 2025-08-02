@@ -1047,3 +1047,1077 @@ select.form-control {
     margin-left: 0;
   }
 }
+/* Add these styles for better resend button */
+
+.resend-section {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.resend-button {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.resend-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.resend-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.resend-button.clickable {
+  cursor: pointer !important;
+}
+
+.resend-icon {
+  font-size: 16px;
+}
+
+.resend-info {
+  margin-top: 10px;
+}
+
+.resend-wait {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #fc8019;
+  margin-bottom: 10px;
+}
+
+.timer-progress {
+  width: 100%;
+  height: 4px;
+  background: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.timer-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #fc8019, #e67317);
+  transition: width 1s linear;
+}
+/* ===============================================
+   NEUMORPHISM OTP VERIFICATION STYLES
+   Add after line 1126 in AuthPages.css
+   =============================================== */
+
+/* Main OTP Page - Neumorphism Background */
+.otp-verification-page {
+  min-height: 100vh;
+  background: #e6f3ff;
+  background-image: 
+    radial-gradient(circle at 25% 25%, #f0f8ff 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, #e6f3ff 0%, transparent 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  padding-top: 120px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Main Container - Neumorphism Card */
+.otp-container {
+  background: #e6f3ff;
+  border-radius: 2rem;
+  padding: 3rem 2.5rem;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 
+    20px 20px 40px rgba(174, 200, 255, 0.4),
+    -20px -20px 40px rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.otp-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+
+/* Header Section */
+.otp-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.otp-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 2rem;
+}
+
+.logo-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(252, 128, 25, 0.3));
+}
+
+/* Phone Icon - Neumorphism */
+.otp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  background: #e6f3ff;
+  border-radius: 50%;
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 
+    10px 10px 20px rgba(174, 200, 255, 0.4),
+    -10px -10px 20px rgba(255, 255, 255, 0.9),
+    inset 2px 2px 4px rgba(174, 200, 255, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+
+.otp-icon::after {
+  content: '✓';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Typography */
+.otp-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.otp-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+}
+
+.phone-display {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #3b82f6;
+  font-family: 'Courier New', monospace;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  display: inline-block;
+  margin-top: 0.5rem;
+  box-shadow: 
+    inset 2px 2px 4px rgba(59, 130, 246, 0.1),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.9);
+}
+
+/* OTP Input Section */
+.otp-input-section {
+  margin-bottom: 2rem;
+}
+
+.otp-input-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.otp-inputs-container {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Individual OTP Input - Neumorphism */
+.otp-input {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: #e6f3ff;
+  border: none;
+  border-radius: 1rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: 
+    inset 6px 6px 12px rgba(174, 200, 255, 0.4),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.9);
+  position: relative;
+}
+
+.otp-input:focus {
+  box-shadow: 
+    inset 8px 8px 16px rgba(174, 200, 255, 0.5),
+    inset -8px -8px 16px rgba(255, 255, 255, 1),
+    0 0 0 3px rgba(59, 130, 246, 0.2);
+  transform: scale(1.05);
+}
+
+.otp-input.filled {
+  color: #059669;
+  box-shadow: 
+    inset 6px 6px 12px rgba(16, 185, 129, 0.2),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.9),
+    0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+.otp-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Timer Section - Neumorphism */
+.otp-timer {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.timer-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e6f3ff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 
+    inset 4px 4px 8px rgba(174, 200, 255, 0.3),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+}
+
+.timer-icon {
+  font-size: 1.2rem;
+  color: #f59e0b;
+}
+
+.timer-display {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.timer-progress {
+  width: 80%;
+  height: 0.5rem;
+  background: #e6f3ff;
+  border-radius: 0.25rem;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+  box-shadow: 
+    inset 3px 3px 6px rgba(174, 200, 255, 0.4),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+}
+
+.timer-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  border-radius: 0.25rem;
+  transition: width 1s linear;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Resend Section */
+.resend-section {
+  text-align: center;
+}
+
+.resend-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.resend-button {
+  background: #e6f3ff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #059669;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    6px 6px 12px rgba(174, 200, 255, 0.4),
+    -6px -6px 12px rgba(255, 255, 255, 0.9);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resend-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    8px 8px 16px rgba(174, 200, 255, 0.5),
+    -8px -8px 16px rgba(255, 255, 255, 1);
+}
+
+.resend-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 4px 4px 8px rgba(174, 200, 255, 0.4),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+.resend-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Action Buttons */
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Verify Button - Neumorphism */
+.verify-button {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    6px 6px 12px rgba(59, 130, 246, 0.3),
+    -6px -6px 12px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verify-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    8px 8px 16px rgba(59, 130, 246, 0.4),
+    -8px -8px 16px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.verify-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 4px 4px 8px rgba(59, 130, 246, 0.3),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.verify-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Back Button - Neumorphism */
+.back-button {
+  background: #e6f3ff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    6px 6px 12px rgba(174, 200, 255, 0.4),
+    -6px -6px 12px rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.back-button:hover {
+  color: #374151;
+  transform: translateY(-1px);
+  box-shadow: 
+    8px 8px 16px rgba(174, 200, 255, 0.5),
+    -8px -8px 16px rgba(255, 255, 255, 1);
+}
+
+.back-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 4px 4px 8px rgba(174, 200, 255, 0.4),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+/* Loading Spinner - Neumorphism */
+.loading-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Help Section - Neumorphism */
+.otp-help {
+  background: #e6f3ff;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 
+    inset 4px 4px 8px rgba(174, 200, 255, 0.3),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+}
+
+.otp-help h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.otp-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.otp-help li {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.otp-help li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+/* Development Info - Neumorphism */
+.dev-info {
+  background: #e6f3ff;
+  border-radius: 1rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #1f2937;
+  box-shadow: 
+    inset 3px 3px 6px rgba(16, 185, 129, 0.2),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .otp-verification-page {
+    padding: 1rem;
+    padding-top: 100px;
+  }
+
+  .otp-container {
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .otp-title {
+    font-size: 1.5rem;
+  }
+
+  .otp-inputs-container {
+    gap: 0.5rem;
+  }
+
+  .otp-input {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.1rem;
+  }
+
+  .verify-button {
+    padding: 0.875rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .otp-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .otp-inputs-container {
+    gap: 0.375rem;
+  }
+
+  .otp-input {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .otp-icon {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus States for Accessibility */
+.otp-input:focus-visible,
+.verify-button:focus-visible,
+.back-button:focus-visible,
+.resend-button:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+/* ===============================================
+   CLEAN OTP VERIFICATION STYLES - FIXED
+   Replace the previous neumorphism styles with this
+   =============================================== */
+
+/* Main OTP Page - Clean Background */
+.otp-verification-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  padding-top: 120px;
+}
+
+/* Main Container - Clean Card */
+.otp-container {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  position: relative;
+}
+
+/* Header Section */
+.otp-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.otp-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fc8019;
+  margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+  font-size: 2rem;
+}
+
+/* Phone Icon */
+.otp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #fc8019, #e67317);
+  border-radius: 50%;
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(252, 128, 25, 0.3);
+  position: relative;
+}
+
+.otp-icon::after {
+  content: '✓';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+/* Typography */
+.otp-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.otp-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.phone-display {
+  display: inline-block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fc8019;
+  background: rgba(252, 128, 25, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(252, 128, 25, 0.2);
+  margin-top: 0.5rem;
+}
+
+/* OTP Input Section */
+.otp-input-section {
+  margin-bottom: 2rem;
+}
+
+.otp-input-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.otp-inputs-container {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Individual OTP Input - Clean Style */
+.otp-input {
+  width: 3.25rem;
+  height: 3.25rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: #fc8019;
+  box-shadow: 0 0 0 3px rgba(252, 128, 25, 0.1);
+  transform: scale(1.05);
+}
+
+.otp-input.filled {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+  color: #059669;
+}
+
+.otp-input:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* Timer Section */
+.otp-timer {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.timer-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(252, 128, 25, 0.1);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(252, 128, 25, 0.2);
+}
+
+.timer-icon {
+  font-size: 1.1rem;
+  color: #f59e0b;
+}
+
+.timer-display span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.timer-progress {
+  width: 80%;
+  height: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+}
+
+.timer-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #fc8019, #e67317);
+  border-radius: 0.25rem;
+  transition: width 1s linear;
+}
+
+/* Resend Section */
+.resend-section {
+  text-align: center;
+}
+
+.resend-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.resend-button {
+  background: #10b981;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resend-button:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.resend-button:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Action Buttons */
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Verify Button */
+.verify-button {
+  background: linear-gradient(135deg, #fc8019, #e67317);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verify-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e67317, #d65a10);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(252, 128, 25, 0.4);
+}
+
+.verify-button:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Back Button */
+.back-button {
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.back-button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Help Section */
+.otp-help {
+  background: #f8fafc;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.otp-help h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.otp-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.otp-help li {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.4;
+}
+
+.otp-help li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #fc8019;
+  font-weight: bold;
+}
+
+/* Development Info */
+.dev-info {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.dev-badge {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .otp-verification-page {
+    padding: 1rem;
+    padding-top: 100px;
+  }
+
+  .otp-container {
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .otp-title {
+    font-size: 1.5rem;
+  }
+
+  .otp-inputs-container {
+    gap: 0.5rem;
+  }
+
+  .otp-input {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.1rem;
+  }
+
+  .verify-button {
+    padding: 0.875rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .otp-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .otp-inputs-container {
+    gap: 0.375rem;
+  }
+
+  .otp-input {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .otp-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.75rem;
+  }
+
+  .otp-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus States for Accessibility */
+.otp-input:focus-visible,
+.verify-button:focus-visible,
+.back-button:focus-visible,
+.resend-button:focus-visible {
+  outline: 2px solid #fc8019;
+  outline-offset: 2px;
+}
+
+/* Remove any conflicting styles */
+.otp-verification-page * {
+  box-sizing: border-box;
+}
+
+.otp-verification-page .otp-container {
+  position: relative;
+  z-index: 10;
+}

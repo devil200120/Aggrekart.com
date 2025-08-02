@@ -415,7 +415,26 @@ export const CartProvider = ({ children }) => {
     return clearCartMutation.mutateAsync()
   }
 
-  const getCartItemByProductId = (productId) => {
+  const refreshCart = async () => {
+    if (!user || user.role !== 'customer') {
+      console.log('No customer user logged in, skipping cart refresh')
+      return
+    }
+
+    try {
+      console.log('Refreshing cart...')
+      
+      // Method 1: Use refetch from the existing query
+      // This is more reliable than invalidateQueries
+      await queryClient.refetchQueries('cart')
+      
+      console.log('Cart refreshed successfully')
+    } catch (error) {
+      console.error('Failed to refresh cart:', error)
+    }
+  }
+
+ const getCartItemByProductId = (productId) => {
     return cartState.items.find(item => 
       item.product._id === productId || 
       item.product.productId === productId
@@ -454,6 +473,7 @@ export const CartProvider = ({ children }) => {
     updateCartItem,
     removeFromCart,
     clearCart,
+    refreshCart,
     getCartItemByProductId,
     
     // Mutation states

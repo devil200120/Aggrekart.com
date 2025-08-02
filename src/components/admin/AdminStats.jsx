@@ -1,10 +1,5 @@
-/* 
-FILE: c:\Users\KIIT0001\Desktop\builder_website using mern\front-end\app\src\components\admin\AdminStats.jsx
-LINES: 1-100
-PURPOSE: Admin dashboard statistics cards with real-time data
-*/
-
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   Users, 
   Store, 
@@ -18,6 +13,8 @@ import {
 import './AdminStats.css'
 
 const AdminStats = ({ stats, loading }) => {
+  const navigate = useNavigate()
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -34,6 +31,37 @@ const AdminStats = ({ stats, loading }) => {
   const formatPercentage = (value) => {
     const sign = value >= 0 ? '+' : ''
     return `${sign}${value.toFixed(1)}%`
+  }
+
+  const handleCardClick = (cardId) => {
+    switch (cardId) {
+      case 'total-users':
+        navigate('/admin/users')
+        break
+      case 'active-suppliers':
+        navigate('/admin/suppliers')
+        break
+      case 'total-orders':
+        navigate('/admin/orders')
+        break
+      case 'total-revenue':
+        navigate('/admin/reports?tab=revenue')
+        break
+      case 'pending-approvals':
+        navigate('/admin/approvals')
+        break
+      case 'monthly-revenue':
+        navigate('/admin/reports?tab=monthly')
+        break
+      case 'active-products':
+        navigate('/admin/products')
+        break
+      case 'platform-commission':
+        navigate('/admin/reports?tab=commission')
+        break
+      default:
+        console.log('No navigation defined for:', cardId)
+    }
   }
 
   if (loading) {
@@ -60,7 +88,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.userGrowth || 0,
       icon: Users,
       color: 'blue',
-      format: 'number'
+      format: 'number',
+      description: 'Click to manage users'
     },
     {
       id: 'active-suppliers',
@@ -69,7 +98,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.supplierGrowth || 0,
       icon: Store,
       color: 'green',
-      format: 'number'
+      format: 'number',
+      description: 'Click to view suppliers'
     },
     {
       id: 'total-orders',
@@ -78,7 +108,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.orderGrowth || 0,
       icon: ShoppingBag,
       color: 'purple',
-      format: 'number'
+      format: 'number',
+      description: 'Click to view all orders'
     },
     {
       id: 'total-revenue',
@@ -87,7 +118,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.revenueGrowth || 0,
       icon: DollarSign,
       color: 'orange',
-      format: 'currency'
+      format: 'currency',
+      description: 'Click to view revenue reports'
     },
     {
       id: 'pending-approvals',
@@ -97,7 +129,8 @@ const AdminStats = ({ stats, loading }) => {
       icon: AlertTriangle,
       color: 'yellow',
       format: 'number',
-      urgent: (stats?.pendingApprovals || 0) > 10
+      urgent: (stats?.pendingApprovals || 0) > 10,
+      description: 'Click to review approvals'
     },
     {
       id: 'monthly-revenue',
@@ -106,7 +139,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.monthlyGrowth || 0,
       icon: TrendingUp,
       color: 'teal',
-      format: 'currency'
+      format: 'currency',
+      description: 'Click to view monthly reports'
     },
     {
       id: 'active-products',
@@ -115,7 +149,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.productGrowth || 0,
       icon: CheckCircle,
       color: 'indigo',
-      format: 'number'
+      format: 'number',
+      description: 'Click to manage products'
     },
     {
       id: 'platform-commission',
@@ -124,7 +159,8 @@ const AdminStats = ({ stats, loading }) => {
       change: stats?.commissionGrowth || 0,
       icon: DollarSign,
       color: 'pink',
-      format: 'currency'
+      format: 'currency',
+      description: 'Click to view commission reports'
     }
   ]
 
@@ -138,7 +174,17 @@ const AdminStats = ({ stats, loading }) => {
         return (
           <div 
             key={stat.id} 
-            className={`stat-card ${stat.color} ${stat.urgent ? 'urgent' : ''}`}
+            className={`stat-card ${stat.color} ${stat.urgent ? 'urgent' : ''} clickable`}
+            onClick={() => handleCardClick(stat.id)}
+            role="button"
+            tabIndex={0}
+            title={stat.description}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleCardClick(stat.id)
+              }
+            }}
           >
             <div className="stat-icon">
               <IconComponent size={24} />
@@ -165,6 +211,11 @@ const AdminStats = ({ stats, loading }) => {
                 <AlertTriangle size={16} />
               </div>
             )}
+
+            {/* Hover indicator */}
+            <div className="click-indicator">
+              <span className="click-icon">→</span>
+            </div>
           </div>
         )
       })}

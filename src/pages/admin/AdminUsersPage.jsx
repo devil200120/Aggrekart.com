@@ -1,8 +1,9 @@
-// Replace the ENTIRE file content with this (remove the comment at the top):
-
 import React, { useState, useEffect } from 'react'
 import UserManagement from '../../components/admin/UserManagement'
+import AddUserModal from '../../components/admin/AddUserModal'
 import { adminAPI } from '../../services/api'
+import { Plus } from 'lucide-react'
+import toast from 'react-hot-toast'
 import './AdminUsersPage.css'
 
 const AdminUsersPage = () => {
@@ -10,6 +11,7 @@ const AdminUsersPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -56,6 +58,19 @@ const AdminUsersPage = () => {
     }
   }
 
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters)
+    fetchUsers(1, newFilters)
+  }
+
+  const handlePageChange = (page) => {
+    fetchUsers(page)
+  }
+
   // Handle user actions (edit, suspend, activate)
   const handleUserAction = async (userId, action, data = {}) => {
     try {
@@ -100,51 +115,34 @@ const AdminUsersPage = () => {
           break
         }
 
-        default:
-          throw new Error('Invalid action')
+        default: {
+          console.log('Unknown action:', action)
+          setActionLoading(false)
+          return
+        }
       }
 
       if (response && response.success) {
-        // Show success message
-        alert(response.message || `User ${action}ed successfully!`)
-        
-        // Update the specific user in the state immediately
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user._id === userId 
-              ? { ...user, ...response.data.user }
-              : user
-          )
-        )
-        
-        // Also refresh the entire list to be sure
-        setTimeout(() => {
-          fetchUsers(pagination.currentPage)
-        }, 500)
-        
+        toast.success(`User ${action}ed successfully!`)
+        // Refresh the users list
+        fetchUsers(pagination.currentPage)
       } else {
-        throw new Error(response?.message || 'Action failed')
+        toast.error(response?.message || `Failed to ${action} user`)
       }
 
     } catch (error) {
-      console.error(`Error performing ${action}:`, error)
-      alert(error.response?.data?.message || error.message || `Failed to ${action} user`)
+      console.error(`Error ${action}ing user:`, error)
+      toast.error(error.response?.data?.message || `Failed to ${action} user`)
     } finally {
       setActionLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters)
-    fetchUsers(1, newFilters)
-  }
-
-  const handlePageChange = (page) => {
-    fetchUsers(page)
+  const handleUserCreated = (newUser) => {
+    console.log('New user created:', newUser)
+    // Refresh the users list to show the new user
+    fetchUsers(pagination.currentPage)
+    toast.success(`User "${newUser.name}" has been added successfully! 🎉`)
   }
 
   if (loading) {
@@ -190,8 +188,20 @@ const AdminUsersPage = () => {
     <div className="admin-users-page">
       <div className="admin-page-container">
         <div className="admin-page-header">
-          <h1>User Management</h1>
-          <p>Manage all registered users, view profiles, and handle user-related activities</p>
+          <div className="header-content">
+            <h1>User Management</h1>
+            <p>Manage all registered users, view profiles, and handle user-related activities</p>
+          </div>
+          <div className="header-actions">
+            <button 
+              className="btn btn-primary add-user-btn"
+              onClick={() => setShowAddUserModal(true)}
+              disabled={loading || actionLoading}
+            >
+              <Plus size={20} />
+              Add User
+            </button>
+          </div>
         </div>
         
         <div className="admin-page-content">
@@ -207,6 +217,13 @@ const AdminUsersPage = () => {
           />
         </div>
       </div>
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={showAddUserModal}
+        onClose={() => setShowAddUserModal(false)}
+        onUserCreated={handleUserCreated}
+      />
     </div>
   )
 }

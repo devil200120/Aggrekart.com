@@ -5,6 +5,8 @@ import MembershipCard from "../components/membership/MembershipCard";
 import EnhancedCategoryCard from "../components/products/EnhancedCategoryCard";
 import "./HomePage.css";
 import AggregatesImg from "../Aggregates.JPG";
+import TopRatedProducts from "../components/TopRatedProducts"; // Add this import
+import {  newsletterAPI } from "../services/api";
 import CCBlocksImg from "../CC Blocks.JPG";
 import TMTSteelImg from "../TMT Steel.webp";
 import RedBricksImg from "../Red Bricks.JPG";
@@ -15,7 +17,7 @@ import DSC0158Img from "../DSC_0158.JPG";
 import SandImg from "../Sand.JPG";
 import Logo1Img from "../logo1.jpg";
 import Logo2Img from "../Aggrebhai.png";
-import AdvertisementImg from "../Advertisement.jpg";
+import AdvertisementImg from "../sponsor.jpg";
 import CrusherImg from "../Home_page_image_crusher.jpg";
 import ImagePng from "../image.png";
 import Image20150619 from "../20150619_115730.jpg"; // Added this import
@@ -26,9 +28,19 @@ import RazorpayImg from "../razorpay.jpg";
 import { productsAPI } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import NewsletterForm from "../components/NewsletterForm";
 import { toast } from "react-toastify"; // Make sure you have react-toastify installed
 const HomePage = () => {
   const { user } = useAuth();
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+const [showAllCities, setShowAllCities] = useState(false);
+const citiesData = [
+  "Bangalore", "Gurgaon", "Hyderabad", "Delhi", "Mumbai", "Pune",
+  "Kolkata", "Chennai", "Ahmedabad", "Chandigarh", "Jaipur", "Lucknow",
+  "Indore", "Bhopal", "Nagpur", "Surat", "Vadodara", "Rajkot",
+  "Coimbatore", "Kochi", "Thiruvananthapuram", "Visakhapatnam", "Vijayawada",
+  "Guntur", "Warangal", "Mysore", "Mangalore", "Hubli"
+];
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentProductSlide, setCurrentProductSlide] = useState(0);
   const productScrollRef = useRef(null);
@@ -37,7 +49,8 @@ const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+const [newsletterLoading, setNewsletterLoading] = useState(false);
   const navigate = useNavigate();
   const sliderImages = [
     { src: CrusherImg, alt: "Construction Site 2015" },
@@ -235,6 +248,88 @@ const HomePage = () => {
       project: "100+ Houses Built",
     },
   ];
+  // Add this test function after handleNewsletterSubmit
+const testNewsletterAPI = async () => {
+  try {
+    console.log('Testing newsletter API...');
+    
+    // Test 1: Check if backend is reachable
+    const testResponse = await fetch('http://localhost:5000/api/newsletter/test-email');
+    const testResult = await testResponse.json();
+    
+    console.log('Email test result:', testResult);
+    
+    if (testResult.success) {
+      toast.success('Email configuration test passed! Check your email.');
+    } else {
+      toast.error('Email configuration test failed: ' + testResult.error);
+    }
+  } catch (error) {
+    console.error('Test failed:', error);
+    toast.error('Backend connection failed: ' + error.message);
+  }
+};
+
+// Add this temporary button in your newsletter section (after the form)
+{process.env.NODE_ENV === 'development' && (
+  <button 
+    onClick={testNewsletterAPI}
+    style={{
+      marginTop: '10px',
+      padding: '8px 16px',
+      background: '#007bff',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer'
+    }}
+  >
+    🧪 Test Email Config
+  </button>
+)}
+  
+
+const handleNewsletterSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!newsletterEmail.trim()) {
+    toast.error('Please enter your email address');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(newsletterEmail)) {
+    toast.error('Please enter a valid email address');
+    return;
+  }
+
+  setNewsletterLoading(true);
+
+  try {
+    const response = await newsletterAPI.subscribe(newsletterEmail, 'homepage');
+    
+    if (response && response.success) {
+      // Show success state
+      setNewsletterSuccess(true);
+      setNewsletterEmail('');
+      
+      // Hide success state after 3 seconds
+      setTimeout(() => {
+        setNewsletterSuccess(false);
+      }, 3000);
+      
+      toast.success(response.message || 'Successfully subscribed to newsletter!');
+    } else {
+      toast.error(response?.message || 'Failed to subscribe. Please try again.');
+    }
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    toast.error('Failed to subscribe. Please try again.');
+  } finally {
+    setNewsletterLoading(false);
+  }
+};
+
   const handleWhatsAppClick = () => {
     const phoneNumber = "918837788388"; // Your phone number
     const message =
@@ -359,45 +454,46 @@ const HomePage = () => {
       {/* Enhanced Features Section */}
       {/* Our Products Section */}
       {/* Our Products Section */}
-      <section className="our-products-section">
-        <div className="container">
-          <h2 className="section-title">Our Products</h2>
-          <div className="products-grid">
-            {/* Aggregates - 40% space (left side) */}
+            {/* Our Products Section - Optimized Responsive */}
+      <section className="product-showcase-section">
+        <div className="showcase-container">
+          <h2 className="showcase-title">Our Products</h2>
+          <div className="product-showcase-grid">
+            {/* Main Product - 40% space (left side) */}
             <Link
               to={`/products?category=${productCategories.aggregate}`}
-              className="aggregate-card-link"
+              className="main-product-link"
             >
-              <div className="aggregate-card">
-                <div className="product-image-container">
+              <div className="main-product-card">
+                <div className="main-product-image">
                   <img
                     src={AggregatesImg}
                     alt="Aggregate products"
-                    className="product-image"
+                    className="main-product-img"
                   />
                 </div>
-                <div className="product-content">
-                  <h3>Aggregate products</h3>
-                  <button className="product-btn">CLICK HERE</button>
+                <div className="main-product-info">
+                  <h3>Aggregate Products</h3>
+                  <button className="main-product-cta">Click Here</button>
                 </div>
               </div>
             </Link>
 
-            {/* Other Products - 60% space (right side grid) */}
-            <div className="other-products-grid">
+            {/* Secondary Products - 60% space (right side grid) */}
+            <div className="secondary-products-grid">
               <Link
                 to={`/products?category=${productCategories.bricks}`}
-                className="small-product-card-link"
+                className="secondary-product-link"
               >
-                <div className="small-product-card">
-                  <div className="small-product-image-container">
+                <div className="secondary-product-card">
+                  <div className="secondary-product-image">
                     <img
-                      src={CCBlocksImg}
-                      alt="Concrete Bricks"
-                      className="small-product-image"
+                      src={SandImg}
+                      alt="Sand"
+                      className="secondary-product-img"
                     />
                   </div>
-                  <div className="small-product-title">
+                  <div className="secondary-product-info">
                     <h4>Sand</h4>
                   </div>
                 </div>
@@ -405,17 +501,17 @@ const HomePage = () => {
 
               <Link
                 to={`/products?category=${productCategories.cement}`}
-                className="small-product-card-link"
+                className="secondary-product-link"
               >
-                <div className="small-product-card">
-                  <div className="small-product-image-container">
+                <div className="secondary-product-card">
+                  <div className="secondary-product-image">
                     <img
                       src={CementImg}
                       alt="Cement"
-                      className="small-product-image"
+                      className="secondary-product-img"
                     />
                   </div>
-                  <div className="small-product-title">
+                  <div className="secondary-product-info">
                     <h4>Cement</h4>
                   </div>
                 </div>
@@ -423,36 +519,36 @@ const HomePage = () => {
 
               <Link
                 to={`/products?category=${productCategories.steel}`}
-                className="small-product-card-link"
+                className="secondary-product-link"
               >
-                <div className="small-product-card">
-                  <div className="small-product-image-container">
+                <div className="secondary-product-card">
+                  <div className="secondary-product-image">
                     <img
                       src={TMTSteelImg}
                       alt="TMT Steel"
-                      className="small-product-image"
+                      className="secondary-product-img"
                     />
                   </div>
-                  <div className="small-product-title">
-                    <h4>TMT STEEL</h4>
+                  <div className="secondary-product-info">
+                    <h4>TMT Steel</h4>
                   </div>
                 </div>
               </Link>
 
               <Link
                 to={`/products?category=${productCategories.bricks}`}
-                className="small-product-card-link"
+                className="secondary-product-link"
               >
-                <div className="small-product-card">
-                  <div className="small-product-image-container">
+                <div className="secondary-product-card">
+                  <div className="secondary-product-image">
                     <img
                       src={RedBricksImg}
                       alt="Clay Bricks"
-                      className="small-product-image"
+                      className="secondary-product-img"
                     />
                   </div>
-                  <div className="small-product-title">
-                    <h4> BRICKS <br /> (CONCRETE /CLAY) </h4>
+                  <div className="secondary-product-info">
+                    <h4>Bricks<br />(Concrete/Clay)</h4>
                   </div>
                 </div>
               </Link>
@@ -634,135 +730,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-      <section className="top-rated-products-section">
-        <div className="container">
-          <h2 className="section-title">Top Rated Products</h2>
-
-          <div className="top-rated-grid">
-            {/* Row 1 */}
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={DSC0200Img} alt="Premium Cement" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>53 Grade OPC Cement Premium Quality</h3>
-                <div className="price-info">
-                  <span className="current-price">₹750.00</span>
-                  <span className="original-price">₹950.00</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={TMTSteelImg} alt="TMT Steel Bars" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>TMT Steel Bars High Grade Fe500</h3>
-                <div className="price-info">
-                  <span className="current-price">₹65,000</span>
-                  <span className="original-price">₹70,000</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={RedBricksImg} alt="Red Clay Bricks" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>Red Clay Bricks Traditional Quality</h3>
-                <div className="price-info">
-                  <span className="current-price">₹8.50</span>
-                  <span className="original-price">₹10.00</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={DSC0141Img} alt="Construction Sand" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>River Sand Premium Construction Grade</h3>
-                <div className="price-info">
-                  <span className="current-price">₹1,200</span>
-                  <span className="original-price">₹1,400</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={AggregatesImg} alt="Stone Aggregates" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>Stone Aggregates Mixed Size 20mm</h3>
-                <div className="price-info">
-                  <span className="current-price">₹2,800</span>
-                  <span className="original-price">₹3,200</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-
-            <div className="product-card-rated">
-              <div className="product-image-rated">
-                <img src={CCBlocksImg} alt="Concrete Blocks" />
-              </div>
-              <div className="product-info-rated">
-                <div className="rating-stars">
-                  <span>⭐⭐⭐⭐⭐</span>
-                </div>
-                <h3>Concrete Blocks AAC Lightweight</h3>
-                <div className="price-info">
-                  <span className="current-price">₹45.00</span>
-                  <span className="original-price">₹55.00</span>
-                </div>
-                <button className="add-to-cart-btn">
-                  <span className="btn-icon">+</span>
-                  Add To Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <TopRatedProducts />
 
       {/* New Testimonials Section */}
       <section className="testimonials-section">
@@ -840,38 +808,110 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Enhanced Newsletter Section */}
-      <section className="newsletter-section">
-        <div className="container">
-          <div className="newsletter-card">
-            <div className="newsletter-icon">📧</div>
-            <h3 className="newsletter-title">Stay Ahead of the Curve</h3>
-            <p className="newsletter-subtitle">
-              Get exclusive updates on new materials, industry insights, price
-              alerts, and special offers
-            </p>
-            <form className="newsletter-form">
-              <div className="form-group">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  className="newsletter-input"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary newsletter-btn"
-                >
-                  Subscribe Now
-                </button>
-              </div>
-            </form>
-            <p className="newsletter-privacy">
-              🔒 We respect your privacy. Unsubscribe at any time.
-            </p>
+      {/* Cities Service Delivery Section */}
+      <section className="cities-service-section">
+  <div className="container">
+    <div className="cities-header">
+      <h2 className="cities-title">Cities with Construction Material Delivery</h2>
+    </div>
+    
+    <div className="cities-grid">
+      {citiesData
+        .slice(0, showAllCities ? citiesData.length : 11)
+        .map((city, index) => (
+          <div 
+            key={city} 
+            className={`city-card ${index === 7 ? 'highlighted' : ''}`}
+          >
+            <span className="city-text">
+              Order materials online in <strong>{city}</strong>
+            </span>
           </div>
+        ))}
+      
+      {!showAllCities && (
+        <div 
+          className="city-card show-more-card"
+          onClick={() => setShowAllCities(true)}
+        >
+          <span className="show-more-text">Show More ▼</span>
         </div>
-      </section>
+      )}
+      
+      {showAllCities && (
+        <div 
+          className="city-card show-less-card"
+          onClick={() => setShowAllCities(false)}
+        >
+          <span className="show-less-text">Show Less ▲</span>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+      {/* Enhanced Newsletter Section */}
+            {/* Enhanced Newsletter Section */}
+      {/* Enhanced Newsletter Section */}
+<section className="newsletter-section">
+  <div className="container">
+    <div className="newsletter-card">
+      <div className="newsletter-icon">📧</div>
+      <h3 className="newsletter-title">Stay Ahead of the Curve</h3>
+      <p className="newsletter-subtitle">
+        Get exclusive updates on new materials, industry insights, price
+        alerts, and special offers
+      </p>
+      
+      {/* Success State */}
+      {newsletterSuccess ? (
+        <div className="newsletter-success">
+          <div className="success-animation">
+            <div className="checkmark-circle">
+              <div className="checkmark">✓</div>
+            </div>
+          </div>
+          <h4 className="success-title">Successfully Subscribed! 🎉</h4>
+          <p className="success-message">
+            Thank you for joining our newsletter! Check your email for a welcome message.
+          </p>
+        </div>
+      ) : (
+        /* Original Form */
+        <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              className="newsletter-input"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              disabled={newsletterLoading}
+              required
+            />
+            <button
+              type="submit"
+              className="btn btn-primary newsletter-btn"
+              disabled={newsletterLoading || !newsletterEmail.trim()}
+            >
+              {newsletterLoading ? (
+                <>
+                  <span className="loading-spinner">⏳</span>
+                  Subscribing...
+                </>
+              ) : (
+                'Subscribe Now'
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+      
+      <p className="newsletter-privacy">
+        🔒 We respect your privacy. Unsubscribe at any time.
+      </p>
+    </div>
+  </div>
+</section>
       {/* Footer Section */}
 
       {/* Enhanced Mobile Responsive Footer Section */}
@@ -1011,7 +1051,7 @@ const HomePage = () => {
                   </div>
                   <div className="contact-text">
                     <strong>Phone</strong>
-                    <span>+91 9989048899</span>
+                    <span>+91 8837788388</span>
                     <br />
                   </div>
                 </div>

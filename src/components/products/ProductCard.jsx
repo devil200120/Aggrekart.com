@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQueryClient } from 'react-query'
 import { cartAPI } from '../../services/api'
@@ -6,13 +6,15 @@ import { useAuth } from '../../context/AuthContext'
 import { toast } from 'react-hot-toast'
 import ImageWithFallback from '../common/ImageWithFallback'
 import './ProductCard.css'
-import '../common/ImageWithFallback.css'
+import {  useNavigate } from 'react-router-dom'
 
 const ProductCard = ({ product, viewMode = 'grid' }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [quantity, setQuantity] = useState(1)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [showQuantityInput, setShowQuantityInput] = useState(false)
 
   // Safe rendering functions to handle undefined/null values
   const safeRender = (value, fallback = '') => {
@@ -26,12 +28,72 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
     return Number(value);
   };
 
+  // Extract product data with enhanced quantity controls
+  const productData = {
+    _id: product._id || '',
+    name: safeRender(product.name, 'Construction Material'),
+    description: safeRender(product.description, 'High quality construction material'),
+    
+    // Images
+    images: product.images || [],
+    primaryImage: product.primaryImage || product.image || (product.images?.[0]?.url) || '/placeholder-product.jpg',
+    
+    // Price from pricing.basePrice
+    price: safeNumber(product.pricing?.basePrice || product.price, 999),
+    originalPrice: safeNumber(product.pricing?.originalPrice || product.originalPrice),
+    unit: safeRender(product.pricing?.unit || product.unit, 'unit'),
+    
+    // Stock info
+    inStock: product.stock?.available > 0 || product.inStock !== false,
+    stockQuantity: safeNumber(product.stock?.available || product.stockQuantity, 100),
+    
+    // Quantity constraints
+    minOrderQuantity: safeNumber(product.pricing?.minimumQuantity || product.minOrderQuantity, 1),
+    maxOrderQuantity: safeNumber(product.stock?.available || product.stockQuantity, 100),
+    
+    // Ratings
+    averageRating: safeNumber(product.ratings?.average || product.averageRating || product.rating, 4.2),
+    reviewCount: safeNumber(product.ratings?.totalReviews || product.reviewCount || product.totalReviews || product.reviews, 25),
+    
+    // Supplier info
+    supplier: {
+      _id: product.supplier?._id || '',
+      businessName: safeRender(
+        product.supplier?.companyName ||
+        product.supplierName ||
+        product.supplier?.businessName ||
+        product.supplier?.name,
+        'Verified Supplier'
+      ),
+      location: {
+        city: safeRender(product.supplier?.location?.city, ''),
+        state: safeRender(product.supplier?.location?.state, '')
+      }
+    },
+    
+    category: safeRender(product.category, 'Construction'),
+    badge: product.badge
+  };
+
+  // Set initial quantity to minimum order quantity
+  useEffect(() => {
+    setQuantity(productData.minOrderQuantity);
+  }, [productData.minOrderQuantity]);
+
   const addToCartMutation = useMutation(
     (data) => cartAPI.addToCart(data),
     {
       onSuccess: () => {
-        toast.success('Added to cart successfully!')
+        toast.success(`Added ${quantity} ${productData.unit}${quantity > 1 ? 's' : ''} to cart!`)
         queryClient.invalidateQueries('cart')
+        
+        // 🆕 REDIRECT TO CART PAGE AFTER SUCCESS
+        setTimeout(() => {
+          navigate('/cart')
+        }, 1500) // Wait 1.5 seconds to show success message
+        
+        // Reset quantity to minimum after successful add
+        setQuantity(productData.minOrderQuantity)
       },
       onError: (error) => {
         toast.error(error.response?.data?.message || 'Failed to add to cart')
@@ -44,6 +106,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
 
   const handleAddToCart = async (e) => {
     e.preventDefault()
+    e.stopPropagation()
     
     if (!user) {
       toast.error('Please login to add items to cart')
@@ -55,6 +118,17 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
       return
     }
 
+    // Validate quantity
+    if (quantity < productData.minOrderQuantity) {
+      toast.error(`Minimum order quantity is ${productData.minOrderQuantity} ${productData.unit}${productData.minOrderQuantity > 1 ? 's' : ''}`)
+      return
+    }
+
+    if (quantity > productData.maxOrderQuantity) {
+      toast.error(`Maximum available quantity is ${productData.maxOrderQuantity} ${productData.unit}${productData.maxOrderQuantity > 1 ? 's' : ''}`)
+      return
+    }
+
     setIsAddingToCart(true)
     addToCartMutation.mutate({
       productId: product._id,
@@ -62,15 +136,71 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
     })
   }
 
+  const handleQuantityChange = (e, action) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    let newQuantity = quantity;
+    
+    if (action === 'decrease') {
+      newQuantity = Math.max(productData.minOrderQuantity, quantity - 1)
+    } else if (action === 'increase') {
+      newQuantity = Math.min(productData.maxOrderQuantity, quantity + 1)
+    }
+    
+    setQuantity(newQuantity)
+  }
+
+  const handleDirectQuantityInput = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const value = parseInt(e.target.value) || productData.minOrderQuantity
+    const clampedValue = Math.max(
+      productData.minOrderQuantity, 
+      Math.min(productData.maxOrderQuantity, value)
+    )
+    setQuantity(clampedValue)
+  }
+
+  const handleQuantityKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      setShowQuantityInput(false)
+    }
+  }
+
+  const getQuantitySteps = () => {
+    // Quick quantity options based on product type
+    const steps = [productData.minOrderQuantity]
+    const max = Math.min(productData.maxOrderQuantity, 50)
+    
+    if (productData.unit === 'MT' || productData.unit === 'bags') {
+      // For bulk items like cement/steel
+      steps.push(5, 10, 25, 50)
+    } else if (productData.unit === 'numbers') {
+      // For bricks/blocks
+      steps.push(100, 500, 1000, 5000)
+    } else {
+      // Default steps
+      steps.push(5, 10, 20, 50)
+    }
+    
+    return [...new Set(steps)].filter(step => step <= max && step >= productData.minOrderQuantity).sort((a, b) => a - b)
+  }
+
   const formatPrice = (price) => {
     const numPrice = safeNumber(price);
-    if (numPrice === 0) return '₹0';
+    if (numPrice === 0) return '₹999';
     
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(numPrice)
+  }
+
+  const getTotalPrice = () => {
+    return formatPrice(productData.price * quantity)
   }
 
   const renderStars = (rating) => {
@@ -95,61 +225,98 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
     return stars
   }
 
-  // Extract data with proper fallbacks based on the actual database schema
-  const productData = {
-  _id: product._id || '',
-  name: safeRender(product.name, 'Unnamed Product'),
-  description: safeRender(product.description, 'No description available'),
-  
-  // Images - FIXED to match backend response
-  images: product.images || [],
-  primaryImage: product.primaryImage || product.image || (product.images?.[0]?.url),
-  
-  // Price from pricing.basePrice
-  price: safeNumber(product.pricing?.basePrice || product.price),
-  originalPrice: safeNumber(product.pricing?.originalPrice || product.originalPrice),
-  unit: safeRender(product.pricing?.unit || product.unit, 'unit'),
-  
-  // Stock from stock.available 
-  inStock: product.stock?.available > 0 || product.inStock || false,
-  stockQuantity: safeNumber(product.stock?.available || product.stockQuantity),
-  
-  // Ratings
-  averageRating: safeNumber(product.ratings?.average || product.averageRating),
-  reviewCount: safeNumber(product.ratings?.totalReviews || product.reviewCount || product.totalReviews),
-  
-  // Supplier info - FIXED to match backend response
-  supplier: {
-    _id: product.supplier?._id || '',
-    businessName: safeRender(
-      product.supplier?.companyName ||     // ← Backend sends 'companyName'
-      product.supplierName ||              // ← Backend also sends 'supplierName' 
-      product.supplier?.businessName ||    // ← Fallback for old data
-      product.supplier?.name,              // ← Another fallback
-      'Unknown Supplier'
-    ),
-    location: {
-      city: safeRender(product.supplier?.location?.city, ''),
-      state: safeRender(product.supplier?.location?.state, '')
-    }
-  },
-  
-  // Other fields
-  minOrderQuantity: safeNumber(product.pricing?.minimumQuantity || product.minOrderQuantity),
-  badge: product.badge
-};
+  // Enhanced Quantity Controls Component
+  const QuantityControls = () => (
+    <div className="quantity-section">
+      <div className="quantity-controls">
+        <button 
+          onClick={(e) => handleQuantityChange(e, 'decrease')}
+          className="quantity-btn decrease"
+          disabled={quantity <= productData.minOrderQuantity}
+          title="Decrease quantity"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M2 6h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+        
+        {showQuantityInput ? (
+          <input
+            type="number"
+            value={quantity}
+            onChange={handleDirectQuantityInput}
+            onKeyPress={handleQuantityKeyPress}
+            onBlur={() => setShowQuantityInput(false)}
+            className="quantity-input"
+            min={productData.minOrderQuantity}
+            max={productData.maxOrderQuantity}
+            autoFocus
+          />
+        ) : (
+          <span 
+            className="quantity-display"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setShowQuantityInput(true)
+            }}
+            title="Click to edit quantity"
+          >
+            {quantity}
+          </span>
+        )}
+        
+        <button 
+          onClick={(e) => handleQuantityChange(e, 'increase')}
+          className="quantity-btn increase"
+          disabled={quantity >= productData.maxOrderQuantity}
+          title="Increase quantity"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div className="quantity-info">
+        <span className="quantity-unit">{productData.unit}</span>
+        {productData.minOrderQuantity > 1 && (
+          <span className="min-order">Min: {productData.minOrderQuantity}</span>
+        )}
+      </div>
+      
+      {/* Quick quantity buttons */}
+      <div className="quantity-quick-select">
+        {getQuantitySteps().map(step => (
+          <button
+            key={step}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setQuantity(step)
+            }}
+            className={`quick-qty-btn ${quantity === step ? 'active' : ''}`}
+            disabled={step > productData.maxOrderQuantity}
+          >
+            {step}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 
+  // List view
   if (viewMode === 'list') {
     return (
       <div className="product-card list-view">
         <Link to={`/products/${productData._id}`} className="product-link">
           <div className="product-image-container">
             <ImageWithFallback
-  src={productData.primaryImage || '/placeholder-product.jpg'}
-  alt={productData.name}
-  className="product-image"
-  fallbackType="product"
-/>
+              src={productData.primaryImage}
+              alt={productData.name}
+              className="product-image"
+              fallbackType="product"
+            />
             {productData.badge && (
               <span className={`product-badge ${productData.badge.type}`}>
                 {productData.badge.text}
@@ -163,6 +330,10 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
             <Link to={`/products/${productData._id}`} className="product-link">
               <h3 className="product-name">{productData.name}</h3>
             </Link>
+            
+            <div className="product-category">
+              <span className="category-badge">{productData.category}</span>
+            </div>
             
             <p className="product-description">{productData.description}</p>
             
@@ -193,56 +364,51 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                 ({productData.reviewCount} reviews)
               </span>
             </div>
+
+            <div className="stock-info">
+              <span className={`stock-status ${productData.inStock ? 'in-stock' : 'out-of-stock'}`}>
+                {productData.inStock ? `${productData.stockQuantity} available` : 'Out of stock'}
+              </span>
+            </div>
           </div>
 
           <div className="product-actions">
             <div className="product-pricing">
-              <div className="price-main">
-                {formatPrice(productData.price)}
-                <span className="price-unit">/{productData.unit}</span>
-              </div>
-              {productData.originalPrice && productData.originalPrice > productData.price && (
-                <div className="price-original">
-                  {formatPrice(productData.originalPrice)}
+              <div className="price-info">
+                <div className="price-main">
+                  {formatPrice(productData.price)}
+                  <span className="price-unit">/{productData.unit}</span>
                 </div>
-              )}
+                {quantity > 1 && (
+                  <div className="total-price">
+                    Total: {getTotalPrice()}
+                  </div>
+                )}
+                {productData.originalPrice && productData.originalPrice > productData.price && (
+                  <div className="price-original">
+                    {formatPrice(productData.originalPrice)}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="quantity-controls">
-              <button 
-                onClick={(e) => {
-                  e.preventDefault()
-                  setQuantity(Math.max(1, quantity - 1))
-                }}
-                className="quantity-btn"
-                disabled={quantity <= 1}
-              >
-                -
-              </button>
-              <input 
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="quantity-input"
-                min="1"
-              />
-              <button 
-                onClick={(e) => {
-                  e.preventDefault()
-                  setQuantity(quantity + 1)
-                }}
-                className="quantity-btn"
-              >
-                +
-              </button>
-            </div>
+            <QuantityControls />
 
             <button 
               onClick={handleAddToCart}
               disabled={isAddingToCart || !productData.inStock}
               className="btn btn-primary add-to-cart-btn"
             >
-              {isAddingToCart ? '...' : !productData.inStock ? 'Out of Stock' : 'Add to Cart'}
+              {isAddingToCart ? (
+                <>
+                  <span className="loading-spinner"></span>
+                  ADDING...
+                </>
+              ) : (
+                <>
+                  ADD {quantity} {productData.unit.toUpperCase()}{quantity > 1 ? 'S' : ''} TO CART
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -256,20 +422,15 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
       <Link to={`/products/${productData._id}`} className="product-link">
         <div className="product-image-container">
           <ImageWithFallback
-  src={productData.primaryImage || '/placeholder-product.jpg'}
-  alt={productData.name}
-  className="product-image"
-  fallbackType="product"
-/>
+            src={productData.primaryImage}
+            alt={productData.name}
+            className="product-image"
+            fallbackType="product"
+          />
           {productData.badge && (
             <span className={`product-badge ${productData.badge.type}`}>
               {productData.badge.text}
             </span>
-          )}
-          {!productData.inStock && (
-            <div className="out-of-stock-overlay">
-              <span>Out of Stock</span>
-            </div>
           )}
         </div>
       </Link>
@@ -279,7 +440,12 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
           <h3 className="product-name">{productData.name}</h3>
         </Link>
         
+        <div className="product-category">
+          <span className="category-badge">{productData.category}</span>
+        </div>
+        
         <div className="product-supplier">
+          <span className="supplier-label">By </span>
           <Link 
             to={`/suppliers/${productData.supplier._id}`}
             className="supplier-name"
@@ -298,53 +464,48 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
         </div>
 
         <div className="product-pricing">
-          <div className="price-main">
-            {formatPrice(productData.price)}
-            <span className="price-unit">/{productData.unit}</span>
-          </div>
-          {productData.originalPrice && productData.originalPrice > productData.price && (
-            <div className="price-original">
-              {formatPrice(productData.originalPrice)}
+          <div className="price-info">
+            <div className="price-main">
+              {formatPrice(productData.price)}
+              <span className="price-unit">/{productData.unit}</span>
             </div>
-          )}
+            {quantity > 1 && (
+              <div className="total-price">
+                Total: {getTotalPrice()}
+              </div>
+            )}
+            {productData.originalPrice && productData.originalPrice > productData.price && (
+              <div className="price-original">
+                {formatPrice(productData.originalPrice)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="stock-info">
+          <span className={`stock-status ${productData.inStock ? 'in-stock' : 'out-of-stock'}`}>
+            {productData.inStock ? `${productData.stockQuantity} available` : 'Out of stock'}
+          </span>
         </div>
 
         <div className="product-actions">
-          <div className="quantity-controls">
-            <button 
-              onClick={(e) => {
-                e.preventDefault()
-                setQuantity(Math.max(1, quantity - 1))
-              }}
-              className="quantity-btn"
-              disabled={quantity <= 1}
-            >
-              -
-            </button>
-            <input 
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="quantity-input"
-              min="1"
-            />
-            <button 
-              onClick={(e) => {
-                e.preventDefault()
-                setQuantity(quantity + 1)
-              }}
-              className="quantity-btn"
-            >
-              +
-            </button>
-          </div>
-
+          <QuantityControls />
+          
           <button 
             onClick={handleAddToCart}
             disabled={isAddingToCart || !productData.inStock}
             className="btn btn-primary add-to-cart-btn"
           >
-            {isAddingToCart ? '...' : !productData.inStock ? 'Out of Stock' : 'Add to Cart'}
+            {isAddingToCart ? (
+              <>
+                <span className="loading-spinner"></span>
+                ADDING...
+              </>
+            ) : (
+              <>
+                ADD {quantity} {productData.unit.toUpperCase()}{quantity > 1 ? 'S' : ''} TO CART
+              </>
+            )}
           </button>
         </div>
       </div>

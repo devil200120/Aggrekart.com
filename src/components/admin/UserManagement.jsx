@@ -1,7 +1,7 @@
 /* 
 FILE: c:\Users\KIIT0001\Desktop\builder_website using mern\front-end\app\src\components\admin\UserManagement.jsx
-LINES: 1-150
-PURPOSE: User management table with search, filter, and actions
+LINES: 1-400
+PURPOSE: User management table with search, filter, and actions - WITH FUNCTIONAL ADD USER BUTTON
 */
 
 import React, { useState, useMemo } from 'react'
@@ -15,8 +15,10 @@ import {
   Mail,
   Phone,
   Calendar,
-  MapPin
+  MapPin,
+  Plus
 } from 'lucide-react'
+import AddUserModal from './AddUserModal'
 import './UserManagement.css'
 
 const UserManagement = ({ 
@@ -37,6 +39,7 @@ const UserManagement = ({
   const [sortOrder, setSortOrder] = useState('desc')
   const [showFilters, setShowFilters] = useState(false)
   const [selectedUsers, setSelectedUsers] = useState([])
+  const [showAddUserModal, setShowAddUserModal] = useState(false)
 
   // Filtered and sorted users
   const filteredUsers = useMemo(() => {
@@ -86,15 +89,25 @@ const UserManagement = ({
       setSelectedUsers(filteredUsers.map(user => user._id))
     }
   }
-  // Add this function after the existing utility functions
-const handleUserAction = (userId, action) => {
-  if (typeof onUpdateUser === 'function') {
-    onUpdateUser(userId, action)
-  } else {
-    console.error('onUpdateUser function not provided')
-    alert('Action handler not available')
+
+  // Handle user actions
+  const handleUserAction = (userId, action) => {
+    if (typeof onUpdateUser === 'function') {
+      onUpdateUser(userId, action)
+    } else {
+      console.error('onUpdateUser function not provided')
+      alert('Action handler not available')
+    }
   }
-}
+
+  // Handle user creation
+  const handleUserCreated = (newUser) => {
+    console.log('New user created:', newUser)
+    // Refresh the user list
+    if (typeof onRefresh === 'function') {
+      onRefresh()
+    }
+  }
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -146,7 +159,12 @@ const handleUserAction = (userId, action) => {
       <div className="user-management-header">
         <h3>User Management</h3>
         <div className="user-actions">
-          <button className="btn btn-primary">
+          <button 
+            className="btn btn-primary add-user-btn"
+            onClick={() => setShowAddUserModal(true)}
+            disabled={loading}
+          >
+            <Plus size={18} />
             Add User
           </button>
         </div>
@@ -292,7 +310,7 @@ const handleUserAction = (userId, action) => {
                     {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                   </div>
                 </td>
-              <td>
+                <td>
                   <div className="user-actions-dropdown">
                     <button 
                       className="action-trigger"
@@ -340,6 +358,13 @@ const handleUserAction = (userId, action) => {
           <p>Try adjusting your search or filter criteria.</p>
         </div>
       )}
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={showAddUserModal}
+        onClose={() => setShowAddUserModal(false)}
+        onUserCreated={handleUserCreated}
+      />
     </div>
   )
 }

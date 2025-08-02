@@ -110,6 +110,7 @@ export const productsAPI = {
   
   // GET /api/products/search
   searchProducts: (params) => api.get('/products/search', { params }),
+  getFeaturedProducts: (params) => api.get('/products/featured', { params }),
   
   // GET /api/products/recommendations
   getRecommendations: (params) => api.get('/products/recommendations', { params }),
@@ -439,6 +440,15 @@ uploadProductImages: (productId, formData) => api.post(`/products/${productId}/i
 }
 // Admin API - Administrative functions and dashboard
 export const adminAPI = {
+  // Add this function to the adminAPI object (around line 450):
+// Add this function to the adminAPI object (around line 520)
+
+// Analytics Export
+exportAnalytics: (params) => api.post('/admin/analytics/export', params, { responseType: 'blob' }),
+  // User Management
+  createUser: (userData) => api.post('/admin/users', userData),
+  
+  getUsers: (params) => api.get('/admin/users', { params }),
   // Dashboard and Statistics
   getDashboardStats: () => api.get('/admin/dashboard/stats'),
   
@@ -711,5 +721,33 @@ export const uploadAPI = {
   // Get file info
   getFileInfo: (fileId) => api.get(`/upload/${fileId}/info`),
 }
+// Add this to your existing api.js file
+
+// Newsletter API
+// Fix line 738 - change apiClient to api
+export const newsletterAPI = {
+  // Subscribe to newsletter
+  subscribe: async (email, source = 'homepage') => {
+    const response = await api.post('/newsletter/subscribe', {
+      email,
+      source
+    });
+    return response;  // Return response directly, not response.data
+  },
+
+  // Unsubscribe from newsletter
+  unsubscribe: async (email) => {
+    const response = await api.post('/newsletter/unsubscribe', {
+      email
+    });
+    return response;  // Return response directly, not response.data
+  },
+
+  // Get newsletter stats (admin only)
+  getStats: async () => {
+    const response = await api.get('/newsletter/stats');  // Changed from apiClient to api
+    return response;  // Return response directly, not response.data
+  }
+};
 
 export default api

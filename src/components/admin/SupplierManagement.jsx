@@ -43,11 +43,38 @@ const SupplierManagement = ({
     setActionData({ reason: '', commissionRate: '' })
   }
 
+  // Fixed status determination logic
   const getStatusBadge = (supplier) => {
-    if (supplier.rejectedAt) return <span className="status-badge rejected">Rejected</span>
-    if (!supplier.isApproved) return <span className="status-badge pending">Pending</span>
-    if (!supplier.isActive) return <span className="status-badge suspended">Suspended</span>
-    return <span className="status-badge approved">Approved</span>
+    console.log('Supplier status check:', {
+      supplierId: supplier.supplierId,
+      isApproved: supplier.isApproved,
+      isActive: supplier.isActive,
+      rejectedAt: supplier.rejectedAt,
+      suspendedAt: supplier.suspendedAt
+    })
+
+    // Check rejection first
+    if (supplier.rejectedAt) {
+      return <span className="status-badge rejected">Rejected</span>
+    }
+    
+    // Check if not approved yet
+    if (!supplier.isApproved) {
+      return <span className="status-badge pending">Pending</span>
+    }
+    
+    // Check if suspended (approved but not active)
+    if (supplier.isApproved && !supplier.isActive) {
+      return <span className="status-badge suspended">Suspended</span>
+    }
+    
+    // Active and approved
+    if (supplier.isApproved && supplier.isActive) {
+      return <span className="status-badge approved">Active</span>
+    }
+
+    // Default fallback
+    return <span className="status-badge pending">Unknown</span>
   }
 
   return (
@@ -61,9 +88,10 @@ const SupplierManagement = ({
             onChange={(e) => handleFilterChange('status', e.target.value)}
           >
             <option value="all">All Suppliers</option>
-            <option value="approved">Approved</option>
+            <option value="approved">Active</option>
             <option value="pending">Pending</option>
             <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
 
@@ -140,7 +168,7 @@ const SupplierManagement = ({
                     </div>
                   </td>
                   <td>{supplier.contactPersonName || supplier.tradeOwnerName}</td>
-                  <td>{supplier.user?.phoneNumber}</td>
+                  <td>{supplier.user?.phoneNumber || supplier.contactPersonNumber}</td>
                   <td>{supplier.state}</td>
                   <td>{getStatusBadge(supplier)}</td>
                   <td>{supplier.productCount || 0}</td>
@@ -164,7 +192,7 @@ const SupplierManagement = ({
                           </button>
                         </>
                       )}
-                      {supplier.isApproved && (
+                      {supplier.isApproved && !supplier.rejectedAt && (
                         <button 
                           onClick={() => openActionModal(supplier, supplier.isActive ? 'suspend' : 'unsuspend')}
                           className={supplier.isActive ? "btn-suspend" : "btn-activate"}
@@ -218,6 +246,7 @@ const SupplierManagement = ({
             <div className="modal-body">
               <p><strong>Company:</strong> {selectedSupplier?.companyName}</p>
               <p><strong>Supplier ID:</strong> {selectedSupplier?.supplierId}</p>
+              <p><strong>Current Status:</strong> {selectedSupplier && getStatusBadge(selectedSupplier)}</p>
               
               {actionType === 'approve' && (
                 <div className="form-group">
@@ -233,7 +262,7 @@ const SupplierManagement = ({
                 </div>
               )}
               
-                            {(actionType === 'reject' || actionType === 'suspend') && (
+              {(actionType === 'reject' || actionType === 'suspend') && (
                 <div className="form-group">
                   <label>Reason * (minimum 5 characters):</label>
                   <textarea
@@ -248,6 +277,17 @@ const SupplierManagement = ({
                   )}
                 </div>
               )}
+
+              {actionType === 'unsuspend' && (
+                <div className="form-group">
+                  <label>Activation Reason (optional):</label>
+                  <textarea
+                    value={actionData.reason}
+                    onChange={(e) => setActionData({...actionData, reason: e.target.value})}
+                    placeholder="Optional reason for reactivation..."
+                  />
+                </div>
+              )}
             </div>
             
             <div className="modal-actions">
@@ -257,15 +297,15 @@ const SupplierManagement = ({
               <button 
                 onClick={handleAction} 
                 className={`btn-confirm ${actionType}`}
-                                disabled={
+                disabled={
                   (actionType === 'reject' || actionType === 'suspend') && 
                   (!actionData.reason.trim() || actionData.reason.trim().length < 5)
                 }
               >
-                {actionType === 'approve' && 'Approve'}
-                {actionType === 'reject' && 'Reject'}
-                {actionType === 'suspend' && 'Suspend'}
-                {actionType === 'unsuspend' && 'Activate'}
+                {actionType === 'approve' && 'Approve Supplier'}
+                {actionType === 'reject' && 'Reject Supplier'}
+                {actionType === 'suspend' && 'Suspend Supplier'}
+                {actionType === 'unsuspend' && 'Activate Supplier'}
               </button>
             </div>
           </div>

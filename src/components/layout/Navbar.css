@@ -769,5 +769,76 @@
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   transform: translateX(5px);
 }
+/* Search Bar Integration */
+.navbar-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 2rem;
+}
 
+.desktop-search {
+  display: none;
+}
+
+.mobile-search {
+  padding: 15px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-search .search-bar.expanded .search-input-container {
+  width: 100%;
+}
+
+/* Updated navbar actions */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Desktop responsive */
+@media (min-width: 1024px) {
+  .desktop-search {
+    display: flex;
+  }
+  
+  .navbar-content {
+    gap: 0;
+  }
+  
+  /* Hide mobile search on desktop */
+  .mobile-search {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .desktop-search {
+    display: flex;
+  }
+  
+  /* Hide mobile search on tablet and larger screens */
+  .mobile-search {
+    display: none;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .desktop-search {
+    display: none;
+  }
+  
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+  
+  /* Ensure mobile search is visible on mobile */
+  .mobile-search {
+    display: block;
+  }
+}
 /* ...rest of existing CSS... */

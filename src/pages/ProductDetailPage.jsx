@@ -6,8 +6,6 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { toast } from 'react-hot-toast'
 import LoadingSpinner from '../components/common/LoadingSpinner'
-import ErrorMessage from '../components/common/ErrorMessage'
-import ImageWithFallback from '../components/common/ImageWithFallback'
 import ReviewSection from '../components/products/ReviewSection'
 import './ProductDetailPage.css'
 
@@ -18,14 +16,14 @@ const ProductDetailPage = () => {
   const { refreshCart } = useCart()
   const queryClient = useQueryClient()
   
-  // ALL HOOKS MUST BE CALLED AT THE TOP LEVEL - NEVER CONDITIONALLY
+  // State management
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [showFullDescription, setShowFullDescription] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('description')
+  const [activeTab, setActiveTab] = useState('overview')
+  const [isWishlisted, setIsWishlisted] = useState(false)
 
-  // Fetch product details - This hook must always be called
+  // Fetch product details
   const { data: response, isLoading, error } = useQuery(
     ['product', productId],
     () => productsAPI.getProduct(productId),
@@ -38,7 +36,7 @@ const ProductDetailPage = () => {
     }
   )
 
-  // Add to cart mutation - This hook must always be called
+  // Add to cart mutation
   const addToCartMutation = useMutation(
     (data) => cartAPI.addToCart(data),
     {
@@ -53,12 +51,13 @@ const ProductDetailPage = () => {
     }
   )
 
-  // Add to wishlist mutation - This hook must always be called
+  // Add to wishlist mutation
   const addToWishlistMutation = useMutation(
     (productId) => wishlistAPI.addToWishlist(productId),
     {
       onSuccess: () => {
         toast.success('Added to wishlist!')
+        setIsWishlisted(true)
         queryClient.invalidateQueries('wishlist')
       },
       onError: (error) => {
@@ -67,13 +66,10 @@ const ProductDetailPage = () => {
     }
   )
 
-  // Helper functions - These are safe to define here
+  // Helper functions
   const safeRender = (value, defaultValue = 'N/A') => {
     if (value === null || value === undefined || value === '') {
       return defaultValue
-    }
-    if (typeof value === 'object') {
-      return JSON.stringify(value)
     }
     return String(value)
   }
@@ -81,10 +77,6 @@ const ProductDetailPage = () => {
   const safeNumber = (value, defaultValue = 0) => {
     const num = Number(value)
     return isNaN(num) ? defaultValue : num
-  }
-
-  const calculateAvailableStock = (stock) => {
-    return Math.max(0, stock?.available || 0)
   }
 
   const formatPrice = (price) => {
@@ -95,7 +87,24 @@ const ProductDetailPage = () => {
     }).format(price)
   }
 
-  // Process product data - This should be done after hooks
+  const renderStars = (rating) => {
+    const stars = []
+    const fullStars = Math.floor(rating)
+    const hasHalfStar = rating % 1 !== 0
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<span key={i} className="star filled">★</span>)
+    }
+    if (hasHalfStar) {
+      stars.push(<span key="half" className="star half">★</span>)
+    }
+    for (let i = stars.length; i < 5; i++) {
+      stars.push(<span key={i} className="star empty">☆</span>)
+    }
+    return stars
+  }
+
+  // Process product data
   let productData = null
   let images = []
   let hasImages = false
@@ -116,7 +125,6 @@ const ProductDetailPage = () => {
       brand: safeRender(product.brand),
       hsnCode: safeRender(product.hsnCode),
       deliveryTime: safeRender(product.deliveryTime),
-      productId: safeRender(product.productId),
       averageRating: safeNumber(product.averageRating),
       totalReviews: safeNumber(product.totalReviews),
       
@@ -140,12 +148,7 @@ const ProductDetailPage = () => {
       },
       supplier: product.supplier ? {
         _id: product.supplier._id || '',
-        companyName: safeRender(
-          product.supplier.companyName || 
-          product.supplier.businessName || 
-          product.supplier.name, 
-          'Unknown Supplier'
-        ),
+        companyName: safeRender(product.supplier.companyName, 'Unknown Supplier'),
         rating: safeNumber(product.supplier.rating),
         totalOrders: safeNumber(product.supplier.totalOrders),
         location: product.supplier.location || {}
@@ -157,11 +160,11 @@ const ProductDetailPage = () => {
     hasImages = images.length > 0
     price = productData.pricing.basePrice
     minQuantity = productData.pricing.minimumQuantity
-    stockQuantity = calculateAvailableStock(productData.stock)
+    stockQuantity = productData.stock.available
     isInStock = stockQuantity > 0
   }
 
-  // Effect to update quantity when minimum quantity changes
+  // Effects
   useEffect(() => {
     if (minQuantity > 0) {
       setQuantity(minQuantity)
@@ -207,83 +210,47 @@ const ProductDetailPage = () => {
     addToWishlistMutation.mutate(productData._id)
   }
 
-  const handleBuyNow = () => {
-    if (!user) {
-      toast.error('Please login to purchase')
-      navigate('/auth/login')
-      return
+  const handleQuantityChange = (newQuantity) => {
+    if (newQuantity >= minQuantity && newQuantity <= stockQuantity) {
+      setQuantity(newQuantity)
     }
-
-    if (user.role === 'supplier') {
-      toast.error('Suppliers cannot purchase products')
-      return
-    }
-
-    if (!isInStock || stockQuantity < quantity) {
-      toast.error('Product is out of stock')
-      return
-    }
-
-    addToCartMutation.mutate(
-      {
-        productId: productData._id,
-        quantity
-      },
-      {
-        onSuccess: () => {
-          navigate('/checkout')
-        }
-      }
-    )
   }
 
-  // Render loading state
+  // Loading state
   if (isLoading) {
     return (
-      <div className="product-detail-loading">
-        <LoadingSpinner size="large" />
-        <p>Loading product details...</p>
+      <div className="swiggy-product-loading">
+        <div className="loading-container">
+          <div className="swiggy-spinner"></div>
+          <h3>Loading Product...</h3>
+          <p>Please wait while we fetch the details</p>
+        </div>
       </div>
     )
   }
 
-  // Render error state
-  if (error) {
+  // Error state
+  if (error || !productData) {
     return (
-      <div className="product-detail-error">
-        <ErrorMessage 
-          message={error.response?.data?.message || error.message || 'Failed to load product details'} 
-        />
-        <div className="error-actions">
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
-            Try Again
-          </button>
-          <button onClick={() => navigate('/products')} className="btn btn-secondary">
-            Back to Products
+      <div className="swiggy-product-error">
+        <div className="error-container">
+          <div className="error-icon">😕</div>
+          <h2>Product Not Found</h2>
+          <p>The product you're looking for doesn't exist or has been removed.</p>
+          <button onClick={() => navigate('/products')} className="swiggy-btn swiggy-btn-primary">
+            <span className="btn-icon">🔍</span>
+            Browse Products
           </button>
         </div>
       </div>
     )
   }
 
-  // Render product not found
-  if (!productData) {
-    return (
-      <div className="product-detail-error">
-        <ErrorMessage message="Product not found" />
-        <button onClick={() => navigate('/products')} className="btn btn-primary">
-          Back to Products
-        </button>
-      </div>
-    )
-  }
-
-  // Main render
   return (
-    <div className="product-detail-page">
-      <div className="container">
+    <div className="swiggy-product-detail">
+      <div className="swiggy-container">
         {/* Breadcrumb */}
-        <nav className="breadcrumb">
+        <nav className="swiggy-breadcrumb">
           <button onClick={() => navigate('/')} className="breadcrumb-link">
             <span className="breadcrumb-icon">🏠</span>
             Home
@@ -293,64 +260,51 @@ const ProductDetailPage = () => {
             Products
           </button>
           <span className="breadcrumb-separator">›</span>
-          <span className="breadcrumb-current">{productData.category}</span>
-          <span className="breadcrumb-separator">›</span>
           <span className="breadcrumb-current">{productData.name}</span>
         </nav>
 
-        <div className="product-detail-content">
-          {/* Product Images Section */}
-          <div className="product-images-section">
+        {/* Main Product Section */}
+        <div className="swiggy-product-main">
+          {/* Product Images */}
+          <div className="swiggy-product-images">
             <div className="main-image-container">
               {hasImages ? (
-                <div className="main-image" onClick={() => setShowImageModal(true)}>
-                  <ImageWithFallback
-                    src={images[selectedImage]?.url || images[0]?.url}
-                    alt={productData.name}
-                    className="product-main-image"
-                    fallbackType="product"
-                  />
-                  <div className="image-overlay">
-                    <span className="zoom-hint">🔍 Click to zoom</span>
-                  </div>
-                </div>
+                <img 
+                  src={images[selectedImage]?.url || '/placeholder-product.jpg'}
+                  alt={productData.name}
+                  className="main-image"
+                  onClick={() => setShowImageModal(true)}
+                  onError={(e) => { e.target.src = '/placeholder-product.jpg' }}
+                />
               ) : (
                 <div className="no-image-placeholder">
-                  <div className="placeholder-content">
-                    <div className="placeholder-icon">📦</div>
-                    <span className="placeholder-text">No Image Available</span>
-                    <small className="placeholder-subtext">Product images will appear here</small>
-                  </div>
+                  <span className="placeholder-icon">📦</span>
+                  <span>No Image Available</span>
                 </div>
               )}
               
-              {/* Image indicators for mobile */}
-              {hasImages && images.length > 1 && (
-                <div className="image-indicators">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`indicator ${selectedImage === index ? 'active' : ''}`}
-                      onClick={() => setSelectedImage(index)}
-                    />
-                  ))}
+              {/* Image zoom indicator */}
+              {hasImages && (
+                <div className="zoom-indicator">
+                  <span className="zoom-icon">🔍</span>
+                  Click to zoom
                 </div>
               )}
             </div>
-            
-            {/* Thumbnail gallery for desktop */}
+
+            {/* Thumbnail Images */}
             {hasImages && images.length > 1 && (
-              <div className="image-thumbnails">
+              <div className="thumbnail-container">
                 {images.map((image, index) => (
                   <button
                     key={index}
                     className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <ImageWithFallback
-                      src={image.url}
+                    <img 
+                      src={image.url} 
                       alt={`${productData.name} ${index + 1}`}
-                      fallbackType="product"
+                      onError={(e) => { e.target.src = '/placeholder-product.jpg' }}
                     />
                   </button>
                 ))}
@@ -358,57 +312,50 @@ const ProductDetailPage = () => {
             )}
           </div>
 
-          {/* Product Info Section */}
-          <div className="product-info-section">
+          {/* Product Information */}
+          <div className="swiggy-product-info">
             {/* Product Header */}
             <div className="product-header">
-              <h1 className="product-title">{productData.name}</h1>
-              
-              {/* Brand & Category */}
-              <div className="product-meta">
-                {productData.brand && productData.brand !== 'N/A' && (
-                  <span className="product-brand">
-                    <span className="meta-label">Brand:</span> {productData.brand}
-                  </span>
+              <div className="product-category">
+                <span className="category-badge">{productData.category}</span>
+                {productData.subcategory && (
+                  <span className="subcategory-badge">{productData.subcategory}</span>
                 )}
-                <span className="product-category">
-                  <span className="meta-label">Category:</span> {productData.category}
-                </span>
               </div>
-              
-              {/* Rating */}
+
+              <h1 className="product-title">{productData.name}</h1>
+
+              {/* Rating and Reviews */}
               <div className="product-rating">
                 <div className="rating-stars">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span 
-                      key={star} 
-                      className={`star ${star <= productData.averageRating ? 'filled' : ''}`}
-                    >
-                      ★
-                    </span>
-                  ))}
+                  {renderStars(productData.averageRating)}
                 </div>
-                <span className="rating-text">
-                  {productData.averageRating.toFixed(1)} ({productData.totalReviews} review{productData.totalReviews !== 1 ? 's' : ''})
-                </span>
+                <div className="rating-info">
+                  <span className="rating-value">{productData.averageRating.toFixed(1)}</span>
+                  <span className="rating-count">({productData.totalReviews} reviews)</span>
+                </div>
               </div>
+
+              {/* Brand */}
+              {productData.brand && productData.brand !== 'N/A' && (
+                <div className="product-brand">
+                  <span className="brand-label">Brand:</span>
+                  <span className="brand-name">{productData.brand}</span>
+                </div>
+              )}
             </div>
 
             {/* Price Section */}
-            <div className="price-section">
+            <div className="swiggy-price-section">
               <div className="price-main">
-                <span className="current-price">
-                  {formatPrice(price)}
-                </span>
+                <span className="current-price">{formatPrice(price)}</span>
                 <span className="price-unit">/{productData.pricing.unit}</span>
               </div>
+              
               <div className="price-details">
-                <span className="gst-info">
-                  {productData.pricing.includesGST ? 
-                    `Inclusive of ${productData.pricing.gstRate}% GST` : 
-                    `+ ${productData.pricing.gstRate}% GST`
-                  }
-                </span>
+                {productData.pricing.includesGST && (
+                  <span className="gst-info">+ {productData.pricing.gstRate}% GST</span>
+                )}
                 {minQuantity > 1 && (
                   <span className="min-order">
                     Minimum order: {minQuantity} {productData.pricing.unit}
@@ -417,8 +364,8 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Stock & Availability */}
-            <div className="availability-section">
+            {/* Stock Status */}
+            <div className="swiggy-stock-section">
               <div className={`stock-status ${isInStock ? 'in-stock' : 'out-of-stock'}`}>
                 <span className="status-icon">
                   {isInStock ? '✓' : '✗'}
@@ -439,102 +386,98 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            {/* Quantity & Actions */}
-            {isInStock && (
-              <div className="purchase-section">
-                <div className="quantity-section">
-                  <label className="quantity-label">Quantity:</label>
-                  <div className="quantity-controls">
-                    <button 
-                      onClick={() => setQuantity(Math.max(minQuantity, quantity - 1))}
-                      disabled={quantity <= minQuantity}
-                      className="quantity-btn"
-                      aria-label="Decrease quantity"
-                    >
-                      −
-                    </button>
-                    <input 
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(minQuantity, parseInt(e.target.value) || minQuantity))}
-                      min={minQuantity}
-                      max={stockQuantity}
-                      className="quantity-input"
-                      aria-label="Product quantity"
-                    />
-                    <button 
-                      onClick={() => setQuantity(Math.min(stockQuantity, quantity + 1))}
-                      disabled={quantity >= stockQuantity}
-                      className="quantity-btn"
-                      aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span className="quantity-unit">{productData.pricing.unit}</span>
-                </div>
-
-                <div className="action-buttons">
+            {/* Quantity Selector */}
+            {isInStock && user && user.role !== 'supplier' && (
+              <div className="swiggy-quantity-section">
+                <label className="quantity-label">Quantity:</label>
+                <div className="quantity-controls">
                   <button 
-                    onClick={handleAddToCart}
-                    disabled={addToCartMutation.isLoading}
-                    className="btn btn-secondary add-to-cart-btn"
+                    className="quantity-btn"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    disabled={quantity <= minQuantity}
                   >
-                    <span className="btn-icon">🛒</span>
-                    {addToCartMutation.isLoading ? 'Adding...' : 'Add to Cart'}
+                    -
                   </button>
-                  
+                  <span className="quantity-value">
+                    {quantity} {productData.pricing.unit}
+                  </span>
                   <button 
-                    onClick={handleBuyNow}
-                    disabled={addToCartMutation.isLoading}
-                    className="btn btn-primary buy-now-btn"
+                    className="quantity-btn"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    disabled={quantity >= stockQuantity}
                   >
-                    <span className="btn-icon">⚡</span>
-                    Buy Now
-                  </button>
-                  
-                  <button 
-                    onClick={handleAddToWishlist}
-                    disabled={addToWishlistMutation.isLoading}
-                    className="btn btn-outline wishlist-btn"
-                    title="Add to Wishlist"
-                    aria-label="Add to wishlist"
-                  >
-                    ♡
+                    +
                   </button>
                 </div>
-
-                {/* Total Price Display */}
-                <div className="total-price">
-                  <span className="total-label">Total: </span>
-                  <span className="total-amount">{formatPrice(price * quantity)}</span>
-                </div>
+                <span className="quantity-info">
+                  Min: {minQuantity} • Max: {stockQuantity}
+                </span>
               </div>
             )}
 
-            {/* Supplier Info */}
+            {/* Action Buttons */}
+            <div className="swiggy-action-buttons">
+              {user && user.role !== 'supplier' ? (
+                <>
+                  <button 
+                    className={`swiggy-btn swiggy-btn-primary ${!isInStock ? 'disabled' : ''}`}
+                    onClick={handleAddToCart}
+                    disabled={!isInStock || addToCartMutation.isLoading}
+                  >
+                    {addToCartMutation.isLoading ? (
+                      <>
+                        <span className="btn-spinner">⏳</span>
+                        Adding to Cart...
+                      </>
+                    ) : (
+                      <>
+                        <span className="btn-icon">🛒</span>
+                        Add to Cart
+                      </>
+                    )}
+                  </button>
+
+                  <button 
+                    className={`swiggy-btn swiggy-btn-outline ${isWishlisted ? 'wishlisted' : ''}`}
+                    onClick={handleAddToWishlist}
+                    disabled={addToWishlistMutation.isLoading}
+                  >
+                    <span className="btn-icon">{isWishlisted ? '❤️' : '🤍'}</span>
+                    {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
+                  </button>
+                </>
+              ) : !user ? (
+                <button 
+                  className="swiggy-btn swiggy-btn-primary"
+                  onClick={() => navigate('/auth/login')}
+                >
+                  <span className="btn-icon">🔐</span>
+                  Login to Purchase
+                </button>
+              ) : (
+                <div className="supplier-notice">
+                  <span className="notice-icon">ℹ️</span>
+                  Suppliers cannot purchase products
+                </div>
+              )}
+            </div>
+
+            {/* Supplier Information */}
             {productData.supplier && (
-              <div className="supplier-section">
-                <h4 className="supplier-title">
-                  <span className="supplier-icon">🏪</span>
-                  Supplier Information
-                </h4>
+              <div className="swiggy-supplier-info">
+                <h3 className="supplier-title">Sold by</h3>
                 <div className="supplier-card">
+                  <div className="supplier-icon">🏪</div>
                   <div className="supplier-details">
                     <div className="supplier-name">{productData.supplier.companyName}</div>
-                    {productData.supplier.location.city && (
-                      <div className="supplier-location">
-                        <span className="location-icon">📍</span>
-                        {productData.supplier.location.city}
-                        {productData.supplier.location.state && `, ${productData.supplier.location.state}`}
-                      </div>
-                    )}
-                    {productData.supplier.rating > 0 && (
-                      <div className="supplier-rating">
-                        <span className="rating-icon">⭐</span>
-                        {productData.supplier.rating.toFixed(1)} supplier rating
-                      </div>
-                    )}
+                    <div className="supplier-stats">
+                      <span className="supplier-rating">
+                        ⭐ {productData.supplier.rating.toFixed(1)}
+                      </span>
+                      <span className="supplier-orders">
+                        📦 {productData.supplier.totalOrders} orders
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -543,153 +486,142 @@ const ProductDetailPage = () => {
         </div>
 
         {/* Product Details Tabs */}
-        <div className="product-details-section">
-          <div className="details-tabs">
+        <div className="swiggy-product-tabs">
+          <div className="tab-navigation">
             <button 
-              className={`tab ${activeTab === 'description' ? 'active' : ''}`}
-              onClick={() => setActiveTab('description')}
+              className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
             >
-              Description
+              <span className="tab-icon">📋</span>
+              Overview
             </button>
             <button 
-              className={`tab ${activeTab === 'specifications' ? 'active' : ''}`}
+              className={`tab-btn ${activeTab === 'specifications' ? 'active' : ''}`}
               onClick={() => setActiveTab('specifications')}
             >
+              <span className="tab-icon">⚙️</span>
               Specifications
             </button>
             <button 
-              className={`tab ${activeTab === 'details' ? 'active' : ''}`}
-              onClick={() => setActiveTab('details')}
+              className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reviews')}
             >
-              Product Details
+              <span className="tab-icon">⭐</span>
+              Reviews ({productData.totalReviews})
             </button>
           </div>
 
-          <div className="details-content">
-            {/* Description Tab */}
-            {activeTab === 'description' && (
-              <div className="tab-content">
-                {productData.description && productData.description !== 'N/A' ? (
-                  <div className="description-content">
-                    <p className={showFullDescription ? 'full' : 'truncated'}>
-                      {productData.description}
-                    </p>
-                    {productData.description.length > 200 && (
-                      <button 
-                        className="description-toggle"
-                        onClick={() => setShowFullDescription(!showFullDescription)}
-                      >
-                        {showFullDescription ? 'Show Less' : 'Read More'}
-                      </button>
+          <div className="tab-content">
+            {activeTab === 'overview' && (
+              <div className="overview-content">
+                <div className="product-description">
+                  <h3>Product Description</h3>
+                  <p>{productData.description || 'No description available for this product.'}</p>
+                </div>
+
+                <div className="product-highlights">
+                  <h3>Key Features</h3>
+                  <div className="highlights-grid">
+                    <div className="highlight-item">
+                      <span className="highlight-icon">📦</span>
+                      <div className="highlight-content">
+                        <strong>Category</strong>
+                        <span>{productData.category}</span>
+                      </div>
+                    </div>
+                    
+                    {productData.hsnCode && productData.hsnCode !== 'N/A' && (
+                      <div className="highlight-item">
+                        <span className="highlight-icon">🏷️</span>
+                        <div className="highlight-content">
+                          <strong>HSN Code</strong>
+                          <span>{productData.hsnCode}</span>
+                        </div>
+                      </div>
                     )}
+                    
+                    <div className="highlight-item">
+                      <span className="highlight-icon">📏</span>
+                      <div className="highlight-content">
+                        <strong>Unit</strong>
+                        <span>{productData.pricing.unit}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="highlight-item">
+                      <span className="highlight-icon">🚚</span>
+                      <div className="highlight-content">
+                        <strong>Delivery Time</strong>
+                        <span>{productData.deliveryTime}</span>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="no-content">
-                    <span className="no-content-icon">📝</span>
-                    <p>No description available for this product.</p>
-                  </div>
-                )}
+                </div>
               </div>
             )}
 
-            {/* Specifications Tab */}
             {activeTab === 'specifications' && (
-              <div className="tab-content">
+              <div className="specifications-content">
+                <h3>Technical Specifications</h3>
                 {Object.keys(productData.specifications).length > 0 ? (
-                  <div className="specifications-grid">
+                  <div className="specs-table">
                     {Object.entries(productData.specifications).map(([key, value]) => (
-                      <div key={key} className="spec-item">
-                        <span className="spec-label">{key}</span>
-                        <span className="spec-value">{safeRender(value)}</span>
+                      <div key={key} className="spec-row">
+                        <span className="spec-label">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                        <span className="spec-value">{value}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="no-content">
-                    <span className="no-content-icon">📋</span>
-                    <p>No specifications available for this product.</p>
+                  <div className="no-specs">
+                    <span className="no-specs-icon">📋</span>
+                    <p>No detailed specifications available for this product.</p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Product Details Tab */}
-            {activeTab === 'details' && (
-              <div className="tab-content">
-                <div className="details-grid">
-                  <div className="detail-item">
-                    <span className="detail-label">Category</span>
-                    <span className="detail-value">{productData.category}</span>
-                  </div>
-                  {productData.subcategory && productData.subcategory !== 'N/A' && (
-                    <div className="detail-item">
-                      <span className="detail-label">Subcategory</span>
-                      <span className="detail-value">{productData.subcategory}</span>
-                    </div>
-                  )}
-                  {productData.hsnCode && productData.hsnCode !== 'N/A' && (
-                    <div className="detail-item">
-                      <span className="detail-label">HSN Code</span>
-                      <span className="detail-value">{productData.hsnCode}</span>
-                    </div>
-                  )}
-                  <div className="detail-item">
-                    <span className="detail-label">Unit</span>
-                    <span className="detail-value">{productData.pricing.unit}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Delivery Time</span>
-                    <span className="detail-value">{productData.deliveryTime}</span>
-                  </div>
-                  {productData.productId && productData.productId !== 'N/A' && (
-                    <div className="detail-item">
-                      <span className="detail-label">Product ID</span>
-                      <span className="detail-value">{productData.productId}</span>
-                    </div>
-                  )}
-                </div>
+            {activeTab === 'reviews' && (
+              <div className="reviews-content">
+                <ReviewSection productId={productData._id} />
               </div>
             )}
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <ReviewSection productId={productData._id} />
-
         {/* Image Modal */}
         {showImageModal && hasImages && (
-          <div className="image-modal" onClick={() => setShowImageModal(false)}>
+          <div className="swiggy-image-modal" onClick={() => setShowImageModal(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <button 
                 className="modal-close"
                 onClick={() => setShowImageModal(false)}
-                aria-label="Close modal"
               >
                 ✕
               </button>
               <img 
-                src={images[selectedImage]?.url} 
+                src={images[selectedImage]?.url}
                 alt={productData.name}
                 className="modal-image"
+                onError={(e) => { e.target.src = '/placeholder-product.jpg' }}
               />
-              {images.length > 1 && (
-                <div className="modal-navigation">
-                  <button 
-                    className="nav-btn prev"
-                    onClick={() => setSelectedImage(selectedImage > 0 ? selectedImage - 1 : images.length - 1)}
-                    aria-label="Previous image"
-                  >
-                    ‹
-                  </button>
-                  <button 
-                    className="nav-btn next"
-                    onClick={() => setSelectedImage(selectedImage < images.length - 1 ? selectedImage + 1 : 0)}
-                    aria-label="Next image"
-                  >
-                    ›
-                  </button>
-                </div>
-              )}
+              <div className="modal-navigation">
+                <button 
+                  className="nav-btn prev"
+                  onClick={() => setSelectedImage(selectedImage > 0 ? selectedImage - 1 : images.length - 1)}
+                >
+                  ‹
+                </button>
+                <span className="image-counter">
+                  {selectedImage + 1} / {images.length}
+                </span>
+                <button 
+                  className="nav-btn next"
+                  onClick={() => setSelectedImage(selectedImage < images.length - 1 ? selectedImage + 1 : 0)}
+                >
+                  ›
+                </button>
+              </div>
             </div>
           </div>
         )}

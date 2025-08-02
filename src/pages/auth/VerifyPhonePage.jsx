@@ -1,10 +1,9 @@
-// Enhanced VerifyPhonePage.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
-import './AuthPages.css'
+import './VerifyPhone.css'
 
 const VerifyPhonePage = () => {
   const navigate = useNavigate()
@@ -145,7 +144,10 @@ const VerifyPhonePage = () => {
     setIsResending(true)
     
     try {
-      const response = await authAPI.resendOtp({ phoneNumber })
+      const response = await authAPI.resendOTP({
+        type: 'phone',
+        identifier: phoneNumber
+      })
       
       if (response.success) {
         toast.success('New OTP sent successfully!')
@@ -153,12 +155,24 @@ const VerifyPhonePage = () => {
         setCanResend(false)
         setOtp(['', '', '', '', '', ''])
         otpRefs.current[0]?.focus()
+        
+        if (import.meta.env.MODE === 'development' && response.devOtp) {
+          toast.success(`Development: New OTP: ${response.devOtp}`, { duration: 5000 })
+        }
       } else {
         toast.error(response.message || 'Failed to resend OTP')
       }
     } catch (error) {
       console.error('Resend OTP error:', error)
-      toast.error('Failed to resend OTP. Please try again.')
+      
+      if (error.response?.status === 400) {
+        toast.error(error.response.data?.message || 'Invalid request')
+      } else if (error.response?.status === 404) {
+        toast.error('User not found. Please register again.')
+        navigate('/auth/register')
+      } else {
+        toast.error('Failed to resend OTP. Please try again.')
+      }
     } finally {
       setIsResending(false)
     }
@@ -179,131 +193,170 @@ const VerifyPhonePage = () => {
   }
 
   return (
-    <div className="otp-verification-page">
-      <div className="otp-container">
-        {/* Header */}
-        <div className="otp-header">
-          <div className="otp-logo">
-            <span className="logo-icon">🏗️</span>
-            Aggrekart
+    <div className="verify-phone-page">
+      <div className="verify-phone-container">
+        {/* Background Elements */}
+        <div className="bg-elements">
+          <div className="bg-circle bg-circle-1"></div>
+          <div className="bg-circle bg-circle-2"></div>
+          <div className="bg-pattern"></div>
+        </div>
+
+        {/* Header Section */}
+        <div className="verify-header">
+          <div className="brand-section">
+            <div className="brand-logo">
+              <span className="logo-icon">🏗️</span>
+              <span className="brand-name">Aggrekart</span>
+            </div>
+            <p className="brand-tagline">Building dreams, delivering quality</p>
           </div>
           
-          <div className="otp-icon">
-            📱
+          <div className="verification-hero">
+            <div className="hero-icon">
+              <div className="phone-icon">📱</div>
+              <div className="verification-badge">✓</div>
+            </div>
+            <h1 className="hero-title">Verify Your Phone Number</h1>
+            <p className="hero-subtitle">
+              We've sent a 6-digit verification code to
+            </p>
+            <div className="phone-display">
+              <span className="country-code">+91</span>
+              <span className="phone-number">{phoneNumber}</span>
+              <button 
+                className="edit-phone-btn"
+                onClick={() => navigate('/auth/register')}
+                title="Edit phone number"
+              >
+                ✏️
+              </button>
+            </div>
           </div>
-          
-          <h1 className="otp-title">Verify Phone Number</h1>
-          <p className="otp-subtitle">
-            We've sent a 6-digit verification code to
-            <br />
-            <span className="phone-display">+91 {phoneNumber}</span>
-          </p>
         </div>
 
         {/* OTP Input Section */}
-        <div className="otp-input-section">
-          <label className="otp-input-label">Enter verification code</label>
-          <div className="otp-inputs-container">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (otpRefs.current[index] = el)}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                onPaste={index === 0 ? handlePaste : undefined}
-                className={`otp-input ${digit ? 'filled' : ''}`}
-                disabled={isSubmitting}
-                autoFocus={index === 0}
-              />
-            ))}
+        <div className="otp-section">
+          <div className="otp-input-container">
+            <label className="otp-label">Enter 6-digit verification code</label>
+            <div className="otp-inputs">
+              {otp.map((digit, index) => (
+                <div key={index} className="otp-input-wrapper">
+                  <input
+                    ref={(el) => (otpRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={index === 0 ? handlePaste : undefined}
+                    className={`otp-input ${digit ? 'filled' : ''} ${isSubmitting ? 'submitting' : ''}`}
+                    disabled={isSubmitting}
+                    autoFocus={index === 0}
+                  />
+                  <div className="input-underline"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Timer Section */}
+          <div className="timer-section">
+            {!canResend ? (
+              <div className="timer-active">
+                <div className="timer-display">
+                  <div className="timer-icon">⏱️</div>
+                  <span className="timer-text">Code expires in</span>
+                  <span className="timer-countdown">{formatTime(timer)}</span>
+                </div>
+                <div className="timer-progress">
+                  <div 
+                    className="progress-bar" 
+                    style={{ width: `${100 - getTimerProgress()}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="resend-section">
+                <p className="resend-info">Didn't receive the code?</p>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={isResending}
+                  className="resend-btn"
+                >
+                  <span className="resend-icon">🔄</span>
+                  {isResending ? 'Sending new code...' : 'Resend verification code'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="action-buttons">
+            <button
+              type="button"
+              onClick={handleVerifyOtp}
+              disabled={isSubmitting || otp.join('').length !== 6}
+              className="verify-btn primary-btn"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="loading-spinner"></div>
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <>
+                  <span>Verify & Continue</span>
+                  <span className="btn-arrow">→</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/auth/register')}
+              className="back-btn secondary-btn"
+            >
+              <span className="btn-arrow">←</span>
+              <span>Back to Registration</span>
+            </button>
           </div>
         </div>
 
-        {/* Timer and Resend Section */}
-        <div className="otp-timer">
-          {!canResend ? (
-            <>
-              <div className="timer-display">
-                <span className="timer-icon">⏱️</span>
-                Code expires in {formatTime(timer)}
-              </div>
-              <div className="timer-progress">
-                <div 
-                  className="timer-progress-bar" 
-                  style={{ width: `${getTimerProgress()}%` }}
-                />
-              </div>
-              <p className="resend-text">Didn't receive the code?</p>
-            </>
-          ) : (
-            <div className="resend-section">
-              <p className="resend-text">Didn't receive the code?</p>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={isResending}
-                className="resend-button"
-              >
-                {isResending ? (
-                  <span className="spinner-container">
-                    <span className="spinner-small"></span>
-                    Sending...
-                  </span>
-                ) : (
-                  '🔄 Resend Code'
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="otp-actions">
-          <button
-            type="button"
-            onClick={handleVerifyOtp}
-            disabled={isSubmitting || otp.join('').length !== 6}
-            className="verify-button"
-          >
-            {isSubmitting ? (
-              <span className="spinner-container">
-                <span className="spinner-small"></span>
-                Verifying...
-              </span>
-            ) : (
-              '✅ Verify & Continue'
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => navigate('/auth/register')}
-            className="back-button"
-          >
-            ← Back to Registration
-          </button>
-        </div>
-
         {/* Help Section */}
-        <div className="otp-help">
-          <h4>💡 Having trouble?</h4>
-          <ul>
-            <li>Check your SMS inbox and spam folder</li>
-            <li>Ensure you have good network coverage</li>
-            <li>Wait for the timer to expire and request a new code</li>
-            <li>Make sure your phone number is correct</li>
+        <div className="help-section">
+          <div className="help-header">
+            <span className="help-icon">💡</span>
+            <h3>Having trouble receiving the code?</h3>
+          </div>
+          <ul className="help-list">
+            <li>
+              <span className="help-item-icon">📱</span>
+              Check your SMS inbox and spam folder
+            </li>
+            <li>
+              <span className="help-item-icon">📶</span>
+              Ensure you have good network coverage
+            </li>
+            <li>
+              <span className="help-item-icon">🔄</span>
+              Wait for the timer to expire and request a new code
+            </li>
+            <li>
+              <span className="help-item-icon">✏️</span>
+              Make sure your phone number is correct
+            </li>
           </ul>
         </div>
 
         {/* Development Info */}
         {import.meta.env.MODE === 'development' && devOtps?.phoneOTP && (
           <div className="dev-info">
-            🔧 Development Mode - OTP: {devOtps.phoneOTP}
+            <div className="dev-badge">DEV MODE</div>
+            <p>Auto-filled OTP: <strong>{devOtps.phoneOTP}</strong></p>
           </div>
         )}
       </div>

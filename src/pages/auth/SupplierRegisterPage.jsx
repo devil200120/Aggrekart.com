@@ -128,25 +128,41 @@ const SupplierRegisterPage = () => {
   ];
 
   // Handle GST auto-fill data - FIXED FUNCTION NAME AND LOGIC
+  // Replace the handleGSTAutoFill function (around line 131) with this enhanced version:
+
+  // Handle GST auto-fill data - ENHANCED WITH DETAILED LOGGING
   const handleGSTAutoFill = (autoFillData) => {
-    console.log('🔄 Applying GST auto-fill data:', autoFillData);
+    console.log('🔄 GST Auto-fill triggered');
+    console.log('📥 Received auto-fill data:', autoFillData);
+    console.log('📝 Current form data before auto-fill:', formData);
     
-    setFormData((prev) => ({
-      ...prev,
-      // Core GST data
-      gstNumber: autoFillData.gstNumber || prev.gstNumber,
-      businessName: autoFillData.businessName || prev.businessName,
+    setFormData((prev) => {
+      const updatedData = {
+        ...prev,
+        // Core GST data
+        gstNumber: autoFillData.gstNumber || prev.gstNumber,
+        
+        // FIXED: Correct field mapping
+        businessName: autoFillData.businessName || autoFillData.legalName || prev.businessName,
+        
+        // Address data - FIXED
+        businessAddress: autoFillData.businessAddress || autoFillData.address || prev.businessAddress,
+        city: autoFillData.city || prev.city,
+        state: autoFillData.state || prev.state,
+        pincode: autoFillData.pincode || prev.pincode,
+        
+        // Optional fields - only fill if empty to avoid overwriting user input
+        contactPersonName: prev.contactPersonName || autoFillData.legalName || "",
+        accountHolderName: prev.accountHolderName || autoFillData.legalName || "",
+        
+        // Additional business info
+        ...(autoFillData.businessType && { businessType: autoFillData.businessType }),
+        ...(autoFillData.businessNature && { businessNature: autoFillData.businessNature }),
+      };
       
-      // Address data
-      businessAddress: autoFillData.businessAddress || prev.businessAddress,
-      city: autoFillData.city || prev.city,
-      state: autoFillData.state || prev.state,
-      pincode: autoFillData.pincode || prev.pincode,
-      
-      // Optional fields - only fill if empty
-      contactPersonName: prev.contactPersonName || autoFillData.legalName || "",
-      accountHolderName: prev.accountHolderName || autoFillData.legalName || "",
-    }));
+      console.log('✅ Updated form data after auto-fill:', updatedData);
+      return updatedData;
+    });
 
     // Clear related validation errors
     setErrors((prev) => {
@@ -154,18 +170,20 @@ const SupplierRegisterPage = () => {
       
       // Clear errors for fields that were auto-filled
       if (autoFillData.gstNumber) delete newErrors.gstNumber;
-      if (autoFillData.businessName) delete newErrors.businessName;
-      if (autoFillData.businessAddress) delete newErrors.businessAddress;
+      if (autoFillData.businessName || autoFillData.legalName) delete newErrors.businessName;
+      if (autoFillData.businessAddress || autoFillData.address) delete newErrors.businessAddress;
       if (autoFillData.city) delete newErrors.city;
       if (autoFillData.state) delete newErrors.state;
       if (autoFillData.pincode) delete newErrors.pincode;
       
+      console.log('🧹 Cleared validation errors:', Object.keys(prev).filter(key => !newErrors[key]));
       return newErrors;
     });
 
-    toast.success("✅ Business details filled from verified GST records!");
+    // Show success message
+    toast.success("✅ Business details automatically filled from verified GST records!");
+    console.log('🎉 GST auto-fill completed successfully!');
   };
-
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

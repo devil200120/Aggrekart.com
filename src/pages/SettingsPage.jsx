@@ -1,3 +1,5 @@
+// Replace the entire file with this Swiggy-style version:
+
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { usersAPI, authAPI } from '../services/api'
@@ -59,9 +61,7 @@ const SettingsPage = () => {
             phoneNumber: userData.phoneNumber || ''
           })
           
-          // Set preferences if they exist
           if (userData.preferences) {
-            // Map backend notification structure to frontend
             const backendNotifications = userData.preferences.notifications || {}
             setNotifications({
               emailNotifications: backendNotifications.emailNotifications ?? backendNotifications.email ?? true,
@@ -72,7 +72,6 @@ const SettingsPage = () => {
               newsletterSubscription: backendNotifications.newsletterSubscription ?? false
             })
             
-            // Map backend privacy structure to frontend
             const backendPrivacy = userData.preferences.privacy || {}
             setPrivacy({
               profileVisibility: backendPrivacy.profileVisibility || 'private',
@@ -99,19 +98,18 @@ const SettingsPage = () => {
           toast.success('Account information updated successfully!')
           setIsEditing(false)
           queryClient.invalidateQueries('userSettings')
-          queryClient.invalidateQueries('auth')
         } else {
           toast.error(response?.message || 'Failed to update account information')
         }
       },
       onError: (error) => {
-        const message = error.response?.data?.message || 'Failed to update account information'
-        toast.error(message)
+        console.error('Update account error:', error)
+        toast.error('Failed to update account information')
       }
     }
   )
 
-  // Change password
+  // Change password mutation
   const changePasswordMutation = useMutation(
     (data) => authAPI.changePassword(data),
     {
@@ -128,55 +126,54 @@ const SettingsPage = () => {
         }
       },
       onError: (error) => {
-        const message = error.response?.data?.message || 'Failed to change password'
-        toast.error(message)
+        console.error('Change password error:', error)
+        toast.error('Failed to change password')
       }
     }
   )
 
-  // Update preferences
+  // Update preferences mutation
   const updatePreferencesMutation = useMutation(
-    (data) => usersAPI.updatePreferences(data),
+    (data) => usersAPI.updateProfile({ preferences: data }),
     {
-      onSuccess: (response) => {
-        if (response?.success) {
-          toast.success('Preferences updated successfully!')
-          queryClient.invalidateQueries('userSettings')
-        } else {
-          toast.error(response?.message || 'Failed to update preferences')
-        }
+      onSuccess: () => {
+        toast.success('Preferences updated successfully!')
+        queryClient.invalidateQueries('userSettings')
       },
       onError: (error) => {
-        const message = error.response?.data?.message || 'Failed to update preferences'
-        toast.error(message)
+        console.error('Update preferences error:', error)
+        toast.error('Failed to update preferences')
       }
     }
   )
 
-  // Request data export
+  // Data export mutation
   const dataExportMutation = useMutation(
-    () => usersAPI.requestDataExport(),
+    () => usersAPI.exportData(),
     {
-      onSuccess: (response) => {
-        if (response?.success) {
-          toast.success('Data export request submitted! You will receive an email when ready.')
-        } else {
-          toast.error(response?.message || 'Failed to request data export')
-        }
+      onSuccess: () => {
+        toast.success('Data export initiated! You will receive an email when ready.')
       },
       onError: (error) => {
-        const message = error.response?.data?.message || 'Failed to request data export'
-        toast.error(message)
+        console.error('Data export error:', error)
+        toast.error('Failed to export data')
       }
     }
   )
 
   const handleAccountSubmit = (e) => {
     e.preventDefault()
+    
     if (!accountForm.name.trim()) {
       toast.error('Name is required')
       return
     }
+    
+    if (!accountForm.phoneNumber.trim()) {
+      toast.error('Phone number is required')
+      return
+    }
+    
     updateAccountMutation.mutate(accountForm)
   }
 
@@ -207,21 +204,13 @@ const SettingsPage = () => {
   const handleNotificationChange = (key, value) => {
     const updatedNotifications = { ...notifications, [key]: value }
     setNotifications(updatedNotifications)
-    
-    // Update backend with proper structure
-    updatePreferencesMutation.mutate({ 
-      notifications: updatedNotifications
-    })
+    updatePreferencesMutation.mutate({ notifications: updatedNotifications })
   }
 
   const handlePrivacyChange = (key, value) => {
     const updatedPrivacy = { ...privacy, [key]: value }
     setPrivacy(updatedPrivacy)
-    
-    // Update backend with proper structure
-    updatePreferencesMutation.mutate({ 
-      privacy: updatedPrivacy
-    })
+    updatePreferencesMutation.mutate({ privacy: updatedPrivacy })
   }
 
   const handleDataExport = () => {
@@ -248,500 +237,338 @@ const SettingsPage = () => {
   }
 
   const tabs = [
-    { id: 'account', label: 'Account', icon: '👤' },
-    { id: 'security', label: 'Security', icon: '🔒' },
-      { id: 'analytics', label: 'Analytics', icon: '📊' }, // ADD THIS
-
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'privacy', label: 'Privacy', icon: '🛡️' },
-    { id: 'danger', label: 'Account Management', icon: '⚠️' }
+    { 
+      id: 'account', 
+      label: 'Account', 
+      icon: '👤',
+      description: 'Update your basic account details'
+    },
+    { 
+      id: 'security', 
+      label: 'Security', 
+      icon: '🔒',
+      description: 'Change password and security settings'
+    },
+    { 
+      id: 'analytics', 
+      label: 'Analytics', 
+      icon: '📊',
+      description: 'View your usage statistics'
+    },
+    { 
+      id: 'notifications', 
+      label: 'Notifications', 
+      icon: '🔔',
+      description: 'Manage notification preferences'
+    },
+    { 
+      id: 'privacy', 
+      label: 'Privacy', 
+      icon: '🛡️',
+      description: 'Control your privacy settings'
+    },
+    { 
+      id: 'danger', 
+      label: 'Account Management', 
+      icon: '⚠️',
+      description: 'Export data or delete account'
+    }
   ]
 
   if (profileLoading) {
     return (
-      <div className="settings-loading">
+      <div className="swiggy-loading">
         <LoadingSpinner />
-        <p>Loading settings...</p>
+        <p>Loading your settings...</p>
       </div>
     )
   }
 
   return (
-    <div className="settings-page">
-      <div className="settings-container">
-        <div className="settings-header">
-          <h1 className="settings-title">Settings</h1>
-          <p className="settings-subtitle">Manage your account preferences and security settings</p>
+    <div className="swiggy-settings">
+      {/* Header */}
+      <div className="swiggy-header">
+        <div className="swiggy-container">
+          <h1 className="swiggy-title">Settings</h1>
+          <p className="swiggy-subtitle">Manage your account preferences and security settings</p>
         </div>
+      </div>
 
-        <div className="settings-content">
-          <div className="settings-sidebar">
-            <nav className="settings-nav">
+      <div className="swiggy-container">
+        <div className="swiggy-content">
+          {/* Sidebar Navigation */}
+          <div className="swiggy-sidebar">
+            <nav className="swiggy-nav">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`settings-nav-item ${activeTab === tab.id ? 'active' : ''}`}
+                  className={`swiggy-nav-item ${activeTab === tab.id ? 'active' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <span className="nav-icon">{tab.icon}</span>
-                  <span className="nav-label">{tab.label}</span>
+                  <div className="nav-icon">{tab.icon}</div>
+                  <div className="nav-content">
+                    <span className="nav-label">{tab.label}</span>
+                    <span className="nav-description">{tab.description}</span>
+                  </div>
+                  <div className="nav-arrow">›</div>
                 </button>
               ))}
             </nav>
           </div>
 
-          <div className="settings-main">
-            {/* Account Settings Tab */}
+          {/* Main Content */}
+          <div className="swiggy-main">
+            {/* Account Settings */}
             {activeTab === 'account' && (
-              <div className="settings-section">
+              <div className="swiggy-section">
                 <div className="section-header">
                   <h2>Account Information</h2>
                   <p>Update your basic account details</p>
                 </div>
 
-                <form onSubmit={handleAccountSubmit} className="settings-form">
-                  <div className="form-group">
-                    <label htmlFor="name">Full Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={accountForm.name}
-                      onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
-                      disabled={!isEditing}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={user?.email || ''}
-                      disabled
-                      className="disabled-input"
-                    />
-                    <small className="form-help">Email cannot be changed. Contact support if needed.</small>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      value={accountForm.phoneNumber}
-                      onChange={(e) => setAccountForm({ ...accountForm, phoneNumber: e.target.value })}
-                      disabled={!isEditing}
-                      pattern="[6-9][0-9]{9}"
-                      title="Please enter a valid 10-digit Indian phone number"
-                    />
-                    {isEditing && (
-                      <small className="form-help">Changing phone number will require re-verification</small>
-                    )}
-                  </div>
-
-                  <div className="form-group">
-                    <label>Account Type</label>
-                    <div className="account-type-info">
-                      <span className="account-badge">{user?.role || 'customer'}</span>
-                      <small>Account type cannot be changed</small>
+                <div className="swiggy-card">
+                  <form onSubmit={handleAccountSubmit} className="swiggy-form">
+                    <div className="form-row">
+                      <label>Full Name</label>
+                      <input
+                        type="text"
+                        value={accountForm.name}
+                        onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
+                        placeholder="Enter your full name"
+                        disabled={!isEditing}
+                      />
                     </div>
-                  </div>
 
-                  <div className="form-actions">
-                    {!isEditing ? (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditing(true)}
-                        className="btn btn-primary"
-                      >
-                        Edit Information
-                      </button>
-                    ) : (
-                      <div className="action-buttons">
-                        <button
-                          type="submit"
-                          className="btn btn-primary"
-                          disabled={updateAccountMutation.isLoading}
+                    <div className="form-row">
+                      <label>Email Address</label>
+                      <input
+                        type="email"
+                        value={user?.email || ''}
+                        disabled
+                        className="disabled-input"
+                      />
+                      <small className="form-help success">Email cannot be changed. Contact support if needed.</small>
+                    </div>
+
+                    <div className="form-row">
+                      <label>Phone Number</label>
+                      <input
+                        type="tel"
+                        value={accountForm.phoneNumber}
+                        onChange={(e) => setAccountForm({...accountForm, phoneNumber: e.target.value})}
+                        placeholder="Enter your phone number"
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    <div className="form-actions">
+                      {!isEditing ? (
+                        <button 
+                          type="button" 
+                          className="swiggy-btn primary"
+                          onClick={() => setIsEditing(true)}
                         >
-                          {updateAccountMutation.isLoading ? 'Saving...' : 'Save Changes'}
+                          Edit Information
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEditing(false)
-                            // Reset form to original values
-                            const userData = profileData?.data?.user
-                            if (userData) {
-                              setAccountForm({
-                                name: userData.name || '',
-                                phoneNumber: userData.phoneNumber || ''
-                              })
-                            }
-                          }}
-                          className="btn btn-outline"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </form>
+                      ) : (
+                        <div className="action-group">
+                          <button 
+                            type="submit" 
+                            className="swiggy-btn primary"
+                            disabled={updateAccountMutation.isLoading}
+                          >
+                            {updateAccountMutation.isLoading ? 'Saving...' : 'Save Changes'}
+                          </button>
+                          <button 
+                            type="button" 
+                            className="swiggy-btn secondary"
+                            onClick={() => setIsEditing(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 
-            {/* Security Settings Tab */}
+            {/* Security Settings */}
             {activeTab === 'security' && (
-              <div className="settings-section">
+              <div className="swiggy-section">
                 <div className="section-header">
-                  <h2>Security Settings</h2>
-                  <p>Manage your password and security preferences</p>
+                  <h2>Security</h2>
+                  <p>Change your password and manage security settings</p>
                 </div>
 
-                <form onSubmit={handlePasswordSubmit} className="settings-form">
-                  <h3>Change Password</h3>
-                  
-                  <div className="form-group">
-                    <label htmlFor="currentPassword">Current Password</label>
-                    <input
-                      type="password"
-                      id="currentPassword"
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                      required
-                    />
-                  </div>
+                <div className="swiggy-card">
+                  <form onSubmit={handlePasswordSubmit} className="swiggy-form">
+                    <div className="form-row">
+                      <label>Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                        placeholder="Enter current password"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label htmlFor="newPassword">New Password</label>
-                    <input
-                      type="password"
-                      id="newPassword"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                      minLength="6"
-                      required
-                    />
-                    <small className="form-help">Password must be at least 6 characters long</small>
-                  </div>
+                    <div className="form-row">
+                      <label>New Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                        placeholder="Enter new password"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label htmlFor="confirmPassword">Confirm New Password</label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                      required
-                    />
-                  </div>
+                    <div className="form-row">
+                      <label>Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                        placeholder="Confirm new password"
+                      />
+                    </div>
 
-                  <div className="form-actions">
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={changePasswordMutation.isLoading}
-                    >
-                      {changePasswordMutation.isLoading ? 'Changing Password...' : 'Change Password'}
-                    </button>
-                  </div>
-                </form>
-
-                <div className="security-info">
-                  <h3>Security Information</h3>
-                  <div className="security-item">
-                    <span className="security-label">Last Login:</span>
-                    <span className="security-value">
-                      {user?.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="security-item">
-                    <span className="security-label">Account Created:</span>
-                    <span className="security-value">
-                      {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="security-item">
-                    <span className="security-label">Phone Verified:</span>
-                    <span className={`security-value ${user?.phoneVerified ? 'verified' : 'unverified'}`}>
-                      {user?.phoneVerified ? '✅ Verified' : '❌ Not Verified'}
-                    </span>
-                  </div>
-                  <div className="security-item">
-                    <span className="security-label">Email Verified:</span>
-                    <span className={`security-value ${user?.emailVerified ? 'verified' : 'unverified'}`}>
-                      {user?.emailVerified ? '✅ Verified' : '❌ Not Verified'}
-                    </span>
-                  </div>
-                  <div className="security-item">
-                    <span className="security-label">Two-Factor Authentication:</span>
-                    <span className="security-value coming-soon">Coming Soon</span>
-                  </div>
+                    <div className="form-actions">
+                      <button 
+                        type="submit" 
+                        className="swiggy-btn primary"
+                        disabled={changePasswordMutation.isLoading}
+                      >
+                        {changePasswordMutation.isLoading ? 'Changing...' : 'Change Password'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}
 
-            {/* Notifications Tab */}
-            {activeTab === 'notifications' && (
-              <div className="settings-section">
-                <div className="section-header">
-                  <h2>Notification Preferences</h2>
-                  <p>Choose how you want to receive notifications</p>
-                </div>
-
-                <div className="settings-form">
-                  <div className="notification-category">
-                    <h3>Communication Preferences</h3>
-                    
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Email Notifications</span>
-                        <span className="setting-description">Receive notifications via email</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.emailNotifications}
-                          onChange={(e) => handleNotificationChange('emailNotifications', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">SMS Notifications</span>
-                        <span className="setting-description">Receive notifications via SMS</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.smsNotifications}
-                          onChange={(e) => handleNotificationChange('smsNotifications', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="notification-category">
-                    <h3>Order & Account Updates</h3>
-                    
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Order Updates</span>
-                        <span className="setting-description">Get notified about order status changes</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.orderUpdates}
-                          onChange={(e) => handleNotificationChange('orderUpdates', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Security Alerts</span>
-                        <span className="setting-description">Important security-related notifications</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.securityAlerts}
-                          onChange={(e) => handleNotificationChange('securityAlerts', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="notification-category">
-                    <h3>Marketing & Promotions</h3>
-                    
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Promotional Emails</span>
-                        <span className="setting-description">Receive promotional offers and deals</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.promotionalEmails}
-                          onChange={(e) => handleNotificationChange('promotionalEmails', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Newsletter Subscription</span>
-                        <span className="setting-description">Weekly newsletter with updates and tips</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={notifications.newsletterSubscription}
-                          onChange={(e) => handleNotificationChange('newsletterSubscription', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Analytics */}
             {activeTab === 'analytics' && (
-  <div className="tab-content">
-    <UserAnalytics user={user} />
-  </div>
-)}
-
-            {/* Privacy Tab */}
-            {activeTab === 'privacy' && (
-              <div className="settings-section">
+              <div className="swiggy-section">
                 <div className="section-header">
-                  <h2>Privacy Settings</h2>
+                  <h2>Analytics</h2>
+                  <p>View your usage statistics and activity</p>
+                </div>
+                <div className="swiggy-card">
+                  <UserAnalytics />
+                </div>
+              </div>
+            )}
+
+            {/* Notifications */}
+            {activeTab === 'notifications' && (
+              <div className="swiggy-section">
+                <div className="section-header">
+                  <h2>Notifications</h2>
+                  <p>Choose what notifications you want to receive</p>
+                </div>
+
+                <div className="swiggy-card">
+                  <div className="toggle-list">
+                    {Object.entries(notifications).map(([key, value]) => (
+                      <div key={key} className="toggle-item">
+                        <div className="toggle-content">
+                          <span className="toggle-label">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </span>
+                          <span className="toggle-description">
+                            {key === 'emailNotifications' && 'Receive notifications via email'}
+                            {key === 'smsNotifications' && 'Receive notifications via SMS'}
+                            {key === 'orderUpdates' && 'Get updates about your orders'}
+                            {key === 'promotionalEmails' && 'Receive promotional offers'}
+                            {key === 'securityAlerts' && 'Important security notifications'}
+                            {key === 'newsletterSubscription' && 'Subscribe to our newsletter'}
+                          </span>
+                        </div>
+                        <label className="toggle-switch">
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => handleNotificationChange(key, e.target.checked)}
+                          />
+                          <span className="slider"></span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Privacy */}
+            {activeTab === 'privacy' && (
+              <div className="swiggy-section">
+                <div className="section-header">
+                  <h2>Privacy</h2>
                   <p>Control your privacy and data sharing preferences</p>
                 </div>
 
-                <div className="settings-form">
-                  <div className="privacy-category">
-                    <h3>Profile Visibility</h3>
-                    
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Profile Visibility</span>
-                        <span className="setting-description">Control who can see your profile information</span>
+                <div className="swiggy-card">
+                  <div className="toggle-list">
+                    {Object.entries(privacy).map(([key, value]) => (
+                      <div key={key} className="toggle-item">
+                        <div className="toggle-content">
+                          <span className="toggle-label">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </span>
+                        </div>
+                        <label className="toggle-switch">
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => handlePrivacyChange(key, e.target.checked)}
+                          />
+                          <span className="slider"></span>
+                        </label>
                       </div>
-                      <select
-                        value={privacy.profileVisibility}
-                        onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
-                        className="select-input"
-                      >
-                        <option value="private">Private</option>
-                        <option value="suppliers">Visible to Suppliers</option>
-                        <option value="public">Public</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="privacy-category">
-                    <h3>Data Sharing</h3>
-                    
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Data Analytics</span>
-                        <span className="setting-description">Help improve our services with anonymous usage data</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={privacy.dataSharing}
-                          onChange={(e) => handlePrivacyChange('dataSharing', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Marketing Communications</span>
-                        <span className="setting-description">Allow personalized marketing based on your preferences</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={privacy.marketingCommunications}
-                          onChange={(e) => handlePrivacyChange('marketingCommunications', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-
-                    <div className="setting-item">
-                      <div className="setting-info">
-                        <span className="setting-label">Third-party Sharing</span>
-                        <span className="setting-description">Share data with trusted partners for better services</span>
-                      </div>
-                      <label className="toggle-switch">
-                        <input
-                          type="checkbox"
-                          checked={privacy.thirdPartySharing}
-                          onChange={(e) => handlePrivacyChange('thirdPartySharing', e.target.checked)}
-                        />
-                        <span className="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="privacy-info">
-                    <h3>Privacy Information</h3>
-                    <p>
-                      We take your privacy seriously. Read our{' '}
-                      <a href="/privacy-policy" className="privacy-link">Privacy Policy</a>{' '}
-                      to learn more about how we collect, use, and protect your data.
-                    </p>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Danger Zone Tab */}
+            {/* Account Management */}
             {activeTab === 'danger' && (
-              <div className="settings-section">
+              <div className="swiggy-section">
                 <div className="section-header">
                   <h2>Account Management</h2>
-                  <p>Manage your account preferences and data</p>
+                  <p>Export your data or delete your account</p>
                 </div>
 
-                <div className="settings-form">
-                  <div className="danger-section">
-                    <h3>Data Export</h3>
-                    <p>Download a copy of your account data including orders, addresses, and preferences</p>
-                    <button 
-                      className="btn btn-outline"
-                      onClick={handleDataExport}
-                      disabled={dataExportMutation.isLoading}
-                    >
-                      {dataExportMutation.isLoading ? 'Requesting...' : 'Export My Data'}
-                    </button>
-                  </div>
+                <div className="swiggy-card">
+                  <div className="danger-actions">
+                    <div className="danger-item">
+                      <div className="danger-content">
+                        <h3>Export Data</h3>
+                        <p>Download a copy of all your account data</p>
+                      </div>
+                      <button 
+                        className="swiggy-btn secondary"
+                        onClick={handleDataExport}
+                        disabled={dataExportMutation.isLoading}
+                      >
+                        {dataExportMutation.isLoading ? 'Exporting...' : 'Export Data'}
+                      </button>
+                    </div>
 
-                  <div className="danger-section">
-                    <h3>Account Deactivation</h3>
-                    <p>Temporarily deactivate your account while preserving your data</p>
-                    <button 
-                      className="btn btn-outline"
-                      onClick={() => toast.info('Account deactivation feature coming soon!')}
-                    >
-                      Deactivate Account
-                    </button>
-                  </div>
-
-                  <div className="danger-section danger-zone">
-                    <h3>Delete Account</h3>
-                    <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
-                    <button 
-                      className="btn btn-danger"
-                      onClick={handleDeleteAccount}
-                    >
-                      Delete Account
-                    </button>
-                  </div>
-
-                  <div className="logout-section">
-                    <h3>Session Management</h3>
-                    <p>Sign out of your account on this device</p>
-                    <button 
-                      className="btn btn-outline"
-                      onClick={logout}
-                    >
-                      Sign Out
-                    </button>
+                    <div className="danger-item">
+                      <div className="danger-content">
+                        <h3>Delete Account</h3>
+                        <p>Permanently delete your account and all data</p>
+                      </div>
+                      <button 
+                        className="swiggy-btn danger"
+                        onClick={handleDeleteAccount}
+                      >
+                        Delete Account
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

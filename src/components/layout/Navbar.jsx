@@ -1,126 +1,148 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
-import CartIcon from '../cart/CartIcon'
-import WishlistIcon from '../cart/WishlistIcon'
-import AuthDropdown from '../auth/AuthDropdown'
-import './Navbar.css'
-import SearchBar from '../common/SearchBar'
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import CartIcon from "../cart/CartIcon";
+import WishlistIcon from "../cart/WishlistIcon";
+import AuthDropdown from "../auth/AuthDropdown";
+import "./Navbar.css";
+import SearchBar from "../common/SearchBar";
 
 // Import the logo image
-import logoImage from '../../image.png'
+import logoImage from "../../image.png";
 
 const Navbar = () => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     try {
-      await logout()
-      navigate('/')
-      setIsMenuOpen(false)
+      await logout();
+      navigate("/");
+      setIsMenuOpen(false);
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error("Logout failed:", error);
     }
-  }
+  };
 
   const closeMenu = () => {
-    setIsMenuOpen(false)
-  }
+    setIsMenuOpen(false);
+  };
 
   const isActivePage = (path) => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   const getAllMenuItems = () => {
     const baseItems = [
-      { path: '/', label: 'Home', icon: '🏠' },
-      { path: '/products', label: 'Products', icon: '📦' },
-    ]
+      { path: "/", label: "Home", icon: "🏠" },
+      { path: "/products", label: "Products", icon: "📦" },
+    ];
 
     if (user) {
       switch (user.role) {
-        case 'customer':
+        case "customer":
           return [
             ...baseItems,
-            { path: '/orders', label: 'My Orders', icon: '📋' },
-            { path: '/profile', label: 'Profile', icon: '👤' },
-            { path: '/wishlist', label: 'Wishlist', icon: '❤️' },
-            { path: '/cart', label: 'Cart', icon: '🛒' },
-            { path: '/settings', label: 'Settings', icon: '⚙️' },
-            { type: 'divider' },
-            { type: 'action', action: handleLogout, label: 'Logout', icon: '🚪', className: 'logout' }
-          ]
-        case 'supplier':
+            { path: "/orders", label: "My Orders", icon: "📋" },
+            { path: "/profile", label: "Profile", icon: "👤" },
+            { path: "/wishlist", label: "Wishlist", icon: "❤️" },
+            { path: "/cart", label: "Cart", icon: "🛒" },
+            { path: "/settings", label: "Settings", icon: "⚙️" },
+            { type: "divider" },
+            {
+              type: "action",
+              action: handleLogout,
+              label: "Logout",
+              icon: "🚪",
+              className: "logout",
+            },
+          ];
+        case "supplier":
           return [
             ...baseItems,
-            { path: '/supplier/dashboard', label: 'Dashboard', icon: '📊' },
-            { path: '/supplier/products', label: 'Products', icon: '📦' },
-            { path: '/supplier/orders', label: 'Orders', icon: '📋' },
-            { path: '/profile', label: 'Profile', icon: '👤' },
-            { path: '/settings', label: 'Settings', icon: '⚙️' },
-            { type: 'divider' },
-            { type: 'action', action: handleLogout, label: 'Logout', icon: '🚪', className: 'logout' }
-          ]
-        case 'admin':
+            { path: "/supplier/dashboard", label: "Dashboard", icon: "📊" },
+            { path: "/supplier/products", label: "Manage Products", icon: "📦" },
+            { path: "/supplier/orders", label: "Orders", icon: "📋" },
+            { path: "/profile", label: "Profile", icon: "👤" },
+            { path: "/settings", label: "Settings", icon: "⚙️" },
+            { type: "divider" },
+            {
+              type: "action",
+              action: handleLogout,
+              label: "Logout",
+              icon: "🚪",
+              className: "logout",
+            },
+          ];
+        case "admin":
           return [
             ...baseItems,
-            { path: '/admin/dashboard', label: 'Admin Panel', icon: '🛡️' },
-            { path: '/admin/users', label: 'Users', icon: '👥' },
-            { path: '/admin/suppliers', label: 'Suppliers', icon: '🏪' },
-            { path: '/admin/orders', label: 'Orders', icon: '📋' },
-            { path: '/admin/products', label: 'Products', icon: '📦' },
-            { path: '/settings', label: 'Settings', icon: '⚙️' },
-            { type: 'divider' },
-            { type: 'action', action: handleLogout, label: 'Logout', icon: '🚪', className: 'logout' }
-          ]
+            { path: "/admin/dashboard", label: "Admin Panel", icon: "🛡️" },
+            { path: "/admin/users", label: "Users", icon: "👥" },
+            { path: "/admin/suppliers", label: "Suppliers", icon: "🏪" },
+            { path: "/admin/orders", label: "Orders", icon: "📋" },
+            { path: "/admin/products", label: "Manage Products", icon: "📦" },
+            { path: "/admin/reports", label: "Reports & Analytics", icon: "📊" },
+            { path: "/settings", label: "Settings", icon: "⚙️" },
+            { type: "divider" },
+            {
+              type: "action",
+              action: handleLogout,
+              label: "Logout",
+              icon: "🚪",
+              className: "logout",
+            },
+          ];
         default:
-          return baseItems
+          return baseItems;
       }
     } else {
       return [
         ...baseItems,
-        { type: 'divider' },
-        { path: '/auth/login', label: 'Login', icon: '🔐' },
-        { path: '/auth/register', label: 'Customer Registration', icon: '👤' },
-        { path: '/auth/supplier-register', label: 'Supplier Registration', icon: '🏪', className: 'supplier' },
-      ]
+        { type: "divider" },
+        { path: "/auth/login", label: "Login", icon: "🔐" },
+        { path: "/auth/register", label: "Customer Registration", icon: "👤" },
+        {
+          path: "/auth/supplier-register",
+          label: "Supplier Registration",
+          icon: "🏪",
+          className: "supplier",
+        },
+      ];
     }
-  }
+  };
 
   return (
-    <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
+    <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
       <div className="container">
         <div className="navbar-content">
           {/* Logo */}
           <Link to="/" className="navbar-logo" onClick={closeMenu}>
-            <img 
-              src={logoImage} 
-              alt="Aggrekart Logo" 
-              className="logo-image"
-            />
+            <img src={logoImage} alt="Aggrekart Logo" className="logo-image" />
           </Link>
-           <div className="navbar-search desktop-search">
-    <SearchBar />
-  </div>
+          <div className="navbar-search desktop-search">
+            <SearchBar />
+          </div>
 
           {/* Desktop Navigation Links */}
           <div className="navbar-nav desktop-nav">
-            
-            {user?.role === 'customer' && (
-              <Link to="/orders" className={`nav-link ${isActivePage('/orders') ? 'active' : ''}`}>
+            {user?.role === "customer" && (
+              <Link
+                to="/orders"
+                className={`nav-link ${isActivePage("/orders") ? "active" : ""}`}
+              >
                 My Orders
               </Link>
             )}
@@ -129,18 +151,21 @@ const Navbar = () => {
           {/* Right Actions */}
           <div className="navbar-actions">
             {/* User Actions for Customers */}
-            <div className="user-actions">
-  <WishlistIcon />
-  <CartIcon />
-</div>
+            {/* User Actions for Customers Only */}
+{user?.role === 'customer' && (
+  <div className="user-actions">
+    <WishlistIcon />
+    <CartIcon />
+  </div>
+)}
 
             {/* User Avatar */}
             {user && (
               <div className="user-avatar" title={user.name}>
-                {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                {user.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             )}
-            
+
             {/* Authentication Dropdown for non-logged in users */}
             {!user && (
               <div className="auth-buttons desktop-auth">
@@ -149,8 +174,8 @@ const Navbar = () => {
             )}
 
             {/* Hamburger Menu Toggle */}
-            <button 
-              className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
+            <button
+              className={`hamburger-btn ${isMenuOpen ? "active" : ""}`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -158,7 +183,6 @@ const Navbar = () => {
               <span></span>
               <span></span>
             </button>
-            
           </div>
         </div>
 
@@ -169,7 +193,7 @@ const Navbar = () => {
             {user && (
               <div className="menu-user-info">
                 <div className="user-avatar-large">
-                  {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <div className="user-details">
                   <h3>{user.name}</h3>
@@ -179,50 +203,50 @@ const Navbar = () => {
               </div>
             )}
             <div className="mobile-search">
-      <SearchBar />
-    </div>
+              <SearchBar />
+            </div>
 
             {/* Menu Items */}
             <div className="menu-items">
               {getAllMenuItems().map((item, index) => {
-                if (item.type === 'divider') {
-                  return <hr key={index} className="menu-divider" />
+                if (item.type === "divider") {
+                  return <hr key={index} className="menu-divider" />;
                 }
-                
-                if (item.type === 'action') {
+
+                if (item.type === "action") {
                   return (
                     <button
                       key={index}
                       onClick={() => {
-                        item.action()
-                        closeMenu()
+                        item.action();
+                        closeMenu();
                       }}
-                      className={`menu-item ${item.className || ''}`}
+                      className={`menu-item ${item.className || ""}`}
                     >
                       <span className="menu-icon">{item.icon}</span>
                       <span>{item.label}</span>
                     </button>
-                  )
+                  );
                 }
-                
+
                 return (
                   <Link
                     key={index}
                     to={item.path}
-                    className={`menu-item ${isActivePage(item.path) ? 'active' : ''} ${item.className || ''}`}
+                    className={`menu-item ${isActivePage(item.path) ? "active" : ""} ${item.className || ""}`}
                     onClick={closeMenu}
                   >
                     <span className="menu-icon">{item.icon}</span>
                     <span>{item.label}</span>
                   </Link>
-                )
+                );
               })}
             </div>
           </div>
         )}
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
