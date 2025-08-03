@@ -467,3 +467,259 @@ PURPOSE: Complete styling for admin dashboard page
     font-size: 0.8rem;
   }
 }
+/* Add these styles for the approvals section: */
+
+.approvals-tab {
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9e9eb;
+}
+
+.section-header h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #282c3f;
+  margin: 0;
+}
+
+.approvals-summary {
+  display: flex;
+  gap: 12px;
+}
+
+.total-badge,
+.suppliers-badge,
+.products-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.total-badge {
+  background: #3b82f6;
+  color: white;
+}
+
+.suppliers-badge {
+  background: #10b981;
+  color: white;
+}
+
+.products-badge {
+  background: #f59e0b;
+  color: white;
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #dc2626;
+  text-align: center;
+}
+
+.error-message p {
+  margin: 12px 0 20px 0;
+  font-weight: 500;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.approvals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.approval-card {
+  background: white;
+  border: 1px solid #e9e9eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.approval-card:hover {
+  border-color: #fc8019;
+  box-shadow: 0 4px 12px rgba(252, 128, 25, 0.1);
+}
+
+.approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.approval-type-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.approval-type-badge.supplier {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.approval-type-badge.product {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.approval-date {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.approval-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #282c3f;
+  margin: 0 0 8px 0;
+}
+
+.approval-info p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+  background: #f9fafb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.no-approvals {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  text-align: center;
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+}
+
+.no-approvals-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-approvals h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #282c3f;
+  margin: 0 0 8px 0;
+}
+
+.no-approvals p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .approvals-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .approval-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .approval-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    justify-content: center;
+  }
+}

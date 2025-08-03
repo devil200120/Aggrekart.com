@@ -1,0 +1,125 @@
+.suspension-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.suspension-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 16px;
+}
+
+.suspension-icon {
+  display: flex;
+  align-items: center;
+  color: #fef2f2;
+}
+
+.suspension-message {
+  flex: 1;
+}
+
+.suspension-message h4 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.suspension-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.suspension-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.logout-btn,
+.close-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.close-btn {
+  background: transparent;
+  color: white;
+  border: 1px solid transparent;
+  padding: 8px;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .suspension-banner-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .suspension-message h4 {
+    font-size: 1rem;
+  }
+  
+  .suspension-message p {
+    font-size: 0.85rem;
+  }
+  
+  .suspension-actions {
+    justify-content: center;
+  }
+}
+
+/* Add margin to body when banner is shown */
+body.suspension-banner-active {
+  margin-top: 80px;
+}
+
+@media (max-width: 768px) {
+  body.suspension-banner-active {
+    margin-top: 120px;
+  }
+}

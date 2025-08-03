@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom'
 import { ordersAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import ImageWithFallback from '../components/common/ImageWithFallback'
 import './OrdersPage.css'
-
+import '../components/common/ImageWithFallback.css'
 const OrdersPage = () => {
   const { user } = useAuth()
   const [filters, setFilters] = useState({
@@ -14,6 +15,7 @@ const OrdersPage = () => {
     sortBy: 'newest'
   })
   const [currentPage, setCurrentPage] = useState(1)
+  const [expandedOrderId, setExpandedOrderId] = useState(null)
 
   // Fetch orders
   const { 
@@ -51,8 +53,61 @@ const OrdersPage = () => {
     setCurrentPage(1)
   }
 
+  const toggleOrderExpansion = (orderId) => {
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId)
+  }
+
   const orders = ordersResponse?.data?.orders || []
   const pagination = ordersResponse?.data?.pagination || {}
+
+  // Helper function to get product image with multiple fallbacks
+  const getProductImage = (item) => {
+    if (!item) return null;
+
+    // Try productSnapshot first (most reliable for orders)
+    if (item.productSnapshot?.imageUrl && 
+        typeof item.productSnapshot.imageUrl === 'string' && 
+        item.productSnapshot.imageUrl.trim() !== '' &&
+        !['null', 'undefined'].includes(item.productSnapshot.imageUrl)) {
+      return item.productSnapshot.imageUrl;
+    }
+    
+    // Try images array in productSnapshot
+    if (item.productSnapshot?.images?.length > 0) {
+      const primaryImage = item.productSnapshot.images.find(img => img?.isPrimary && img?.url);
+      if (primaryImage) return primaryImage.url;
+      
+      const firstImage = item.productSnapshot.images.find(img => img?.url);
+      if (firstImage) return firstImage.url;
+    }
+
+    // Try product data (populated reference)
+    if (item.product?.images?.length > 0) {
+      const primaryImage = item.product.images.find(img => img?.isPrimary && img?.url);
+      if (primaryImage) return primaryImage.url;
+      
+      const firstImage = item.product.images.find(img => img?.url);
+      if (firstImage) return firstImage.url;
+    }
+    
+    // Try legacy image fields
+    if (item.product?.image && typeof item.product.image === 'string' && item.product.image.trim() !== '') {
+      return item.product.image;
+    }
+    
+    if (item.product?.primaryImage && typeof item.product.primaryImage === 'string' && item.product.primaryImage.trim() !== '') {
+      return item.product.primaryImage;
+    }
+    
+    return null; // Return null to trigger ImageWithFallback placeholder
+  }
+
+  // Helper function to get product name
+  const getProductName = (item) => {
+    return item?.productSnapshot?.name || 
+           item?.product?.name || 
+           'Construction Material'
+  }
 
   // Enhanced price formatting
   const formatPrice = (price) => {
@@ -234,7 +289,7 @@ const OrdersPage = () => {
         <div className="container">
           <div className="empty-state">
             <div className="empty-illustration">
-              <img src="/placeholder-login.svg" alt="Login required" className="empty-image" />
+              <span className="empty-icon">🔐</span>
             </div>
             <h2>Please sign in to view your orders</h2>
             <p>Track your construction material orders and manage deliveries</p>
@@ -352,225 +407,227 @@ const OrdersPage = () => {
               const itemCount = order.items?.length || 0;
               const firstItem = order.items?.[0];
               const canCancel = canCancelOrder(order);
+              const isExpanded = expandedOrderId === order._id;
 
               return (
-                <div key={order._id} className="order-card">
-                  {/* Order Header */}
-                  <div className="order-header">
-                    <div className="order-meta">
-                      <div className="order-id-section">
-                        <h3 className="order-id">
-                          Order #{(order.orderId || order._id).slice(-8).toUpperCase()}
-                        </h3>
-                        <span className="order-date">{formatDate(order.createdAt)}</span>
+                <div key={order._id} className={`swiggy-order-card ${isExpanded ? 'expanded' : ''}`}>
+                  {/* Compact Order Card */}
+                  <div 
+                    className="order-card-compact"
+                    onClick={() => toggleOrderExpansion(order._id)}
+                  >
+                    {/* Left Section - Product Info */}
+                    <div className="order-left">
+                      <div className="order-image">
+                        <ImageWithFallback
+                          src={getProductImage(firstItem)} 
+                          alt={getProductName(firstItem)}
+                          className="product-image"
+                          fallbackType="product"
+                        />
                       </div>
                       
-                      <div className="order-total-section">
-                        <div className="total-amount">{formatPrice(orderTotal)}</div>
-                        <div className="item-count">{itemCount} item{itemCount > 1 ? 's' : ''}</div>
+                      <div className="order-info">
+                        <div className="order-title">
+                          {getProductName(firstItem)}
+                          {itemCount > 1 && <span className="item-count-badge">+{itemCount - 1}</span>}
+                        </div>
+                        <div className="order-subtitle">
+                          Order #{(order.orderId || order._id).slice(-8).toUpperCase()}
+                        </div>
+                        <div className="order-date-compact">{formatDate(order.createdAt)}</div>
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="status-section">
+                    {/* Right Section - Status & Price */}
+                    <div className="order-right">
+                      <div className="order-amount">{formatPrice(orderTotal)}</div>
                       <div 
-                        className="status-badge"
+                        className="status-badge-compact"
                         style={{ 
                           backgroundColor: statusInfo.bgColor,
-                          color: statusInfo.color,
-                          border: `1px solid ${statusInfo.color}20`
+                          color: statusInfo.color
                         }}
                       >
                         <span className="status-icon">{statusInfo.icon}</span>
                         <span className="status-text">{statusInfo.text}</span>
                       </div>
-                      
-                      {/* Progress Bar */}
-                      <div className="progress-bar-container">
-                        <div 
-                          className="progress-bar"
-                          style={{ 
-                            width: `${statusInfo.progress}%`,
-                            backgroundColor: statusInfo.color
-                          }}
-                        ></div>
-                      </div>
-                      
-                      <div className="status-description">{statusInfo.description}</div>
-                    </div>
-                  </div>
-
-                  {/* Order Content */}
-                  <div className="order-content">
-                    {/* Main Item Display */}
-                    {firstItem && (
-                      <div className="main-item">
-                        <div className="item-image-placeholder">
-                          {firstItem.productSnapshot?.imageUrl ? (
-                            <img 
-                              src={firstItem.productSnapshot.imageUrl} 
-                              alt={firstItem.productSnapshot.name}
-                              className="item-image"
-                            />
-                          ) : (
-                            <div className="placeholder-icon">🏗️</div>
-                          )}
-                        </div>
-                        
-                        <div className="item-info">
-                          <h4 className="item-title">
-                            {firstItem.productSnapshot?.name || firstItem.product?.name || 'Construction Material'}
-                          </h4>
-                          <div className="item-details">
-                            <span className="item-quantity">Qty: {firstItem.quantity}</span>
-                            <span className="item-separator">•</span>
-                            <span className="item-price">₹{firstItem.unitPrice}/unit</span>
-                            {firstItem.productSnapshot?.brand && (
-                              <>
-                                <span className="item-separator">•</span>
-                                <span className="item-brand">{firstItem.productSnapshot.brand}</span>
-                              </>
-                            )}
-                          </div>
-                          
-                          {itemCount > 1 && (
-                            <div className="additional-items">
-                              +{itemCount - 1} more item{itemCount > 2 ? 's' : ''}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="item-total">
-                          {formatPrice(firstItem.totalPrice || (firstItem.unitPrice * firstItem.quantity))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Order Details Grid */}
-                    <div className="order-details-grid">
-                      {/* Supplier Info */}
-                      <div className="detail-section">
-                        <div className="detail-label">Supplier</div>
-                        <div className="detail-value">
-                          {order.supplier?.businessName || order.supplier?.name || 'Aggrekart Supplier'}
-                        </div>
-                      </div>
-
-                      {/* Delivery Address */}
-                      <div className="detail-section">
-                        <div className="detail-label">Delivery Address</div>
-                        <div className="detail-value address">
-                          {getDeliveryAddress(order)}
-                        </div>
-                      </div>
-
-                      {/* Payment Method */}
-                      <div className="detail-section">
-                        <div className="detail-label">Payment</div>
-                        <div className="detail-value payment">
-                          <span className="payment-method">
-                            {order.payment?.method?.toUpperCase() || 'COD'}
-                          </span>
-                          <span 
-                            className={`payment-status ${order.payment?.status || 'pending'}`}
-                          >
-                            {order.payment?.status === 'paid' ? 'Paid' : 'Pending'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Expected Delivery */}
-                      <div className="detail-section">
-                        <div className="detail-label">Delivery</div>
-                        <div className="detail-value">
-                          {getExpectedDelivery(order)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pricing Breakdown */}
-                    {(order.pricing?.transportCost > 0 || order.pricing?.gstAmount > 0) && (
-                      <div className="pricing-breakdown">
-                        <div className="pricing-header">Bill Details</div>
-                        <div className="pricing-rows">
-                          <div className="pricing-row">
-                            <span>Item total</span>
-                            <span>{formatPrice(calculateItemsTotal(order.items))}</span>
-                          </div>
-                          
-                          {order.pricing?.transportCost > 0 && (
-                            <div className="pricing-row">
-                              <span>Delivery charges</span>
-                              <span>{formatPrice(order.pricing.transportCost)}</span>
-                            </div>
-                          )}
-                          
-                          {order.pricing?.gstAmount > 0 && (
-                            <div className="pricing-row">
-                              <span>Taxes & fees</span>
-                              <span>{formatPrice(order.pricing.gstAmount)}</span>
-                            </div>
-                          )}
-                          
-                          <div className="pricing-row total">
-                            <span>Total amount</span>
-                            <span>{formatPrice(orderTotal)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Order Actions */}
-                  <div className="order-actions">
-                    <div className="primary-actions">
-                      <Link 
-                        to={`/orders/${order._id}`}
-                        className="action-button secondary"
-                      >
-                        View details
-                      </Link>
-                      
-                      {order.status === 'delivered' && (
-                        <button className="action-button primary">
-                          Buy again
-                        </button>
-                      )}
-                      
-                      {['dispatched', 'material_loading', 'processing'].includes(order.status) && (
-                        <Link 
-                          to={`/orders/${order._id}/track`}
-                          className="action-button primary"
+                      <div className="expand-indicator">
+                        <svg 
+                          className={`expand-arrow ${isExpanded ? 'expanded' : ''}`}
+                          width="16" 
+                          height="16" 
+                          viewBox="0 0 24 24" 
+                          fill="currentColor"
                         >
-                          Track order
-                        </Link>
-                      )}
-                    </div>
-
-                    <div className="secondary-actions">
-                      {canCancel && (
-                        <button className="action-button danger">
-                          Cancel order
-                        </button>
-                      )}
-                      
-                      {order.status === 'delivered' && !order.customerRating?.rating && (
-                        <button className="action-button outline">
-                          Rate order
-                        </button>
-                      )}
-                      
-                      {order.invoice?.invoiceNumber && (
-                        <button className="action-button outline">
-                          Download invoice
-                        </button>
-                      )}
-                      
-                      <button className="action-button outline">
-                        Get help
-                      </button>
+                          <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                        </svg>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Expanded Order Details */}
+                  {isExpanded && (
+                    <div className="order-expanded-content">
+                      {/* Progress Bar */}
+                      <div className="progress-section">
+                        <div className="progress-bar-container">
+                          <div 
+                            className="progress-bar"
+                            style={{ 
+                              width: `${statusInfo.progress}%`,
+                              backgroundColor: statusInfo.color
+                            }}
+                          ></div>
+                        </div>
+                        <div className="status-description">{statusInfo.description}</div>
+                      </div>
+
+                      {/* All Items */}
+                      <div className="items-section">
+                        <h4 className="section-title">Items ({itemCount})</h4>
+                        <div className="items-list">
+                          {order.items?.map((item, index) => (
+                            <div key={index} className="expanded-item">
+                              <div className="expanded-item-image">
+                                <ImageWithFallback
+                                  src={getProductImage(item)} 
+                                  alt={getProductName(item)}
+                                  className="item-image"
+                                  fallbackType="product"
+                                />
+                              </div>
+                              <div className="item-details">
+                                <div className="item-name">
+                                  {getProductName(item)}
+                                </div>
+                                <div className="item-specs">
+                                  Qty: {item.quantity} • ₹{item.unitPrice}/unit
+                                  {item.productSnapshot?.brand && ` • ${item.productSnapshot.brand}`}
+                                </div>
+                              </div>
+                              <div className="item-price">
+                                {formatPrice(item.totalPrice || (item.unitPrice * item.quantity))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Order Details Grid */}
+                      <div className="details-grid">
+                        <div className="detail-item">
+                          <div className="detail-label">Supplier</div>
+                          <div className="detail-value">
+                            {order.supplier?.businessName || order.supplier?.name || 'Aggrekart Supplier'}
+                          </div>
+                        </div>
+
+                        <div className="detail-item">
+                          <div className="detail-label">Delivery Address</div>
+                          <div className="detail-value">
+                            {getDeliveryAddress(order)}
+                          </div>
+                        </div>
+
+                        <div className="detail-item">
+                          <div className="detail-label">Payment</div>
+                          <div className="detail-value">
+                            <span className="payment-method">
+                              {order.payment?.method?.toUpperCase() || 'COD'}
+                            </span>
+                            <span 
+                              className={`payment-status ${order.payment?.status || 'pending'}`}
+                            >
+                              {order.payment?.status === 'paid' ? 'Paid' : 'Pending'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="detail-item">
+                          <div className="detail-label">Expected Delivery</div>
+                          <div className="detail-value">
+                            {getExpectedDelivery(order)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bill Details */}
+                      {(order.pricing?.transportCost > 0 || order.pricing?.gstAmount > 0) && (
+                        <div className="bill-section">
+                          <h4 className="section-title">Bill Details</h4>
+                          <div className="bill-rows">
+                            <div className="bill-row">
+                              <span>Item total</span>
+                              <span>{formatPrice(calculateItemsTotal(order.items))}</span>
+                            </div>
+                            
+                            {order.pricing?.transportCost > 0 && (
+                              <div className="bill-row">
+                                <span>Delivery charges</span>
+                                <span>{formatPrice(order.pricing.transportCost)}</span>
+                              </div>
+                            )}
+                            
+                            {order.pricing?.gstAmount > 0 && (
+                              <div className="bill-row">
+                                <span>Taxes & fees</span>
+                                <span>{formatPrice(order.pricing.gstAmount)}</span>
+                              </div>
+                            )}
+                            
+                            <div className="bill-row total-row">
+                              <span>Total Paid</span>
+                              <span>{formatPrice(orderTotal)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="action-section">
+                        <div className="action-buttons">
+                          <Link 
+                            to={`/orders/${order._id}`}
+                            className="action-btn secondary"
+                          >
+                            View Details
+                          </Link>
+                          
+                          {order.status === 'delivered' && (
+                            <button className="action-btn primary">
+                              Buy Again
+                            </button>
+                          )}
+                          
+                          {['dispatched', 'material_loading', 'processing'].includes(order.status) && (
+                            <Link 
+                              to={`/orders/${order._id}/track`}
+                              className="action-btn primary"
+                            >
+                              Track Order
+                            </Link>
+                          )}
+                          
+                          {canCancel && (
+                            <button className="action-btn danger">
+                              Cancel Order
+                            </button>
+                          )}
+                          
+                          {order.status === 'delivered' && !order.customerRating?.rating && (
+                            <button className="action-btn outline">
+                              Rate Order
+                            </button>
+                          )}
+                          
+                          <button className="action-btn outline">
+                            Get Help
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}

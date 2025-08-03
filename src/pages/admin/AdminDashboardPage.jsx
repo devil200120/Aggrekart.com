@@ -5,7 +5,7 @@ PURPOSE: Main admin dashboard with overview statistics and quick access
 */
 
 import React, { useState } from 'react'
-import { useQuery } from 'react-query'
+import { useQuery ,useQueryClient} from 'react-query'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { adminAPI } from '../../services/api'
@@ -28,6 +28,9 @@ import './AdminDashboardPage.css'
 const AdminDashboardPage = () => {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+
+  const queryClient = useQueryClient() // Add this line
+
 
   // Fetch admin dashboard data
   const { data: dashboardData, isLoading: statsLoading, error: statsError } = useQuery(
@@ -69,14 +72,23 @@ const AdminDashboardPage = () => {
   const recentUsers = recentUsersData?.data?.users || recentUsersData?.users || [];
 
   // Fetch pending approvals
-  const { data: pendingApprovals, isLoading: approvalsLoading } = useQuery(
-    'admin-pending-approvals',
-    adminAPI.getPendingApprovals,
-    {
-      enabled: !!user && user.role === 'admin',
-      refetchInterval: 60000, // Refresh every minute
+  const { data: pendingApprovalsData, isLoading: approvalsLoading, error: approvalsError } = useQuery(
+  'admin-pending-approvals',
+  adminAPI.getPendingApprovals,
+  {
+    enabled: !!user && user.role === 'admin',
+    refetchInterval: 60000, // Refresh every minute
+    onSuccess: (data) => {
+      console.log('📋 Approvals data received:', data);
+    },
+    onError: (error) => {
+      console.error('❌ Approvals fetch error:', error);
+      toast.error('Failed to load pending approvals');
     }
-  )
+  }
+)
+const pendingApprovals = pendingApprovalsData?.data?.approvals || [];
+const approvalsCount = pendingApprovalsData?.data?.counts || { total: 0, suppliers: 0, products: 0 };
 
   const handleUserAction = async (userId, action) => {
     try {
@@ -87,6 +99,57 @@ const AdminDashboardPage = () => {
       toast.error(`Failed to ${action} user`)
     }
   }
+  // Add this function after the existing handleUserAction function (around line 85):
+
+const handleApproval = async (approvalId, type, action) => {
+  try {
+    const confirmMessage = `Are you sure you want to ${action} this ${type}?`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    // Show loading toast
+    const loadingToast = toast.loading(`${action === 'approve' ? 'Approving' : 'Rejecting'} ${type}...`);
+
+    let result;
+    // Call the correct API endpoint based on type and action
+    if (type === 'supplier') {
+      if (action === 'approve') {
+        result = await adminAPI.approveSupplier(approvalId, { 
+          notes: 'Approved from admin dashboard' 
+        });
+      } else {
+        result = await adminAPI.rejectSupplier(approvalId, { 
+          reason: 'Rejected from admin dashboard' 
+        });
+      }
+    } else if (type === 'product') {
+      if (action === 'approve') {
+        result = await adminAPI.approveProduct(approvalId, { 
+          reason: 'Approved from admin dashboard' 
+        });
+      } else {
+        result = await adminAPI.rejectProduct(approvalId, { 
+          reason: 'Rejected from admin dashboard' 
+        });
+      }
+    }
+
+    // Dismiss loading toast
+    toast.dismiss(loadingToast);
+
+    // Show success toast
+    toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} ${action}d successfully!`);
+
+    // Refetch approvals data
+    queryClient.invalidateQueries('admin-pending-approvals');
+    queryClient.invalidateQueries('admin-dashboard-stats');
+
+  } catch (error) {
+    console.error(`❌ Failed to ${action} ${type}:`, error);
+    toast.error(`Failed to ${action} ${type}. Please try again.`);
+  }
+};
 
   if (!user || user.role !== 'admin') {
     return (
@@ -241,16 +304,104 @@ const AdminDashboardPage = () => {
           </div>
         )}
 
+        
+
         {activeTab === 'users' && (
-          <div className="users-tab">
-            <UserManagement 
-              users={recentUsers || []}
-              loading={usersLoading}
-              onUpdateUser={handleUserAction}
-              onDeleteUser={handleUserAction}
-            />
-          </div>
+          <UserManagement 
+            users={recentUsers} 
+            loading={usersLoading} 
+            onAction={handleUserAction}
+          />
         )}
+
+        
+{activeTab === 'approvals' && (
+  <div className="approvals-tab">
+    <div className="approvals-section">
+      <div className="section-header">
+        <h3>Pending Approvals</h3>
+        <div className="approvals-summary">
+          <span className="total-badge">
+            {approvalsCount.total} Total
+          </span>
+          <span className="suppliers-badge">
+            {approvalsCount.suppliers} Suppliers
+          </span>
+          <span className="products-badge">
+            {approvalsCount.products} Products
+          </span>
+        </div>
+      </div>
+
+      {approvalsError && (
+        <div className="error-message">
+          <AlertTriangle size={24} />
+          <p>Failed to load pending approvals. Please try again.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="btn btn-primary btn-sm"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {approvalsLoading ? (
+        <div className="loading-container">
+          <LoadingSpinner />
+          <p>Loading pending approvals...</p>
+        </div>
+      ) : (
+        <div className="approvals-list">
+          {pendingApprovals?.length > 0 ? (
+            pendingApprovals.map((approval) => (
+              <div key={approval._id} className="approval-card">
+                <div className="approval-header">
+                  <span className={`approval-type-badge ${approval.type}`}>
+                    {approval.type === 'supplier' ? '🏢' : '📦'} {approval.type}
+                  </span>
+                  <span className="approval-date">
+                    {new Date(approval.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="approval-info">
+                  <h4>{approval.title}</h4>
+                  <p>{approval.description}</p>
+                </div>
+                <div className="approval-actions">
+                  <button 
+                    className="btn btn-success btn-sm"
+                    onClick={() => handleApproval(approval._id, approval.type, 'approve')}
+                  >
+                    ✅ Approve
+                  </button>
+                  <button 
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleApproval(approval._id, approval.type, 'reject')}
+                  >
+                    ❌ Reject
+                  </button>
+                  <Link 
+                    to={`/admin/${approval.type}s/${approval.entityId}`}
+                    className="btn btn-outline btn-sm"
+                  >
+                    📄 View Details
+                  </Link>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-approvals">
+              <div className="no-approvals-icon">✅</div>
+              <h4>No Pending Approvals</h4>
+              <p>All suppliers and products have been reviewed.</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
         {activeTab === 'approvals' && (
           <div className="approvals-tab">

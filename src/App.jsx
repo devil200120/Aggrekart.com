@@ -1,13 +1,16 @@
-import React from 'react'
+import {React,useEffect}  from 'react'
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { Toaster } from 'react-hot-toast'
+import SuspensionBanner from './components/common/SuspensionBanner';
 
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import Navbar from './components/layout/Navbar'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import { useSupplierSuspensionCheck } from './hooks/useSupplierSuspensionCheck';
 
 // Pages
 // Add this import with the other imports in App.jsx
@@ -80,11 +83,33 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+    const suspensionCheck = useSupplierSuspensionCheck();
+
+      useEffect(() => {
+    if (suspensionCheck.showSuspensionDialog) {
+      document.body.classList.add('suspension-banner-active');
+    } else {
+      document.body.classList.remove('suspension-banner-active');
+    }
+    
+    return () => {
+      document.body.classList.remove('suspension-banner-active');
+    };
+  }, [suspensionCheck.showSuspensionDialog]);
+
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
           <CartProvider>
+            {suspensionCheck.showSuspensionDialog && (
+              <SuspensionBanner 
+                suspensionData={suspensionCheck.suspensionData}
+                onClose={suspensionCheck.handleClose}
+                onLogout={suspensionCheck.handleLogout}
+              />
+            )}
             <div className="app">
               <Navbar />
               

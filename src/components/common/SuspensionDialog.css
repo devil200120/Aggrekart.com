@@ -1,0 +1,158 @@
+suspension-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.suspension-dialog {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.suspension-header {
+  text-align: center;
+  padding: 30px 30px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.suspension-icon {
+  color: #dc2626;
+  margin-bottom: 16px;
+}
+
+.suspension-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.suspension-content {
+  padding: 30px;
+}
+
+.suspension-message {
+  font-size: 1.1rem;
+  color: #374151;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.suspension-details {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-item strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.detail-item span {
+  color: #6b7280;
+}
+
+.contact-support {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 24px;
+}
+
+.contact-support h4 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.contact-support p {
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.contact-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+}
+
+.suspension-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 30px 30px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-primary {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .suspension-dialog {
+    margin: 20px;
+    max-width: none;
+  }
+  
+  .suspension-actions {
+    flex-direction: column;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
