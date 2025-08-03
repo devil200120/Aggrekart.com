@@ -9,7 +9,7 @@ import TopRatedProducts from "../components/TopRatedProducts"; // Add this impor
 import {  newsletterAPI } from "../services/api";
 import CCBlocksImg from "../CC Blocks.JPG";
 import TMTSteelImg from "../TMT Steel.webp";
-import RedBricksImg from "../red_bricks.JPG";
+import RedBricksImg from "../red_bricks.jpg";
 import CementImg from "../Cement.jpg";
 import DSC0200Img from "../DSC_0200.JPG";
 import DSC0141Img from "../DSC_0141.JPG";
