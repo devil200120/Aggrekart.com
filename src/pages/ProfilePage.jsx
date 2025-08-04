@@ -1,727 +1,427 @@
-import React, { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { usersAPI } from '../services/api'
-import { useAuth } from '../context/AuthContext'
-import toast from 'react-hot-toast'
-import LoadingSpinner from '../components/common/LoadingSpinner'
-import MembershipTab from '../components/membership/MembershipTab'
-import './ProfilePage.css'
-import UserAnalytics from '../components/analytics/UserAnalytics'
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { usersAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import AddressManager from "../components/address/AddressManager";
+import OrdersPage from "./OrdersPage";
+import WishlistPage from "./WishlistPage";
+import SettingsPage from "./SettingsPage";
+import toast from "react-hot-toast";
+import {
+  FaUser,
+  FaMapMarkerAlt,
+  FaShoppingBag,
+  FaCog,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaPhone,
+  FaEnvelope,
+  FaCalendar,
+  FaMapPin,
+  FaBox,
+  FaBell,
+  FaLock,
+  FaHeart,
+  FaHistory,
+} from "react-icons/fa";
+import "./ProfilePage.css";
 
 const ProfilePage = () => {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  
-  // Get tab from URL params or default to 'personal'
-  const urlParams = new URLSearchParams(window.location.search)
-  const initialTab = urlParams.get('tab') || 'personal'
-  
-  const [activeTab, setActiveTab] = useState(initialTab)
-  const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phoneNumber: '',
-    customerType: '',
-    gstNumber: ''
-  })
-  const [addressForm, setAddressForm] = useState({
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    isDefault: false
-  })
-  const [showAddressForm, setShowAddressForm] = useState(false)
-  const [editingAddress, setEditingAddress] = useState(null) // Fix: Added editing address state
-  const [showEditAddressForm, setShowEditAddressForm] = useState(false) // Fix: Added edit form state
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+  });
+  const [editingAddress, setEditingAddress] = useState(null);
 
-  // Update URL when tab changes
-  useEffect(() => {
-    const url = new URL(window.location)
-    if (activeTab !== 'personal') {
-      url.searchParams.set('tab', activeTab)
-    } else {
-      url.searchParams.delete('tab')
-    }
-    window.history.replaceState({}, '', url)
-  }, [activeTab])
+  const queryClient = useQueryClient();
 
-  // Fetch user profile
-  const { data: profileData, isLoading: profileLoading } = useQuery(
-    'userProfile',
-    usersAPI.getProfile,
-    {
-      onSuccess: (data) => {
-        if (data?.data?.user) {
-          const userData = data.data.user
-          setFormData({
-            name: userData.name || '',
-            email: userData.email || '',
-            phoneNumber: userData.phoneNumber || '',
-            customerType: userData.customerType || '',
-            gstNumber: userData.gstNumber || ''
-          })
-        }
+  // Fetch user profile data
+  const {
+    data: userProfile,
+    isLoading,
+    refetch,
+  } = useQuery("userProfile", usersAPI.getProfile, {
+    onSuccess: (data) => {
+      if (data?.data?.user) {
+        const userData = data.data.user;
+        setProfileData({
+          name: userData.name || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          dateOfBirth: userData.dateOfBirth
+            ? new Date(userData.dateOfBirth).toISOString().split("T")[0]
+            : "",
+        });
       }
-    }
-  )
+    },
+    onError: (error) => {
+      console.error("Profile fetch error:", error);
+      toast.error("Failed to load profile data");
+    },
+  });
 
-  // Fetch user addresses
-  const { data: addressesData, isLoading: addressesLoading } = useQuery(
-    'userAddresses',
-    usersAPI.getAddresses
-  )
-
-  // Update profile mutation
-  const updateProfileMutation = useMutation(
-    (data) => usersAPI.updateProfile(data),
+  const updateAddressMutation = useMutation(
+    ({ addressId, data }) => {
+      console.log("🔄 Updating address:", { addressId, data });
+      return usersAPI.updateAddress(addressId, data);
+    },
     {
       onSuccess: (response) => {
-        toast.success('Profile updated successfully!')
-        setIsEditing(false)
-        queryClient.invalidateQueries('userProfile')
-        queryClient.invalidateQueries('auth')
+        console.log("✅ Address updated successfully:", response);
+        toast.success("Address updated successfully!");
+        // Close any edit modals and refresh data
+        setEditingAddress(null);
+        queryClient.invalidateQueries(["userProfile"]);
+        queryClient.invalidateQueries(["userAddresses"]);
       },
       onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to update profile')
-      }
-    }
-  )
+        console.error("❌ Address update failed:", error);
 
-  // Add address mutation
-  const addAddressMutation = useMutation(
-    (data) => usersAPI.addAddress(data),
-    {
-      onSuccess: () => {
-        toast.success('Address added successfully!')
-        setShowAddressForm(false)
-        setAddressForm({
-          address: '',
-          city: '',
-          state: '',
-          pincode: '',
-          isDefault: false
-        })
-        queryClient.invalidateQueries('userAddresses')
-      },
-      onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to add address')
-      }
-    }
-  )
+        const errorData = error?.response?.data;
+        let errorMessage = "Failed to update address";
 
-  // Fix: Added update address mutation
-  const updateAddressMutation = useMutation(
-    ({ addressId, data }) => usersAPI.updateAddress(addressId, data),
-    {
-      onSuccess: () => {
-        toast.success('Address updated successfully!')
-        setShowEditAddressForm(false)
-        setEditingAddress(null)
-        setAddressForm({
-          address: '',
-          city: '',
-          state: '',
-          pincode: '',
-          isDefault: false
-        })
-        queryClient.invalidateQueries('userAddresses')
-      },
-      onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to update address')
-      }
-    }
-  )
+        if (errorData?.debug?.availableAddresses) {
+          console.log(
+            "📍 Available addresses:",
+            errorData.debug.availableAddresses
+          );
+          errorMessage = `Address not found. Please refresh the page and try again.`;
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        }
 
-  // Delete address mutation
-  const deleteAddressMutation = useMutation(
-    (addressId) => usersAPI.deleteAddress(addressId),
-    {
-      onSuccess: () => {
-        toast.success('Address deleted successfully!')
-        queryClient.invalidateQueries('userAddresses')
+        toast.error(errorMessage);
       },
-      onError: (error) => {
-        toast.error(error?.response?.data?.message || 'Failed to delete address')
-      }
     }
-  )
+  );
+
+  // Add this function to handle address updates
+  const handleUpdateAddress = (addressId, formData) => {
+    console.log("📝 Updating address:", { addressId, formData });
+
+    if (!addressId) {
+      toast.error("Invalid address ID");
+      return;
+    }
+
+    updateAddressMutation.mutate({
+      addressId,
+      data: formData,
+    });
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setProfileData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
-  const handleAddressChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setAddressForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-  }
-
-  const handleProfileSubmit = (e) => {
-    e.preventDefault()
-    updateProfileMutation.mutate(formData)
-  }
-
-  const handleAddressSubmit = (e) => {
-    e.preventDefault()
-    addAddressMutation.mutate(addressForm)
-  }
-
-  // Fix: Added edit address submit handler
-  const handleEditAddressSubmit = (e) => {
-    e.preventDefault()
-    if (editingAddress) {
-      updateAddressMutation.mutate({
-        addressId: editingAddress._id,
-        data: addressForm
-      })
+  const handleSaveProfile = async () => {
+    try {
+      await usersAPI.updateProfile(profileData);
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+      refetch();
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("Failed to update profile");
     }
-  }
+  };
 
-  // Fix: Added edit address handler
-  const handleEditAddress = (address) => {
-    setEditingAddress(address)
-    setAddressForm({
-      address: address.address,
-      city: address.city,
-      state: address.state,
-      pincode: address.pincode,
-      isDefault: address.isDefault || false
-    })
-    setShowEditAddressForm(true)
-  }
-
-  // Fix: Added cancel edit handler
   const handleCancelEdit = () => {
-    setShowEditAddressForm(false)
-    setEditingAddress(null)
-    setAddressForm({
-      address: '',
-      city: '',
-      state: '',
-      pincode: '',
-      isDefault: false
-    })
-  }
-
-  const handleDeleteAddress = (addressId) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
-      deleteAddressMutation.mutate(addressId)
+    setIsEditing(false);
+    // Reset to original data
+    if (userProfile?.data?.user) {
+      const userData = userProfile.data.user;
+      setProfileData({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        dateOfBirth: userData.dateOfBirth
+          ? new Date(userData.dateOfBirth).toISOString().split("T")[0]
+          : "",
+      });
     }
-  }
+  };
 
-  const userData = profileData?.data?.user || user
-  const addresses = addressesData?.data?.addresses || []
+  const tabs = [
+    {
+      id: "profile",
+      label: "Profile Info",
+      icon: FaUser,
+      description: "Personal information and account details",
+    },
+    {
+      id: "addresses",
+      label: "Addresses",
+      icon: FaMapMarkerAlt,
+      description: "Manage delivery addresses",
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      icon: FaShoppingBag,
+      description: "Order history and tracking",
+    },
+    {
+      id: "wishlist",
+      label: "Wishlist",
+      icon: FaHeart,
+      description: "Saved items and favorites",
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: FaCog,
+      description: "Account preferences and security",
+    },
+  ];
 
-  if (profileLoading) {
+  if (isLoading) {
     return (
       <div className="profile-page">
-        <div className="container">
-          <LoadingSpinner />
+        <div className="profile-container">
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading profile...</p>
+          </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="profile-page">
-      <div className="container">
-        {/* Page Header */}
+      <div className="profile-container">
+        {/* Profile Header */}
         <div className="profile-header">
-          <div className="profile-header-content">
-            <div className="profile-avatar">
-              <div className="avatar-placeholder">
-                {userData?.name?.charAt(0)?.toUpperCase() || 'U'}
+          <div className="profile-avatar">
+            <div className="avatar-circle">
+              <FaUser />
+            </div>
+            <div className="avatar-status">
+              <div className="status-dot online"></div>
+            </div>
+          </div>
+          <div className="profile-info">
+            <h1>{userProfile?.data?.user?.name || "User"}</h1>
+            <p className="profile-email">
+              <FaEnvelope />
+              {userProfile?.data?.user?.email}
+            </p>
+            <p className="member-since">
+              <FaCalendar />
+              Member since{" "}
+              {new Date(
+                userProfile?.data?.user?.createdAt
+              ).toLocaleDateString()}
+            </p>
+            <div className="profile-stats">
+              <div className="stat-item">
+                <span className="stat-number">0</span>
+                <span className="stat-label">Orders</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">0</span>
+                <span className="stat-label">Addresses</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">0</span>
+                <span className="stat-label">Wishlist</span>
               </div>
             </div>
-            <div className="profile-info">
-              <h1>My Profile</h1>
-              <p>Manage your account information and preferences</p>
-            </div>
+          </div>
+          <div className="profile-actions">
+            {!isEditing ? (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="btn btn-primary"
+              >
+                <FaEdit />
+                Edit Profile
+              </button>
+            ) : (
+              <div className="edit-actions">
+                <button onClick={handleSaveProfile} className="btn btn-success">
+                  <FaSave />
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="btn btn-secondary"
+                >
+                  <FaTimes />
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Profile Content */}
+        {/* Navigation Tabs */}
+        <div className="profile-navigation">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`nav-tab ${activeTab === tab.id ? "active" : ""}`}
+              title={tab.description}
+            >
+              <tab.icon />
+              <span className="nav-label">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
         <div className="profile-content">
-          {/* Sidebar Navigation */}
-          <div className="profile-sidebar">
-            <nav className="profile-nav">
-              <button
-                className={`nav-item ${activeTab === 'personal' ? 'active' : ''}`}
-                onClick={() => setActiveTab('personal')}
-              >
-                👤 Personal Information
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'membership' ? 'active' : ''}`}
-                onClick={() => setActiveTab('membership')}
-              >
-                💎 Membership & Rewards
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'addresses' ? 'active' : ''}`}
-                onClick={() => setActiveTab('addresses')}
-              >
-                📍 Addresses
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'preferences' ? 'active' : ''}`}
-                onClick={() => setActiveTab('preferences')}
-              >
-                ⚙️ Preferences
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'security' ? 'active' : ''}`}
-                onClick={() => setActiveTab('security')}
-              >
-                🔒 Security
-              </button>
-            </nav>
-          </div>
-
-          {/* Main Content */}
-          <div className="profile-main">
-            {/* Membership Tab */}
-            {activeTab === 'membership' && (
-              <div className="profile-section">
-                <div className="section-header">
-                  <h2>Membership & Rewards</h2>
-                  <p>Manage your membership tier, AggreCoins, and referrals</p>
-                </div>
-                <MembershipTab user={userData} />
+          {activeTab === "profile" && (
+            <div className="profile-tab">
+              <div className="tab-header">
+                <h2>Personal Information</h2>
+                <p>Manage your personal details and account settings</p>
               </div>
-            )}
 
-            {/* Personal Information Tab */}
-            {activeTab === 'personal' && (
-              <div className="profile-section">
-                <div className="section-header">
-                  <h2>Personal Information</h2>
-                  <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="btn btn-outline"
-                  >
-                    {isEditing ? 'Cancel' : 'Edit Profile'}
-                  </button>
-                </div>
-
-                <form onSubmit={handleProfileSubmit} className="profile-form">
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Full Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Email Address</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Phone Number</label>
-                      <input
-                        type="tel"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Customer Type</label>
-                      <select
-                        name="customerType"
-                        value={formData.customerType}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        required
-                      >
-                        <option value="">Select Type</option>
-                        <option value="house_owner">House Owner</option>
-                        <option value="mason">Mason</option>
-                        <option value="builder_contractor">Builder/Contractor</option>
-                        <option value="others">Others</option>
-                      </select>
-                    </div>
-
-                    <div className="form-group full-width">
-                      <label>GST Number (Optional)</label>
-                      <input
-                        type="text"
-                        name="gstNumber"
-                        value={formData.gstNumber}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        placeholder="Enter GST number if applicable"
-                      />
-                    </div>
+              <div className="profile-form">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="name">Full Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={profileData.name}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      placeholder="Enter your full name"
+                    />
                   </div>
 
-                  {isEditing && (
-                    <div className="form-actions">
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={updateProfileMutation.isLoading}
-                      >
-                        {updateProfileMutation.isLoading ? (
-                          <>
-                            <span className="spinner-small"></span>
-                            Saving...
-                          </>
-                        ) : (
-                          'Save Changes'
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </form>
-              </div>
-            )}
-
-            {/* Addresses Tab */}
-            {activeTab === 'addresses' && (
-              <div className="profile-section">
-                <div className="section-header">
-                  <h2>Delivery Addresses</h2>
-                  <button
-                    onClick={() => setShowAddressForm(true)}
-                    className="btn btn-primary"
-                  >
-                    + Add New Address
-                  </button>
-                </div>
-
-                {addressesLoading ? (
-                  <LoadingSpinner size="small" />
-                ) : (
-                  <div className="addresses-list">
-                    {addresses.length === 0 ? (
-                      <div className="empty-state">
-                        <p>No addresses added yet</p>
-                        <button
-                          onClick={() => setShowAddressForm(true)}
-                          className="btn btn-primary"
-                        >
-                          Add Your First Address
-                        </button>
-                      </div>
-                    ) : (
-                      addresses.map((address) => (
-                        <div key={address._id} className="address-card">
-                          <div className="address-info">
-                            <div className="address-text">
-                              <p className="address-line">{address.address}</p>
-                              <p className="address-details">
-                                {address.city}, {address.state} - {address.pincode}
-                              </p>
-                            </div>
-                            {address.isDefault && (
-                              <span className="default-badge">Default</span>
-                            )}
-                          </div>
-                          <div className="address-actions">
-                            {/* Fix: Added onClick handler for Edit button */}
-                            <button 
-                              className="btn btn-outline btn-sm"
-                              onClick={() => handleEditAddress(address)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteAddress(address._id)}
-                              className="btn btn-outline btn-sm btn-danger"
-                              disabled={deleteAddressMutation.isLoading}
-                            >
-                              {deleteAddressMutation.isLoading ? 'Deleting...' : 'Delete'}
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={profileData.email}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      placeholder="Enter your email"
+                    />
                   </div>
-                )}
 
-                {/* Add Address Form */}
-                {showAddressForm && (
-                  <div className="modal-overlay">
-                    <div className="modal">
-                      <div className="modal-header">
-                        <h3>Add New Address</h3>
-                        <button
-                          onClick={() => setShowAddressForm(false)}
-                          className="modal-close"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <form onSubmit={handleAddressSubmit} className="modal-form">
-                        <div className="form-group">
-                          <label>Address</label>
-                          <textarea
-                            name="address"
-                            value={addressForm.address}
-                            onChange={handleAddressChange}
-                            rows="3"
-                            required
-                          />
-                        </div>
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label>City</label>
-                            <input
-                              type="text"
-                              name="city"
-                              value={addressForm.city}
-                              onChange={handleAddressChange}
-                              required
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label>State</label>
-                            <input
-                              type="text"
-                              name="state"
-                              value={addressForm.state}
-                              onChange={handleAddressChange}
-                              required
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label>Pincode</label>
-                            <input
-                              type="text"
-                              name="pincode"
-                              value={addressForm.pincode}
-                              onChange={handleAddressChange}
-                              pattern="[0-9]{6}"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group">
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              name="isDefault"
-                              checked={addressForm.isDefault}
-                              onChange={handleAddressChange}
-                            />
-                            Set as default address
-                          </label>
-                        </div>
-                        <div className="modal-actions">
-                          <button
-                            type="button"
-                            onClick={() => setShowAddressForm(false)}
-                            className="btn btn-outline"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={addAddressMutation.isLoading}
-                          >
-                            {addAddressMutation.isLoading ? 'Adding...' : 'Add Address'}
-                          </button>
-                        </div>
-                      </form>
-                    </div>
+                  <div className="form-group">
+                    <label htmlFor="phone">Phone Number</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={profileData.phone}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      placeholder="Enter your phone number"
+                    />
                   </div>
-                )}
 
-                {/* Fix: Added Edit Address Form */}
-                {showEditAddressForm && (
-                  <div className="modal-overlay">
-                    <div className="modal">
-                      <div className="modal-header">
-                        <h3>Edit Address</h3>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="modal-close"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <form onSubmit={handleEditAddressSubmit} className="modal-form">
-                        <div className="form-group">
-                          <label>Address</label>
-                          <textarea
-                            name="address"
-                            value={addressForm.address}
-                            onChange={handleAddressChange}
-                            rows="3"
-                            required
-                          />
-                        </div>
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label>City</label>
-                            <input
-                              type="text"
-                              name="city"
-                              value={addressForm.city}
-                              onChange={handleAddressChange}
-                              required
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label>State</label>
-                            <input
-                              type="text"
-                              name="state"
-                              value={addressForm.state}
-                              onChange={handleAddressChange}
-                              required
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label>Pincode</label>
-                            <input
-                              type="text"
-                              name="pincode"
-                              value={addressForm.pincode}
-                              onChange={handleAddressChange}
-                              pattern="[0-9]{6}"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group">
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              name="isDefault"
-                              checked={addressForm.isDefault}
-                              onChange={handleAddressChange}
-                            />
-                            Set as default address
-                          </label>
-                        </div>
-                        <div className="modal-actions">
-                          <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                            className="btn btn-outline"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={updateAddressMutation.isLoading}
-                          >
-                            {updateAddressMutation.isLoading ? 'Updating...' : 'Update Address'}
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Preferences Tab */}
-            {activeTab === 'preferences' && (
-              <div className="profile-section">
-                <div className="section-header">
-                  <h2>Preferences</h2>
-                </div>
-                <div className="preferences-content">
-                  <div className="preference-item">
-                    <div>
-                      <h4>Email Notifications</h4>
-                      <p>Receive updates about orders, promotions, and news</p>
-                    </div>
-                    <label className="toggle">
-                      <input type="checkbox" defaultChecked />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                  <div className="preference-item">
-                    <div>
-                      <h4>SMS Notifications</h4>
-                      <p>Get order updates and delivery notifications via SMS</p>
-                    </div>
-                    <label className="toggle">
-                      <input type="checkbox" defaultChecked />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                  <div className="preference-item">
-                    <div>
-                      <h4>Promotional Offers</h4>
-                      <p>Receive information about special deals and discounts</p>
-                    </div>
-                    <label className="toggle">
-                      <input type="checkbox" defaultChecked />
-                      <span className="toggle-slider"></span>
-                    </label>
+                  <div className="form-group">
+                    <label htmlFor="dateOfBirth">Date of Birth</label>
+                    <input
+                      type="date"
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      value={profileData.dateOfBirth}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <div className="profile-section">
-                <div className="section-header">
-                  <h2>Security Settings</h2>
-                </div>
-                <div className="security-content">
-                  <div className="security-item">
-                    <div>
-                      <h4>Change Password</h4>
-                      <p>Update your account password</p>
-                    </div>
-                    <button className="btn btn-outline">Change Password</button>
-                  </div>
-                  <div className="security-item">
-                    <div>
-                      <h4>Two-Factor Authentication</h4>
-                      <p>Add an extra layer of security to your account</p>
-                    </div>
-                    <button className="btn btn-outline">Enable 2FA</button>
-                  </div>
-                  <div className="security-item">
-                    <div>
-                      <h4>Login History</h4>
-                      <p>View recent login activity</p>
-                    </div>
-                    <button className="btn btn-outline">View History</button>
-                  </div>
-                </div>
+          {activeTab === "addresses" && (
+            <div className="addresses-tab">
+              <div className="tab-header">
+                <h2>
+                  <FaMapPin />
+                  Saved Addresses
+                </h2>
+                <p>
+                  Manage your delivery addresses with Google Maps integration
+                </p>
               </div>
-            )}
-          </div>
+
+              {/* Using existing AddressManager component */}
+              <AddressManager
+                onUpdateAddress={handleUpdateAddress}
+                setEditingAddress={setEditingAddress}
+                editingAddress={editingAddress}
+              />
+            </div>
+          )}
+
+          {activeTab === "orders" && (
+            <div className="orders-tab">
+              <div className="tab-header">
+                <h2>
+                  <FaShoppingBag />
+                  Order History
+                </h2>
+                <p>View and track your past orders</p>
+              </div>
+
+              {/* Using existing OrdersPage component */}
+              <div className="embedded-page">
+                <OrdersPage />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "wishlist" && (
+            <div className="wishlist-tab">
+              <div className="tab-header">
+                <h2>
+                  <FaHeart />
+                  My Wishlist
+                </h2>
+                <p>Items you've saved for later</p>
+              </div>
+
+              {/* Using existing WishlistPage component */}
+              <div className="embedded-page">
+                <WishlistPage />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="settings-tab">
+              <div className="tab-header">
+                <h2>
+                  <FaCog />
+                  Account Settings
+                </h2>
+                <p>Manage your account preferences and security settings</p>
+              </div>
+
+              {/* Using existing SettingsPage component */}
+              <div className="embedded-page">
+                <SettingsPage />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProfilePage
+export default ProfilePage;

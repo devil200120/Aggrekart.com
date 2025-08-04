@@ -8,16 +8,23 @@ import LoadingSpinner from '../components/common/LoadingSpinner'
 import './ProductsPage.css'
 
 const ProductsPage = () => {
+  
+   const [suppliers, setSuppliers] = useState([])
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState({
     category: searchParams.get('category') || '',
+    subcategory: searchParams.get('subcategory') || '',
     search: searchParams.get('search') || '',
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
     rating: searchParams.get('rating') || '',
     availability: searchParams.get('availability') || '',
     sortBy: searchParams.get('sortBy') || 'newest',
-    brand: searchParams.get('brand') || ''
+    brand: searchParams.get('brand') || '',
+    // Location parameters
+    userLatitude: searchParams.get('userLatitude') || '',
+    userLongitude: searchParams.get('userLongitude') || '',
+    maxDistance: searchParams.get('maxDistance') || ''
   })
   
   const [viewMode, setViewMode] = useState('grid')
@@ -47,7 +54,8 @@ const ProductsPage = () => {
       price_high: 'price_high',
       rating: 'rating',
       newest: 'newest',
-      name: 'newest'
+      name: 'newest',
+      distance: 'distance'
     }
     return sortMapping[sortBy] || 'newest'
   }
@@ -63,7 +71,8 @@ const ProductsPage = () => {
     // Add only non-empty filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== 'newest' && key !== 'sortBy') {
-        if (key === 'minPrice' || key === 'maxPrice' || key === 'rating') {
+        if (key === 'minPrice' || key === 'maxPrice' || key === 'rating' || 
+            key === 'userLatitude' || key === 'userLongitude' || key === 'maxDistance') {
           params[key] = parseFloat(value)
         } else {
           params[key] = value
@@ -71,6 +80,7 @@ const ProductsPage = () => {
       }
     })
 
+    console.log('📡 API parameters:', params)
     return params
   }, [filters, currentPage, isMobile])
 
@@ -106,314 +116,313 @@ const ProductsPage = () => {
 
   // Fallback categories if API fails
   const fallbackCategories = [
-    { _id: 'cement', name: 'Cement', productCount: 0 },
-    { _id: 'tmt_steel', name: 'TMT Steel', productCount: 0 },
-    { _id: 'bricks_blocks', name: 'Bricks & Blocks', productCount: 0 },
-    { _id: 'sand', name: 'Sand', productCount: 0 },
-    { _id: 'aggregate', name: 'Aggregate', productCount: 0 }
+    { 
+      _id: 'cement', 
+      name: 'Cement', 
+      productCount: 0,
+      subcategories: {
+        'OPC Cement': 'OPC Cement',
+        'opc': 'OPC'
+      }
+    },
+    { 
+      _id: 'tmt_steel', 
+      name: 'TMT Steel', 
+      productCount: 0,
+      subcategories: {
+        'FE-415': 'FE-415',
+        'FE-500': 'FE-500',
+        'fe_500': 'FE-500'
+      }
+    },
+    { 
+      _id: 'bricks_blocks', 
+      name: 'Bricks & Blocks', 
+      productCount: 0,
+      subcategories: {
+        'Fly Ash Bricks': 'Fly Ash Bricks'
+      }
+    },
+    { 
+      _id: 'sand', 
+      name: 'Sand', 
+      productCount: 0,
+      subcategories: {
+        'M Sand': 'M Sand',
+        'River Sand': 'River Sand',
+        'river_sand_plastering': 'River Sand (Plastering)'
+      }
+    },
+    { 
+      _id: 'aggregate', 
+      name: 'Aggregate', 
+      productCount: 0,
+      subcategories: {
+        'Metal Aggregate': 'Metal Aggregate',
+        'Stone Aggregate': 'Stone Aggregate',
+        'dust': 'Dust'
+      }
+    }
   ]
 
   // Transform categories
   const categories = useMemo(() => {
+    console.log('🏷️ Processing categories...', { categoriesData, categoriesError })
+    
     if (categoriesError || !categoriesData?.data?.categories) {
+      console.log('🏷️ Using fallback categories due to error or missing data')
       return fallbackCategories
     }
     
     const categoriesObj = categoriesData.data.categories
-    return Object.entries(categoriesObj).map(([key, category]) => ({
+    console.log('🏷️ Raw categories from API:', categoriesObj)
+    
+    const transformedCategories = Object.entries(categoriesObj).map(([key, category]) => ({
       _id: key,
       name: category.name,
       productCount: 0,
-      subcategories: category.subcategories
+      subcategories: category.subcategories || {}
     }))
+    
+    console.log('🏷️ Transformed categories:', transformedCategories)
+    return transformedCategories
   }, [categoriesData, categoriesError])
 
-  // Update URL when filters change
   useEffect(() => {
-    const params = new URLSearchParams()
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value && value !== 'newest') params.set(key, value)
+  if (data?.data?.products) {
+    const uniqueSuppliers = []
+    const supplierIds = new Set()
+    
+    data.data.products.forEach(product => {
+      if (product.supplier && !supplierIds.has(product.supplier._id)) {
+        supplierIds.add(product.supplier._id)
+        uniqueSuppliers.push(product.supplier)
+      }
     })
-    if (currentPage > 1) params.set('page', currentPage.toString())
-    setSearchParams(params)
-  }, [filters, currentPage, setSearchParams])
+    
+    setSuppliers(uniqueSuppliers)
+    console.log(`📍 Found ${uniqueSuppliers.length} suppliers on products page`)
+  }
+}, [data])
 
   // Handle filter changes
-  const handleFilterChange = (filterKey, filterValue) => {
-    console.log('🔧 Filter change:', filterKey, filterValue)
+  const handleFilterChange = (key, value) => {
+    console.log(`🔧 Filter change: ${key} = ${value}`)
     
-    if (typeof filterKey === 'object') {
-      // Handle multiple filters at once
-      setFilters(prev => ({ ...prev, ...filterKey }))
-    } else {
-      // Handle single filter
-      setFilters(prev => ({ ...prev, [filterKey]: filterValue }))
-    }
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value }
+      
+      // Reset subcategory if category changes
+      if (key === 'category') {
+        newFilters.subcategory = ''
+      }
+      
+      return newFilters
+    })
+    
     setCurrentPage(1)
     
-    // Close mobile filters after category/price selection
-    if (isMobile && (filterKey === 'category' || filterKey === 'minPrice' || filterKey === 'maxPrice')) {
-      setTimeout(() => setShowFilters(false), 300)
+    // Update URL params
+    const newSearchParams = new URLSearchParams(searchParams)
+    if (value) {
+      newSearchParams.set(key, value)
+    } else {
+      newSearchParams.delete(key)
     }
-  }
-
-  // Handle search input
-  const handleSearchChange = (searchValue) => {
-    handleFilterChange('search', searchValue)
+    setSearchParams(newSearchParams)
   }
 
   // Clear all filters
-  const clearFilters = () => {
+  const clearAllFilters = () => {
     setFilters({
       category: '',
+      subcategory: '',
       search: '',
       minPrice: '',
       maxPrice: '',
       rating: '',
       availability: '',
       sortBy: 'newest',
-      brand: ''
+      brand: '',
+      userLatitude: '',
+      userLongitude: '',
+      maxDistance: ''
     })
     setCurrentPage(1)
-    setShowFilters(false)
+    setSearchParams({})
   }
 
-  // Handle mobile filter overlay
-  const handleFilterOverlayClick = (e) => {
-    if (e.target.classList.contains('filter-overlay')) {
-      setShowFilters(false)
-    }
+  // Get active filter count
+  const getActiveFilterCount = () => {
+    let count = 0
+    
+    if (filters.category) count++
+    if (filters.subcategory) count++
+    if (filters.search) count++
+    if (filters.minPrice || filters.maxPrice) count++
+    if (filters.rating) count++
+    if (filters.availability) count++
+    if (filters.brand) count++
+    if (filters.userLatitude && filters.userLongitude) count++
+    
+    return count
   }
 
-  // Calculate data
+  const activeFilterCount = getActiveFilterCount()
+
+  // Handle pagination
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First' },
+    { value: 'featured', label: 'Featured' },
+    { value: 'price_low', label: 'Price: Low to High' },
+    { value: 'price_high', label: 'Price: High to Low' },
+    { value: 'rating', label: 'Highest Rated' },
+    // Add distance option only when location is available
+    ...(filters.userLatitude && filters.userLongitude ? 
+      [{ value: 'distance', label: '📍 Nearest First' }] : [])
+  ]
+
+  // Loading and error states
+  if (isLoading && currentPage === 1) {
+    return (
+      <div className="products-page">
+        <div className="loading-container">
+          <LoadingSpinner />
+          <p>Loading products...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="products-page">
+        <div className="error-container">
+          <h3>Something went wrong</h3>
+          <p>{error?.response?.data?.message || error.message || 'Failed to load products'}</p>
+          <button onClick={() => refetch()} className="retry-btn">
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const products = data?.data?.products || []
-  const totalItems = data?.data?.pagination?.totalItems || 0
+  const totalProducts = data?.data?.pagination?.totalItems || 0
   const totalPages = data?.data?.pagination?.totalPages || 1
-  const activeFiltersCount = Object.values(filters).filter(f => f && f !== 'newest').length
 
   return (
     <div className="products-page">
-      <div className="container">
-        {/* Page Header */}
-        <div className="page-header">
-          <div className="breadcrumb">
-            <Link to="/" className="breadcrumb-link">Home</Link>
-            <span className="breadcrumb-separator">›</span>
-            <span className="breadcrumb-current">Products</span>
-          </div>
-          
-          <h1 className="page-title">Construction Materials</h1>
-          <p className="page-subtitle">
-            Find quality construction materials from verified suppliers
-          </p>
-        </div>
-
-        {/* Search Section - Navbar Style */}
-
-        {/* Enhanced Mobile-First Search Section */}
-        <div className="search-section">
-          <div className="search-container">
-            <div className="search-bar">
-              <div className="search-input-wrapper">
-                <div className="search-icon-container">
-                  <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search for cement, steel, bricks..."
-                  value={filters.search}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearchChange(filters.search)}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                />
-                
-                {filters.search && (
-                  <button 
-                    className="clear-search"
-                    onClick={() => handleSearchChange('')}
-                    title="Clear search"
-                    type="button"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-                
-                <button 
-                  className="search-submit-btn"
-                  onClick={() => handleSearchChange(filters.search)}
-                  title="Search"
-                  type="button"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            {/* Mobile Filter Button */}
-            <button
-              className={`filter-toggle-btn ${showFilters ? 'active' : ''}`}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <svg className="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
-              </svg>
-              <span>Filters</span>
-              {activeFiltersCount > 0 && (
-                <span className="filter-badge">{activeFiltersCount}</span>
+      <div className="products-page-container">
+        {/* Header */}
+        <div className="products-page-header">
+          <div className="page-title-section">
+            <h1>Products</h1>
+            <p>
+              {totalProducts > 0 ? (
+                <>
+                  Showing {products.length} of {totalProducts} products
+                  {filters.userLatitude && filters.userLongitude && (
+                    <span className="location-info">
+                      📍 within {filters.maxDistance}km of your location
+                    </span>
+                  )}
+                </>
+              ) : (
+                'No products found'
               )}
-            </button>
+            </p>
+          </div>
+
+          <div className="page-controls">
+            {/* View Mode Toggle */}
+            <div className="view-mode-toggle">
+              <button
+                className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                ⊞
+              </button>
+              <button
+                className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                ☰
+              </button>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="sort-dropdown">
+              <select 
+                value={filters.sortBy} 
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                className="sort-select"
+              >
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mobile Filters Toggle */}
+            {isMobile && (
+              <button
+                className="mobile-filters-toggle"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                Filters {activeFilterCount > 0 && <span className="filter-count">({activeFilterCount})</span>}
+              </button>
+            )}
           </div>
         </div>
-
-        {/* Mobile Filter Overlay */}
-        {isMobile && showFilters && (
-          <div className="filter-overlay" onClick={handleFilterOverlayClick}>
-            <div className="mobile-filters">
-              <div className="mobile-filters-header">
-                <h3>Filters</h3>
-                <div className="mobile-filters-actions">
-                  <button className="clear-all-btn" onClick={clearFilters}>
-                    Clear All
-                  </button>
-                  <button className="close-filters-btn" onClick={() => setShowFilters(false)}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div className="mobile-filters-content">
-                <ProductFilters 
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  categories={categories}
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Main Content */}
-        <div className="products-content">
-          {/* Desktop Sidebar Filters */}
-          {!isMobile && (
-            <aside className="products-sidebar">
-              <div className="sidebar-header">
-                <h3 className="sidebar-title">Filters</h3>
-                {activeFiltersCount > 0 && (
-                  <button className="clear-filters-btn" onClick={clearFilters}>
-                    Clear All ({activeFiltersCount})
-                  </button>
-                )}
-              </div>
-              <ProductFilters 
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                categories={categories}
-              />
-            </aside>
-          )}
-
-          {/* Products Main */}
-          <main className="products-main">
-            {/* Results Header */}
-            <div className="results-header">
-              <div className="results-info">
-                {isLoading ? (
-                  <div className="results-skeleton"></div>
-                ) : (
-                  <div className="results-text">
-                    <span className="results-count">{totalItems.toLocaleString()}</span>
-                    <span className="results-label">products found</span>
-                    {filters.search && (
-                      <span className="search-term">for "{filters.search}"</span>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <div className="results-controls">
-                {/* View Mode Toggle - Desktop Only */}
-                {!isMobile && (
-                  <div className="view-toggle">
-                    <button
-                      className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                      onClick={() => setViewMode('grid')}
-                      title="Grid View"
-                    >
-                      <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                      </svg>
-                    </button>
-                    <button
-                      className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                      onClick={() => setViewMode('list')}
-                      title="List View"
-                    >
-                      <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-                
-                {/* Sort Dropdown */}
-                <select
-                  className="sort-select"
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+        <div className="products-page-content">
+          {/* Filters Sidebar */}
+          <div className={`filters-sidebar ${isMobile ? (showFilters ? 'mobile-open' : 'mobile-closed') : ''}`}>
+            <div className="filters-header">
+              <h3>Filters</h3>
+              {activeFilterCount > 0 && (
+                <button onClick={clearAllFilters} className="clear-filters-btn">
+                  Clear All ({activeFilterCount})
+                </button>
+              )}
+              {isMobile && (
+                <button
+                  className="close-filters-btn"
+                  onClick={() => setShowFilters(false)}
                 >
-                  <option value="newest">Newest First</option>
-                  <option value="featured">Featured</option>
-                  <option value="price_low">Price: Low to High</option>
-                  <option value="price_high">Price: High to Low</option>
-                  <option value="rating">Best Rated</option>
-                </select>
-              </div>
+                  ×
+                </button>
+              )}
             </div>
+            
+            <ProductFilters 
+              filters={filters}
+              categories={categories}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
 
-            {/* Products Content */}
-            {isLoading ? (
-              <div className="loading-state">
-                <LoadingSpinner />
-                <p>Loading products...</p>
-              </div>
-            ) : error ? (
-              <div className="error-state">
-                <div className="error-icon">⚠️</div>
-                <h3>Failed to load products</h3>
-                <p>Please check your connection and try again.</p>
-                <button className="retry-btn" onClick={() => refetch()}>
-                  Try Again
-                </button>
-              </div>
-            ) : products.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">📦</div>
-                <h3>No products found</h3>
-                <p>Try adjusting your search criteria or browse different categories.</p>
-                <button className="clear-btn" onClick={clearFilters}>
-                  Clear Filters
-                </button>
-              </div>
-            ) : (
+          {/* Products Grid */}
+          <div className="products-main">
+            {products.length > 0 ? (
               <>
-                {/* Products Grid */}
-                <div className={`products-grid ${viewMode} ${isMobile ? 'mobile' : ''}`}>
-                  {products.map((product) => (
+                <div className={`products-grid ${viewMode}`}>
+                  {products.map(product => (
                     <ProductCard 
                       key={product._id} 
                       product={product}
-                      viewMode={isMobile ? 'grid' : viewMode}
                     />
                   ))}
                 </div>
@@ -422,61 +431,60 @@ const ProductsPage = () => {
                 {totalPages > 1 && (
                   <div className="pagination">
                     <button
-                      className="pagination-btn prev"
+                      onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="pagination-btn"
                     >
-                      {isMobile ? '‹' : '← Previous'}
+                      Previous
                     </button>
                     
                     <div className="pagination-numbers">
-                      {/* Smart pagination for mobile */}
-                      {Array.from({ length: Math.min(totalPages, isMobile ? 3 : 5) }, (_, i) => {
-                        let page = i + 1
-                        if (isMobile && totalPages > 3) {
-                          if (currentPage <= 2) page = i + 1
-                          else if (currentPage >= totalPages - 1) page = totalPages - 2 + i
-                          else page = currentPage - 1 + i
-                        }
-                        
-                        return (
-                          <button
-                            key={page}
-                            className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                            onClick={() => setCurrentPage(page)}
-                          >
-                            {page}
-                          </button>
-                        )
-                      })}
-                      
-                      {!isMobile && totalPages > 5 && currentPage < totalPages - 2 && (
-                        <>
-                          <span className="pagination-dots">...</span>
-                          <button
-                            className="pagination-number"
-                            onClick={() => setCurrentPage(totalPages)}
-                          >
-                            {totalPages}
-                          </button>
-                        </>
-                      )}
+                      {Array.from({ length: totalPages }, (_, index) => index + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                        >
+                          {page}
+                        </button>
+                      ))}
                     </div>
                     
                     <button
-                      className="pagination-btn next"
+                      onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="pagination-btn"
                     >
-                      {isMobile ? '›' : 'Next →'}
+                      Next
                     </button>
                   </div>
                 )}
               </>
+            ) : (
+              <div className="no-products">
+                <h3>No products found</h3>
+                <p>
+                  {filters.userLatitude && filters.userLongitude
+                    ? "No products found from nearby suppliers. Try increasing the distance range or adjusting your filters."
+                    : "Try adjusting your search criteria or browse different categories."
+                  }
+                </p>
+                <button onClick={clearAllFilters} className="reset-filters-btn">
+                  Clear All Filters
+                </button>
+              </div>
             )}
-          </main>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Filters Overlay */}
+      {isMobile && showFilters && (
+        <div 
+          className="mobile-filters-overlay"
+          onClick={() => setShowFilters(false)}
+        />
+      )}
     </div>
   )
 }

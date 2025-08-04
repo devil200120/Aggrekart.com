@@ -1,0 +1,290 @@
+/* Browser Compatibility CSS Fixes for Cross-Browser Alignment Issues */
+
+/* 1. CSS Reset for consistent box model across browsers */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+/* 2. Flexbox compatibility fixes */
+.d-flex, [class*="d-flex"] {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.align-center, [class*="align-center"] {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+.justify-center, [class*="justify-center"] {
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.justify-between, [class*="justify-between"] {
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+/* 3. Grid compatibility fixes */
+.d-grid, [class*="d-grid"] {
+  display: -ms-grid;
+  display: grid;
+}
+
+/* 4. Transform compatibility fixes */
+[class*="transform"], .hero-slide, .slider-dots {
+  -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+/* 5. Transition compatibility fixes */
+[class*="transition"], .dot, .hero-slide {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+/* 6. Border-radius compatibility */
+[class*="rounded"], .dot, .btn {
+  -webkit-border-radius: inherit;
+  -moz-border-radius: inherit;
+  border-radius: inherit;
+}
+
+/* 7. Box-shadow compatibility */
+[class*="shadow"], .card, .product-card {
+  -webkit-box-shadow: inherit;
+  -moz-box-shadow: inherit;
+  box-shadow: inherit;
+}
+
+/* 8. Position sticky fallback for older browsers */
+.sticky-header {
+  position: -webkit-sticky;
+  position: sticky;
+  /* Fallback for IE */
+  position: relative;
+}
+
+/* 9. Viewport units fix for mobile browsers */
+.vh-100, [class*="vh-100"] {
+  height: 100vh;
+  /* Fallback for older mobile browsers */
+  height: -webkit-fill-available;
+  min-height: -webkit-fill-available;
+}
+
+/* 10. Flexbox wrap compatibility */
+.flex-wrap {
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/* 11. Text rendering optimization */
+body, input, button, select, textarea {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 12. Image rendering optimization */
+img {
+  -ms-interpolation-mode: bicubic;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* 13. Scroll behavior compatibility */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 14. Firefox-specific fixes */
+@-moz-document url-prefix() {
+  .flex-container {
+    display: -moz-box;
+    display: flex;
+  }
+}
+
+/* 15. Internet Explorer 11 fixes */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .flex-container {
+    display: -ms-flexbox;
+    display: flex;
+  }
+  
+  .grid-container {
+    display: -ms-grid;
+    display: grid;
+  }
+}
+
+/* 16. Safari-specific fixes */
+@media not all and (min-resolution:.001dpcm) {
+  @supports (-webkit-appearance:none) {
+    .safari-fix {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+  }
+}
+
+/* 17. Chrome-specific performance optimizations */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .chrome-optimize {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+/* 18. Edge-specific fixes */
+@supports (-ms-ime-align:auto) {
+  .edge-flex-fix {
+    display: -ms-flexbox;
+    display: flex;
+  }
+}
+
+/* 19. Mobile Safari viewport fix */
+@supports (-webkit-touch-callout: none) {
+  .mobile-safari-fix {
+    height: -webkit-fill-available;
+  }
+}
+
+/* 20. Cross-browser button reset */
+button, input[type="button"], input[type="submit"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* 21. Cross-browser input styling */
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* 22. Prevent zoom on iOS form inputs */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* 23. Fix for 100vh on mobile devices */
+.full-height {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* 24. Flex gap fallback for older browsers */
+.flex-gap {
+  gap: 1rem;
+}
+
+@supports not (gap: 1rem) {
+  .flex-gap > * + * {
+    margin-left: 1rem;
+  }
+}
+
+/* 25. Grid gap fallback */
+.grid-gap {
+  gap: 1rem;
+}
+
+@supports not (gap: 1rem) {
+  .grid-gap {
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+  }
+}
+
+/* 26. Aspect ratio fallback */
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+@supports not (aspect-ratio: 16 / 9) {
+  .aspect-ratio-16-9::before {
+    content: '';
+    display: block;
+    padding-top: 56.25%; /* 9/16 * 100% */
+  }
+}
+
+/* 27. Container query fallback */
+@supports not (container-type: inline-size) {
+  .container-responsive {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* 28. Clamp() fallback for older browsers */
+.text-responsive {
+  font-size: clamp(1rem, 2.5vw, 2rem);
+}
+
+@supports not (font-size: clamp(1rem, 2.5vw, 2rem)) {
+  .text-responsive {
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .text-responsive {
+      font-size: 1rem;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .text-responsive {
+      font-size: 2rem;
+    }
+  }
+}
+
+/* 29. CSS Custom Properties fallback */
+:root {
+  --primary-color: #f78b29;
+  --secondary-color: #1a365d;
+}
+
+.fallback-colors {
+  color: #f78b29; /* Fallback */
+  color: var(--primary-color);
+}
+
+/* 30. Print styles for better cross-browser printing */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}

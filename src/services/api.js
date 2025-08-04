@@ -4,7 +4,7 @@ import Cookies from 'js-cookie'
 // Create axios instance
 const api = axios.create({
 
-  baseURL: 'https://aggrekart-com-backend.onrender.com/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
+  baseURL: 'http://localhost:5000/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -115,6 +115,18 @@ export const productsAPI = {
   
   // GET /api/products/recommendations
   getRecommendations: (params) => api.get('/products/recommendations', { params }),
+  getSuppliersWithDistance: async (latitude, longitude, maxDistance = 50) => {
+    const response = await api.get('/products/suppliers-with-distance', {
+      params: { latitude, longitude, maxDistance }
+    })
+    return response.data
+  },
+
+  // Enhanced product search with location
+  getProductsWithLocation: async (params) => {
+    const response = await api.get('/products', { params })
+    return response.data
+  },
 }
 
 // Cart API - Following your backend routes

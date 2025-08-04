@@ -2956,6 +2956,7 @@ body {
 
 @media (max-width: 480px) {
   .advertisement-image {
+    transform: translate(-17px);
     min-height: 80px;
   }
 }

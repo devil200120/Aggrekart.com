@@ -1,0 +1,77 @@
+/* Import CSS Variables First */
+@import './styles/variables.css';
+
+/* Import Browser Compatibility Fixes */
+@import './styles/browser-compatibility.css';
+
+/* Import Global Styles */
+@import './styles/global.css';
+
+/* Import Component Styles */
+@import './styles/components.css';
+
+/* Additional base styles for your app */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure consistent font loading */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Additional cross-browser fixes for your specific app */
+.app {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix for sticky headers across browsers */
+.navbar, .header {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Mobile-first responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+  -ms-interpolation-mode: bicubic;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Better button styling across browsers */
+button, input[type="button"], input[type="submit"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+/* Consistent input styling */
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  font-family: inherit;
+}
+
+/* Prevent iOS zoom on form inputs */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+    transform: scale(1);
+  }
+}

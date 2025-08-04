@@ -12,6 +12,9 @@ import TMTSteelImg from "../TMT Steel.webp";
 import RedBricksImg from "../Red Bricks.JPG";
 import CementImg from "../Cement.jpg";
 import DSC0200Img from "../DSC_0200.JPG";
+
+import GoogleMapsLocationDetector from '../components/location/GoogleMapsLocationDetector'
+
 import DSC0141Img from "../DSC_0141.JPG";
 import DSC0158Img from "../DSC_0158.JPG";
 import SandImg from "../Sand.JPG";
@@ -50,6 +53,8 @@ const citiesData = [
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [userLocation, setUserLocation] = useState(null)
+const [suppliers, setSuppliers] = useState([])
 const [newsletterLoading, setNewsletterLoading] = useState(false);
   const navigate = useNavigate();
   const sliderImages = [
@@ -83,6 +88,22 @@ const [newsletterLoading, setNewsletterLoading] = useState(false);
 
     fetchProducts();
   }, []);
+  useEffect(() => {
+  if (products && products.length > 0) {
+    const uniqueSuppliers = []
+    const supplierIds = new Set()
+    
+    products.forEach(product => {
+      if (product.supplier && !supplierIds.has(product.supplier._id)) {
+        supplierIds.add(product.supplier._id)
+        uniqueSuppliers.push(product.supplier)
+      }
+    })
+    
+    setSuppliers(uniqueSuppliers)
+    console.log(`📍 Found ${uniqueSuppliers.length} suppliers on homepage`)
+  }
+}, [products])
 
   
   const productCategories = {
@@ -353,6 +374,10 @@ const handleNewsletterSubmit = async (e) => {
     // Method 3: Fallback to placeholder
     return "/placeholder-product.jpg";
   };
+  const handleLocationChange = (location) => {
+  setUserLocation(location)
+  console.log('📍 User location updated on homepage:', location)
+}
   const scrollToProduct = (direction) => {
     const container = productScrollRef.current;
     if (!container) return;
@@ -368,6 +393,7 @@ const handleNewsletterSubmit = async (e) => {
     } else {
       newSlide = Math.min(maxSlide, currentProductSlide + 1);
     }
+    
 
     setCurrentProductSlide(newSlide);
     container.scrollTo({

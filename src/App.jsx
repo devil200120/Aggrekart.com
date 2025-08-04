@@ -57,6 +57,7 @@ import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import AdminProductsPage from './pages/admin/AdminProductsPage'
 import AdminReportsPage from './pages/admin/AdminReportsPage'
 import AdminSettingsPage from './pages/admin/AdminSettingsPage'
+import AdminProductDetailPage from './pages/admin/AdminProductDetailPage';
 
 // Payment Pages - NEW IMPORTS
 import PaymentProcessingPage from './pages/payment/PaymentProcessingPage'
@@ -289,6 +290,14 @@ function App() {
                     element={
                       <ProtectedRoute allowedRoles={['admin']}>
                         <AdminProductsPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/products/:productId" 
+                    element={
+                      <ProtectedRoute allowedRoles={['admin']}>
+                        <AdminProductDetailPage />
                       </ProtectedRoute>
                     } 
                   />

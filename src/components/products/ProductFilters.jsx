@@ -4,10 +4,19 @@ import './ProductFilters.css'
 const ProductFilters = ({ filters, categories, onFilterChange }) => {
   const [expandedSections, setExpandedSections] = useState({
     category: true,
+    subcategory: true,
     price: true,
     rating: true,
     availability: true,
-    location: false
+    location: false // Add location section
+  })
+
+  const [locationState, setLocationState] = useState({
+    enabled: false,
+    detecting: false,
+    currentLocation: null,
+    maxDistance: 10,
+    error: null
   })
 
   const toggleSection = (section) => {
@@ -16,6 +25,97 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
       [section]: !prev[section]
     }))
   }
+
+  // Simple location detection function
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationState(prev => ({
+        ...prev,
+        error: 'Geolocation not supported'
+      }))
+      return
+    }
+
+    setLocationState(prev => ({
+      ...prev,
+      detecting: true,
+      error: null
+    }))
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }
+        
+        setLocationState(prev => ({
+          ...prev,
+          detecting: false,
+          currentLocation: location,
+          enabled: true
+        }))
+
+        // Update filters with location data
+        onFilterChange('userLatitude', location.latitude)
+        onFilterChange('userLongitude', location.longitude)
+        onFilterChange('maxDistance', locationState.maxDistance)
+        onFilterChange('sortBy', 'distance')
+      },
+      (error) => {
+        setLocationState(prev => ({
+          ...prev,
+          detecting: false,
+          error: 'Location access denied'
+        }))
+      }
+    )
+  }
+
+  const toggleLocationFilter = () => {
+    if (locationState.enabled) {
+      // Disable location
+      setLocationState(prev => ({ ...prev, enabled: false }))
+      onFilterChange('userLatitude', '')
+      onFilterChange('userLongitude', '')
+      onFilterChange('maxDistance', '')
+      if (filters.sortBy === 'distance') {
+        onFilterChange('sortBy', 'newest')
+      }
+    } else if (locationState.currentLocation) {
+      // Re-enable with existing location
+      setLocationState(prev => ({ ...prev, enabled: true }))
+      onFilterChange('userLatitude', locationState.currentLocation.latitude)
+      onFilterChange('userLongitude', locationState.currentLocation.longitude)
+      onFilterChange('maxDistance', locationState.maxDistance)
+      onFilterChange('sortBy', 'distance')
+    } else {
+      // Detect new location
+      detectLocation()
+    }
+  }
+
+  const handleDistanceChange = (distance) => {
+    setLocationState(prev => ({ ...prev, maxDistance: distance }))
+    if (locationState.enabled && locationState.currentLocation) {
+      onFilterChange('maxDistance', distance)
+    }
+  }
+
+  // Get subcategories for the selected category
+  const getSubcategoriesForCategory = (categoryId) => {
+    if (!categoryId || !categories) return []
+    
+    const category = categories.find(cat => cat._id === categoryId)
+    if (!category?.subcategories) return []
+    
+    return Object.entries(category.subcategories).map(([key, value]) => ({
+      id: key,
+      name: value
+    }))
+  }
+
+  const selectedCategorySubcategories = getSubcategoriesForCategory(filters.category)
 
   const priceRanges = [
     { label: 'Under ₹1,000', min: '', max: '1000' },
@@ -48,6 +148,72 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
 
   return (
     <div className="product-filters">
+      {/* Location Filter */}
+      <div className="filter-section">
+        <button 
+          className="filter-section-header"
+          onClick={() => toggleSection('location')}
+        >
+          <span>📍 Location</span>
+          <span className={`expand-icon ${expandedSections.location ? 'expanded' : ''}`}>
+            ▼
+          </span>
+        </button>
+        
+        {expandedSections.location && (
+          <div className="filter-section-content">
+            <div className="location-filter">
+              <div className="location-toggle">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={locationState.enabled}
+                    onChange={toggleLocationFilter}
+                    disabled={locationState.detecting}
+                  />
+                  <span>Show nearby suppliers</span>
+                </label>
+              </div>
+
+              {locationState.detecting && (
+                <div className="location-status">
+                  <span>📍 Detecting location...</span>
+                </div>
+              )}
+
+              {locationState.error && (
+                <div className="location-error">
+                  <span>⚠️ {locationState.error}</span>
+                </div>
+              )}
+
+              {locationState.currentLocation && (
+                <div className="location-detected">
+                  <span>✅ Location detected</span>
+                </div>
+              )}
+
+              {locationState.enabled && (
+                <div className="distance-selector">
+                  <label>Show suppliers within:</label>
+                  <div className="distance-options">
+                    {[5, 10, 20, 50].map(distance => (
+                      <button
+                        key={distance}
+                        className={`distance-btn ${locationState.maxDistance === distance ? 'active' : ''}`}
+                        onClick={() => handleDistanceChange(distance)}
+                      >
+                        {distance}km
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Category Filter */}
       <div className="filter-section">
         <button 
@@ -69,28 +235,79 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                   name="category"
                   value=""
                   checked={filters.category === ''}
-                  onChange={(e) => onFilterChange('category', e.target.value)}
+                  onChange={(e) => {
+                    onFilterChange('category', e.target.value)
+                    onFilterChange('subcategory', '')
+                  }}
                 />
                 <span>All Categories</span>
               </label>
-              
-              {categories?.map((category) => (
+              {categories.map(category => (
                 <label key={category._id} className="filter-option">
                   <input
                     type="radio"
                     name="category"
-                   value={category._id}
-                   checked={filters.category === category._id}
-                    onChange={(e) => onFilterChange('category', e.target.value)}
+                    value={category._id}
+                    checked={filters.category === category._id}
+                    onChange={(e) => {
+                      onFilterChange('category', e.target.value)
+                      onFilterChange('subcategory', '')
+                    }}
                   />
                   <span>{category.name}</span>
-                  <span className="option-count">({category.productCount})</span>
+                  {category.productCount > 0 && (
+                    <span className="count">({category.productCount})</span>
+                  )}
                 </label>
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* Subcategory Filter */}
+      {filters.category && selectedCategorySubcategories.length > 0 && (
+        <div className="filter-section">
+          <button 
+            className="filter-section-header"
+            onClick={() => toggleSection('subcategory')}
+          >
+            <span>Subcategory</span>
+            <span className={`expand-icon ${expandedSections.subcategory ? 'expanded' : ''}`}>
+              ▼
+            </span>
+          </button>
+          
+          {expandedSections.subcategory && (
+            <div className="filter-section-content">
+              <div className="filter-options">
+                <label className="filter-option">
+                  <input
+                    type="radio"
+                    name="subcategory"
+                    value=""
+                    checked={filters.subcategory === ''}
+                    onChange={(e) => onFilterChange('subcategory', e.target.value)}
+                  />
+                  <span>All Subcategories</span>
+                </label>
+                {selectedCategorySubcategories.map(subcategory => (
+                  <label key={subcategory.id} className="filter-option">
+                    <input
+                      type="radio"
+                      name="subcategory"
+                      value={subcategory.id}
+                      checked={filters.subcategory === subcategory.id}
+                      onChange={(e) => onFilterChange('subcategory', e.target.value)}
+                    />
+                    <span>{subcategory.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Price Filter */}
       <div className="filter-section">
@@ -107,6 +324,15 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
         {expandedSections.price && (
           <div className="filter-section-content">
             <div className="filter-options">
+              <label className="filter-option">
+                <input
+                  type="radio"
+                  name="priceRange"
+                  checked={!filters.minPrice && !filters.maxPrice}
+                  onChange={() => handlePriceRangeSelect('', '')}
+                />
+                <span>Any Price</span>
+              </label>
               {priceRanges.map((range, index) => (
                 <label key={index} className="filter-option">
                   <input
@@ -121,7 +347,6 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
             </div>
             
             <div className="custom-price-range">
-              <h4>Custom Range</h4>
               <div className="price-inputs">
                 <input
                   type="number"
@@ -130,7 +355,7 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                   onChange={(e) => onFilterChange('minPrice', e.target.value)}
                   className="price-input"
                 />
-                <span>to</span>
+                <span>-</span>
                 <input
                   type="number"
                   placeholder="Max"
@@ -150,7 +375,7 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
           className="filter-section-header"
           onClick={() => toggleSection('rating')}
         >
-          <span>Customer Rating</span>
+          <span>Rating</span>
           <span className={`expand-icon ${expandedSections.rating ? 'expanded' : ''}`}>
             ▼
           </span>
@@ -167,10 +392,9 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                   checked={filters.rating === ''}
                   onChange={(e) => onFilterChange('rating', e.target.value)}
                 />
-                <span>All Ratings</span>
+                <span>Any Rating</span>
               </label>
-              
-              {ratingOptions.map((option) => (
+              {ratingOptions.map(option => (
                 <label key={option.value} className="filter-option">
                   <input
                     type="radio"
@@ -179,19 +403,7 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                     checked={filters.rating === option.value}
                     onChange={(e) => onFilterChange('rating', e.target.value)}
                   />
-                  <span className="rating-option">
-                    {option.label}
-                    <div className="stars">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span 
-                          key={i} 
-                          className={`star ${i < parseInt(option.value) ? 'filled' : 'empty'}`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  </span>
+                  <span>{option.label}</span>
                 </label>
               ))}
             </div>
@@ -224,8 +436,7 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                 />
                 <span>All Products</span>
               </label>
-              
-              {availabilityOptions.map((option) => (
+              {availabilityOptions.map(option => (
                 <label key={option.value} className="filter-option">
                   <input
                     type="radio"
@@ -238,31 +449,6 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                 </label>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Location Filter */}
-      <div className="filter-section">
-        <button 
-          className="filter-section-header"
-          onClick={() => toggleSection('location')}
-        >
-          <span>Location</span>
-          <span className={`expand-icon ${expandedSections.location ? 'expanded' : ''}`}>
-            ▼
-          </span>
-        </button>
-        
-        {expandedSections.location && (
-          <div className="filter-section-content">
-            <input
-              type="text"
-              placeholder="Enter city or state"
-              value={filters.location}
-              onChange={(e) => onFilterChange('location', e.target.value)}
-              className="location-input"
-            />
           </div>
         )}
       </div>
