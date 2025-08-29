@@ -4,7 +4,7 @@ import Cookies from 'js-cookie'
 // Create axios instance
 const api = axios.create({
 
-  baseURL: 'http://localhost:5000/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
+  baseURL: '/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -128,9 +128,24 @@ export const productsAPI = {
     return response.data
   },
 }
-
+export const distancePricingAPI = {
+  calculate: (data) => api.post('/distance-pricing/calculate', data),
+  optimalSuppliers: (data) => api.post('/distance-pricing/optimal-suppliers', data),
+  deliveryZones: () => api.get('/distance-pricing/delivery-zones'),
+  estimateDelivery: (data) => api.post('/distance-pricing/estimate-delivery', data)
+};
 // Cart API - Following your backend routes
 export const cartAPI = {
+  applySupplierPromotionToCart: async (promotionData) => {
+  const response = await api.post('/cart/apply-supplier-promotion', promotionData);
+  return response;  // ✅ This is correct because interceptor already extracted .data
+},
+
+  // Remove supplier promotion from cart
+  removeSupplierPromotionFromCart: async () => {
+  const response = await api.delete('/cart/remove-supplier-promotion');
+  return response;  // ✅ Remove .data here too
+},
   // GET /api/cart
   getCart: () => api.get('/cart'),
   
@@ -154,6 +169,8 @@ export const cartAPI = {
   
   // DELETE /api/cart/remove-coupon
   removeCoupon: () => api.delete('/cart/remove-coupon'),
+  getGSTBreakdown: (customerState) => api.get(`/cart/gst-breakdown?customerState=${encodeURIComponent(customerState)}`),
+
 }
 
 // Wishlist API endpoints
@@ -207,16 +224,63 @@ export const ordersAPI = {
   
   // GET /api/orders/history
   getOrderHistory: (params) => api.get('/orders/history', { params }),
+   // Replace lines 225-230 with:
+
+downloadInvoice: (orderId) => {
+  return api.post(`/orders/${orderId}/download-invoice`, {}, {
+    responseType: 'blob', // Important: to handle PDF binary data
+    timeout: 60000 // Longer timeout for PDF generation
+  });
+},
+
+previewInvoice: (orderId) => {
+  return api.post(`/orders/${orderId}/download-invoice`, {}, {
+    responseType: 'blob', // Important: to handle PDF binary data
+    timeout: 60000 // Longer timeout for PDF generation
+  });
+},
   
 }
+// Add these methods to the existing API services (around line 230):
 
+// Know More API
+export const knowMoreAPI = {
+  uploadImages: (formData) => api.post('/know-more/upload-images', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  // Public endpoints
+  getProductKnowMore: (productId) => api.get(`/know-more/product/${productId}`),
+  getSubcategoryKnowMore: (category, subcategory) => api.get(`/know-more/subcategory/${category}/${subcategory}`),
+  trackClick: (contentId) => api.post(`/know-more/click/${contentId}`),
+  
+  // Admin endpoints
+  getAllContents: (params) => api.get('/know-more/admin/contents', { params }),
+  getContent: (id) => api.get(`/know-more/admin/content/${id}`),
+  createContent: (data) => api.post('/know-more/admin/content', data),
+  updateContent: (id, data) => api.put(`/know-more/admin/content/${id}`, data),
+  deleteContent: (id) => api.delete(`/know-more/admin/content/${id}`),
+  toggleStatus: (id) => api.put(`/know-more/admin/content/${id}/toggle-status`),
+  getAnalytics: () => api.get('/know-more/admin/analytics')
+};
 // Payment API - Razorpay Integration
 export const paymentsAPI = {
-  // POST /api/payments/create-order
-  createPaymentOrder: (orderData) => api.post('/payments/create-order', orderData),
+  createCashfreeOrder: (orderData) => api.post('/payments/cashfree/create-order', orderData),
   
-  // POST /api/payments/verify
-  verifyPayment: (paymentData) => api.post('/payments/verify', paymentData),
+  verifyCashfreePayment: (verificationData) => api.post('/payments/cashfree/verify', verificationData),
+
+  // Add Razorpay methods
+  createPaymentOrder: async (orderData) => {
+    const response = await api.post('/payments/razorpay/create-order', orderData);
+    return response.data;
+  },
+  
+  verifyPayment: async (paymentData) => {
+    const response = await api.post('/payments/razorpay/verify', paymentData);
+    return response.data;
+  },
+
+  // POST /api/payments/create-order
+  
   
   // GET /api/payments/status/:orderId
   getPaymentStatus: (orderId) => api.get(`/payments/status/${orderId}`),
@@ -273,8 +337,8 @@ export const usersAPI = {
   deleteAccount: (data) => api.post('/users/delete-account', data),
   
   // POST /api/users/export-data
-  exportUserData: () => api.post('/users/export-data'),
-  
+// Update the API endpoints around line 276
+  exportUserData: () => api.post('/users/request-data-export', {}, { responseType: 'blob' }),  
   // GET /api/users/export-data/status/:requestId
   getExportStatus: (requestId) => api.get(`/users/export-data/status/${requestId}`),
   
@@ -376,6 +440,11 @@ export const suppliersAPI = {
 
 // Supplier API - For authenticated suppliers
 export const supplierAPI = {
+updateTransportRates: (data) => api.put('/suppliers/transport-rates', data),
+  getTransportRates: () => api.get('/suppliers/transport-rates'),
+  toggleProductStock: (productId) => api.put(`/suppliers/products/${productId}/toggle-stock`),// Update the supplierAPI.exportData around line 379
+exportData: () => api.post('/users/request-data-export', {}, { responseType: 'blob' }),
+getExportStatus: () => api.get('/users/data-export-status'),
   // Registration & Authentication (from routes/suppliers.js)
   register: (supplierData) => api.post('/suppliers/register-new', supplierData),
   registerExistingUser: (supplierData) => api.post('/suppliers/register', supplierData),
@@ -437,7 +506,9 @@ uploadProductImages: (productId, formData) => api.post(`/products/${productId}/i
   // Analytics & Stats - These would need to be implemented in your backend
   getStats: (params = {}) => api.get('/suppliers/stats', { params }),
   getProductAnalytics: (params = {}) => api.get('/suppliers/analytics/products', { params }),
-  getSalesAnalytics: (params = {}) => api.get('/suppliers/analytics/sales', { params }),
+
+  // Sales Analytics
+  getSalesAnalytics: (params = {}) => api.get('/suppliers/analytics/sales', { params }),  
   getPerformance: (params = {}) => api.get('/suppliers/performance', { params }),
 
   // Helper functions for the dashboard components
@@ -450,12 +521,16 @@ uploadProductImages: (productId, formData) => api.post(`/products/${productId}/i
   setProductPricing: (productId, pricingData) => api.post(`/suppliers/products/${productId}/pricing`, pricingData),
   updateProductPricing: (productId, pricingData) => api.put(`/suppliers/products/${productId}/pricing`, pricingData),
 
+  getProfileStatus: () => api.get('/suppliers/profile/status'),
+  toggleProfile: (enabled, reason = '') => api.put('/suppliers/profile/toggle', { enabled, reason }),
+  getProfileImpact: () => api.get('/suppliers/profile/impact'),
+
 }
 // Admin API - Administrative functions and dashboard
 export const adminAPI = {
   // Add this function to the adminAPI object (around line 450):
 // Add this function to the adminAPI object (around line 520)
-
+getProductAnalytics: (params) => api.get('/admin/analytics/products', { params }),
 // Analytics Export
 exportAnalytics: (params) => api.post('/admin/analytics/export', params, { responseType: 'blob' }),
   // User Management
@@ -510,8 +585,7 @@ suspendSupplier: (supplierId, data) => api.put(`/admin/suppliers/${supplierId}/s
   
   featuredProduct: (productId, featured) => api.put(`/admin/products/${productId}/featured`, { featured }),
   
-  deleteProduct: (productId) => api.delete(`/admin/products/${productId}`),
-  
+deleteProduct: (productId, data) => api.delete(`/admin/products/${productId}`, { data }),  
   // Approvals and Moderation
   getPendingApprovals: () => api.get('/admin/approvals/pending'),
   
@@ -610,7 +684,7 @@ export const loyaltyAPI = {
 }
 
 
-// ...existing code...
+// ...existing code....
 
 
 
@@ -676,33 +750,63 @@ export const settingsAPI = {
 
 // Support API
 export const supportAPI = {
-  // Create support ticket
+  // Customer endpoints
   createTicket: (ticketData) => api.post('/support/tickets', ticketData),
-  
-  // Get user tickets
-  getTickets: (params) => api.get('/support/tickets', { params }),
-  
-  // Get ticket details
+  getTickets: (params) => {
+    const filteredParams = Object.entries(params || {}).reduce((acc, [key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+    
+    return api.get('/support/tickets', { params: filteredParams });
+  },
   getTicket: (ticketId) => api.get(`/support/tickets/${ticketId}`),
-  
-  // Reply to ticket
   replyToTicket: (ticketId, message) => api.post(`/support/tickets/${ticketId}/reply`, { message }),
-  
-  // Close ticket
   closeTicket: (ticketId) => api.put(`/support/tickets/${ticketId}/close`),
+  rateTicket: (ticketId, ratingData) => api.post(`/support/tickets/${ticketId}/rating`, ratingData),
+  
+  // Admin endpoints
+  admin: {
+    // Get all tickets for admin management
+    getTickets: (params) => {
+      const filteredParams = Object.entries(params || {}).reduce((acc, [key, value]) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      
+      return api.get('/support/admin/tickets', { params: filteredParams });
+    },
+    
+    // Get specific ticket details for admin
+    getTicket: (ticketId) => api.get(`/support/admin/tickets/${ticketId}`),
+    
+    // Assign ticket to admin
+    assignTicket: (ticketId, adminId) => api.put(`/support/admin/tickets/${ticketId}/assign`, { adminId }),
+    
+    // Update ticket status
+    updateStatus: (ticketId, status, message) => api.put(`/support/admin/tickets/${ticketId}/status`, { status, message }),
+    
+    // Reply to ticket as admin
+    replyToTicket: (ticketId, message, isInternal = false) => 
+      api.post(`/support/admin/tickets/${ticketId}/reply`, { message, isInternal }),
+    
+    // Update admin notes
+    updateNotes: (ticketId, notes) => api.put(`/support/admin/tickets/${ticketId}/notes`, { notes }),
+    
+    // Get support statistics
+    getStats: () => api.get('/support/admin/stats'),
+    
+    // Get support analytics
+    getAnalytics: (params) => api.get('/support/admin/analytics', { params })
+  },
   
   // Get FAQ
   getFAQ: (category) => api.get('/support/faq', { params: { category } }),
-  
-  // Search help articles
-  searchHelp: (query) => api.get('/support/help/search', { params: { q: query } }),
-  
-  // Get help article
-  getHelpArticle: (articleId) => api.get(`/support/help/${articleId}`),
-  
-  // Submit feedback
-  submitFeedback: (feedbackData) => api.post('/support/feedback', feedbackData),
-}
+};
 
 // Utility function to handle file uploads
 export const uploadAPI = {
@@ -762,5 +866,27 @@ export const newsletterAPI = {
     return response;  // Return response directly, not response.data
   }
 };
+// Add this at the end of the file, before the export:
 
+// Translation API endpoints
+export const translationAPI = {
+  // GET /api/translations/languages
+  getSupportedLanguages: () => api.get('/translations/languages'),
+  
+  // GET /api/translations/:language
+  getTranslations: (language, context = 'general') => 
+    api.get(`/translations/${language}`, { params: { context } }),
+  
+  // GET /api/translations/:language/:key
+  getTranslation: (language, key, context = 'general') => 
+    api.get(`/translations/${language}/${key}`, { params: { context } }),
+  
+  // PATCH /api/translations/user/language
+  updateUserLanguage: (language) => 
+    api.patch('/translations/user/language', { language }),
+  
+  // GET /api/translations/:language with specific keys
+  getSpecificTranslations: (language, keys, context = 'general') =>
+    api.get(`/translations/${language}`, { params: { keys, context } })
+};
 export default api

@@ -293,7 +293,7 @@
 }
 
 /* Address Details */
-.address-details {
+.profile-address-details {
   margin-bottom: 1.5rem;
 }
 
@@ -322,11 +322,11 @@
 
 /* Contact Info */
 .contact-info {
-  background: #f9fafb;
+  
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #667eea;
+  
 }
 
 .contact-name,

@@ -1052,13 +1052,13 @@ PURPOSE: Complete styling for admin analytics component
   cursor: not-allowed;
 }
 
-.btn-outline {
+.btn-outlines {
   background: white;
   border: 1px solid #d1d5db;
   color: #374151;
 }
 
-.btn-outline:hover:not(:disabled) {
+.btn-outlines:hover:not(:disabled) {
   background-color: #f9fafb;
   border-color: #9ca3af;
 }

@@ -1,0 +1,403 @@
+.ticket-details-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.back-btn {
+  text-decoration: none !important;
+}
+
+.page-header h1 {
+  color: #333;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.ticket-details-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ticket-header {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.ticket-info h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+.ticket-info h3 {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0 0 15px 0;
+  line-height: 1.4;
+}
+
+.ticket-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-badge, .priority-badge, .category-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.category-badge {
+  background: #6c757d;
+}
+
+.ticket-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ticket-meta {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.meta-item strong {
+  color: #333;
+  font-size: 14px;
+}
+
+.order-link {
+  color: #ff6b35;
+  font-weight: 500;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ffc107;
+  font-size: 16px;
+}
+
+.rating-display span {
+  color: #666;
+  font-size: 14px;
+}
+
+.messages-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.messages-section h4 {
+  color: #333;
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+}
+
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.customer-message {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.admin-message {
+  background: #f3e5f5;
+  border-left: 4px solid #9c27b0;
+  align-self: flex-start;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.sender {
+  font-weight: 600;
+  color: #333;
+}
+
+.timestamp {
+  color: #666;
+}
+
+.message-content {
+  color: #333;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.reply-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.reply-section h4 {
+  color: #333;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.reply-form textarea {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.reply-form textarea:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.char-count {
+  color: #888;
+  font-size: 12px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.rating-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.rating-modal h3 {
+  color: #333;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.rating-modal p {
+  color: #666;
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.star {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.star.active {
+  color: #ffc107;
+}
+
+.star:hover {
+  color: #ffc107;
+}
+
+.rating-modal textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #e55a2e;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #ff6b35;
+  border: 1px solid #ff6b35;
+}
+
+.btn-outline:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ticket-details-page {
+    padding: 10px 0;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .ticket-header {
+    padding: 20px;
+    flex-direction: column;
+  }
+  
+  .ticket-meta {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+  
+  .messages-section,
+  .reply-section {
+    padding: 20px;
+  }
+  
+  .message {
+    max-width: 95%;
+  }
+  
+  .reply-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}

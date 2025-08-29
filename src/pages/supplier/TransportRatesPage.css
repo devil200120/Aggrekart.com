@@ -1,0 +1,234 @@
+.transport-rates-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.trans-page-header {
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin-top: 5rem;
+  margin-bottom: 32px;
+  padding: 2rem 1rem;
+}
+
+.header-navigation {
+  margin-bottom: 16px;
+  padding-left: 1rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #374151;
+}
+
+.trans-header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.trans-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  border-radius: 16px;
+  color: white;
+  font-size: 24px;
+}
+
+.header-text h1 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.header-text p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.page-content {
+  margin-bottom: 40px;
+}
+
+.transport-info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.info-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-card h3 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.info-card ul {
+  margin: 0;
+  padding: 0 0 0 16px;
+  color: #4b5563;
+}
+
+.info-card li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.zone-explanations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zone-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.zone-item:last-child {
+  border-bottom: none;
+}
+
+.zone-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  min-width: 60px;
+  text-align: center;
+}
+
+.zone-badge.green {
+  background: #22c55e;
+}
+
+.zone-badge.blue {
+  background: #3b82f6;
+}
+
+.zone-badge.amber {
+  background: #f59e0b;
+}
+
+.zone-badge.red {
+  background: #ef4444;
+}
+
+.transport-rates-loading-page,
+.transport-rates-error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.transport-rates-loading-page svg {
+  font-size: 24px;
+  margin-bottom: 12px;
+  animation: spin 1s linear infinite;
+}
+
+.transport-rates-loading-page p,
+.transport-rates-error-page p {
+  margin-top: 16px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.transport-rates-error-page button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .transport-rates-page {
+    padding: 16px;
+  }
+
+  .trans-header-content {
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-navigation {
+    padding-left: 0;
+  }
+
+  .trans-header-icon {
+    font-size: 1.9rem !important;
+    height: 60px;
+    width: 90px;
+  }
+
+  .header-text h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .header-text p {
+    font-size: 1rem !important;
+  }
+
+  .transport-info-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .zone-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

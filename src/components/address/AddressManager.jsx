@@ -465,7 +465,7 @@ const AddressManager = () => {
                     </div>
 
                     {/* Address Details */}
-                    <div className="address-details">
+                    <div className="profile-address-details">
                       <div className="address-text">
                         <div className="street-address">
                           {address.street}

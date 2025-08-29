@@ -1,43 +1,48 @@
-import React, { useState, useEffect } from 'react'
-import { useQuery } from 'react-query'
-import { useAuth } from '../../context/AuthContext'
-import { supplierAPI } from '../../services/api'
-import { Link } from 'react-router-dom'
-import LoadingSpinner from '../../components/common/LoadingSpinner'
-import DashboardStats from '../../components/supplier/DashboardStats'
-import SalesChart from '../../components/supplier/SalesChart'
-import QuickActions from '../../components/supplier/QuickActions'
-import './SupplierDashboardPage.css'
+import React, { useState, useEffect } from "react";
+import { useQuery } from "react-query";
+import { useAuth } from "../../context/AuthContext";
+import { supplierAPI } from "../../services/api";
+import { Link } from "react-router-dom";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import DashboardStats from "../../components/supplier/DashboardStats";
+import SalesChart from "../../components/supplier/SalesChart";
+import QuickActions from "../../components/supplier/QuickActions";
+import "./SupplierDashboardPage.css";
 
 const SupplierDashboardPage = () => {
-  const { user } = useAuth()
-  const [dateRange, setDateRange] = useState('30')
-  const [greeting, setGreeting] = useState('')
+  const { user } = useAuth();
+  const [dateRange, setDateRange] = useState("30");
+  const [greeting, setGreeting] = useState("");
 
   // Set dynamic greeting based on time
   useEffect(() => {
-    const hour = new Date().getHours()
-    if (hour < 12) setGreeting('Good Morning')
-    else if (hour < 17) setGreeting('Good Afternoon')
-    else setGreeting('Good Evening')
-  }, [])
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
   // Fetch dashboard data
-  const { data: dashboardData, isLoading, error, refetch } = useQuery(
-    ['supplier-dashboard', user?.id, dateRange],
+  const {
+    data: dashboardData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery(
+    ["supplier-dashboard", user?.id, dateRange],
     () => supplierAPI.getDashboardData({ days: dateRange }),
     {
-      enabled: !!user && user.role === 'supplier',
+      enabled: !!user && user.role === "supplier",
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
       onError: (error) => {
-        console.error('Dashboard fetch error:', error)
-      }
+        console.error("Dashboard fetch error:", error);
+      },
     }
-  )
+  );
 
   // Access control
-  if (!user || user.role !== 'supplier') {
+  if (!user || user.role !== "supplier") {
     return (
       <div className="supplier-dashboard-page">
         <div className="swiggy-container">
@@ -45,11 +50,13 @@ const SupplierDashboardPage = () => {
             <div className="swiggy-empty-icon">🚫</div>
             <h2>Access Denied</h2>
             <p>Only suppliers can access this dashboard</p>
-            <Link to="/auth/login" className="swiggy-btn swiggy-btn-primary">Login as Supplier</Link>
+            <Link to="/auth/login" className="swiggy-btn swiggy-btn-primary">
+              Login as Supplier
+            </Link>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Loading state
@@ -64,7 +71,7 @@ const SupplierDashboardPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Error state
@@ -74,25 +81,59 @@ const SupplierDashboardPage = () => {
         <div className="swiggy-container">
           <div className="swiggy-error">
             <div className="swiggy-empty-icon">⚠️</div>
-            <h2>Oops! Something went wrong</h2>
-            <p>We're having trouble loading your dashboard. Please try again.</p>
+            <h2>your account has been suspended </h2>
+
+            <p>
+              Please contact the <a href="">help desk </a>{" "}
+            </p>
             <div className="swiggy-error-actions">
-              <button onClick={refetch} className="swiggy-btn swiggy-btn-primary">
+              <button
+                onClick={refetch}
+                className="swiggy-btn swiggy-btn-primary"
+              >
                 <span className="btn-icon">🔄</span>
                 Try Again
               </button>
-              <Link to="/supplier/products" className="swiggy-btn swiggy-btn-outline">
+              <Link
+                to="/supplier/products"
+                className="swiggy-btn swiggy-btn-outline"
+              >
                 View Products
               </Link>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  const { supplier, stats, products, salesData, approvalStatus, notifications } = dashboardData.data
+  const {
+    supplier,
+    stats,
+    products,
+    salesData,
+    approvalStatus,
+    notifications,
+  } = dashboardData.data;
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="sales-chart">
+        <div className="chart-header">
+          <div className="header-left">
+            <h3 className="chart-title">Sales Performance</h3>
+            <div className="loading-indicator">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // Handle error state
+  if (error) {
+    console.error('Sales data fetch error:', error);
+    // Continue with sample data as fallback
+  }
   return (
     <div className="supplier-dashboard-page">
       <div className="swiggy-container">
@@ -101,7 +142,9 @@ const SupplierDashboardPage = () => {
           <div className="swiggy-header-content">
             <div className="swiggy-welcome">
               <div className="swiggy-greeting">
-                <h1>{greeting}, {supplier.name}! 👋</h1>
+                <h1>
+                  {greeting}, {supplier.name}! 👋
+                </h1>
                 <p>Here's how your business is performing today</p>
               </div>
               <div className="swiggy-supplier-info">
@@ -111,21 +154,26 @@ const SupplierDashboardPage = () => {
                 </div>
                 <div className="swiggy-badge swiggy-member-since">
                   <span className="badge-icon">📅</span>
-                  Member since {new Date(supplier.memberSince).toLocaleDateString('en-IN', { 
-                    month: 'short', 
-                    year: 'numeric' 
+                  Member since{" "}
+                  {new Date(supplier.memberSince).toLocaleDateString("en-IN", {
+                    month: "short",
+                    year: "numeric",
                   })}
                 </div>
-                <div className={`swiggy-status ${approvalStatus.isApproved ? 'approved' : 'pending'}`}>
-                  <span className="status-icon">{approvalStatus.isApproved ? '✓' : '⏳'}</span>
-                  {approvalStatus.isApproved ? 'Approved' : 'Pending Approval'}
+                <div
+                  className={`swiggy-status ${approvalStatus.isApproved ? "approved" : "pending"}`}
+                >
+                  <span className="status-icon">
+                    {approvalStatus.isApproved ? "✓" : "⏳"}
+                  </span>
+                  {approvalStatus.isApproved ? "Approved" : "Pending Approval"}
                 </div>
               </div>
             </div>
-            
+
             <div className="swiggy-header-controls">
               <div className="swiggy-time-selector">
-                <select 
+                <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
                   className="swiggy-select"
@@ -136,8 +184,12 @@ const SupplierDashboardPage = () => {
                   <option value="365">Last year</option>
                 </select>
               </div>
-              
-              <button onClick={refetch} className="swiggy-refresh-btn" title="Refresh Data">
+
+              <button
+                onClick={refetch}
+                className="swiggy-refresh-btn"
+                title="Refresh Data"
+              >
                 <span className="refresh-icon">🔄</span>
               </button>
             </div>
@@ -151,7 +203,10 @@ const SupplierDashboardPage = () => {
                 <strong>Complete your profile to start selling</strong>
                 <p>Get approved and start receiving orders from customers</p>
               </div>
-              <Link to="/supplier/profile" className="swiggy-btn swiggy-btn-small">
+              <Link
+                to="/supplier/profile"
+                className="swiggy-btn swiggy-btn-small"
+              >
                 Complete Profile
               </Link>
             </div>
@@ -163,11 +218,18 @@ const SupplierDashboardPage = () => {
           <div className="swiggy-stat-card revenue">
             <div className="stat-icon">💰</div>
             <div className="stat-content">
-              <div className="stat-value">₹{stats.totalRevenue?.toLocaleString() || '0'}</div>
+              <div className="stat-value">
+                ₹{stats.totalRevenue?.toLocaleString() || "0"}
+              </div>
               <div className="stat-label">Total Revenue</div>
-              <div className={`stat-change ${stats.revenueGrowth >= 0 ? 'positive' : 'negative'}`}>
-                <span className="change-icon">{stats.revenueGrowth >= 0 ? '↗️' : '↘️'}</span>
-                {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth?.toFixed(1) || '0'}%
+              <div
+                className={`stat-change ${stats.revenueGrowth >= 0 ? "positive" : "negative"}`}
+              >
+                <span className="change-icon">
+                  {stats.revenueGrowth >= 0 ? "↗️" : "↘️"}
+                </span>
+                {stats.revenueGrowth > 0 ? "+" : ""}
+                {stats.revenueGrowth?.toFixed(1) || "0"}%
               </div>
             </div>
           </div>
@@ -175,11 +237,16 @@ const SupplierDashboardPage = () => {
           <div className="swiggy-stat-card orders">
             <div className="stat-icon">📦</div>
             <div className="stat-content">
-              <div className="stat-value">{stats.totalOrders || '0'}</div>
+              <div className="stat-value">{stats.totalOrders || "0"}</div>
               <div className="stat-label">Total Orders</div>
-              <div className={`stat-change ${stats.ordersGrowth >= 0 ? 'positive' : 'negative'}`}>
-                <span className="change-icon">{stats.ordersGrowth >= 0 ? '↗️' : '↘️'}</span>
-                {stats.ordersGrowth > 0 ? '+' : ''}{stats.ordersGrowth?.toFixed(1) || '0'}%
+              <div
+                className={`stat-change ${stats.ordersGrowth >= 0 ? "positive" : "negative"}`}
+              >
+                <span className="change-icon">
+                  {stats.ordersGrowth >= 0 ? "↗️" : "↘️"}
+                </span>
+                {stats.ordersGrowth > 0 ? "+" : ""}
+                {stats.ordersGrowth?.toFixed(1) || "0"}%
               </div>
             </div>
           </div>
@@ -187,18 +254,24 @@ const SupplierDashboardPage = () => {
           <div className="swiggy-stat-card products">
             <div className="stat-icon">🛍️</div>
             <div className="stat-content">
-              <div className="stat-value">{products.active || '0'}</div>
+              <div className="stat-value">{products.active || "0"}</div>
               <div className="stat-label">Active Products</div>
-              <div className="stat-subtitle">{products.total || '0'} total products</div>
+              <div className="stat-subtitle">
+                {products.total || "0"} total products
+              </div>
             </div>
           </div>
 
           <div className="swiggy-stat-card rating">
             <div className="stat-icon">⭐</div>
             <div className="stat-content">
-              <div className="stat-value">{stats.avgProductRating?.toFixed(1) || '0.0'}</div>
+              <div className="stat-value">
+                {stats.avgProductRating?.toFixed(1) || "0.0"}
+              </div>
               <div className="stat-label">Avg. Rating</div>
-              <div className="stat-subtitle">{stats.totalReviews || '0'} reviews</div>
+              <div className="stat-subtitle">
+                {stats.totalReviews || "0"} reviews
+              </div>
             </div>
           </div>
         </div>
@@ -226,7 +299,11 @@ const SupplierDashboardPage = () => {
                 </div>
               </div>
               <div className="swiggy-card-body">
-                <SalesChart data={salesData} dateRange={dateRange} />
+                <SalesChart
+                  supplierId={supplier?.supplierId || supplier?._id}
+                  data={salesData}
+                  dateRange={dateRange}
+                />
               </div>
             </div>
 
@@ -237,7 +314,9 @@ const SupplierDashboardPage = () => {
                   <h3>🚀 Product Performance</h3>
                   <p>Your best performing products</p>
                 </div>
-                <Link to="/supplier/products" className="swiggy-link">View All →</Link>
+                <Link to="/supplier/products" className="swiggy-link">
+                  View All →
+                </Link>
               </div>
               <div className="swiggy-card-body">
                 {products.total > 0 ? (
@@ -246,7 +325,9 @@ const SupplierDashboardPage = () => {
                     <div className="swiggy-product-item">
                       <div className="product-info">
                         <div className="product-name">Sample Product</div>
-                        <div className="product-stats">125 views • 12 orders</div>
+                        <div className="product-stats">
+                          125 views • 12 orders
+                        </div>
                       </div>
                       <div className="product-rating">
                         <span className="rating-value">4.5</span>
@@ -258,7 +339,10 @@ const SupplierDashboardPage = () => {
                   <div className="swiggy-empty-state">
                     <div className="empty-icon">📦</div>
                     <p>No products yet</p>
-                    <Link to="/supplier/products" className="swiggy-btn swiggy-btn-outline swiggy-btn-small">
+                    <Link
+                      to="/supplier/products"
+                      className="swiggy-btn swiggy-btn-outline swiggy-btn-small"
+                    >
                       Add Products
                     </Link>
                   </div>
@@ -309,19 +393,27 @@ const SupplierDashboardPage = () => {
               <div className="swiggy-card-body">
                 <div className="swiggy-summary-grid">
                   <div className="summary-item">
-                    <div className="summary-number">{products.total || '0'}</div>
+                    <div className="summary-number">
+                      {products.total || "0"}
+                    </div>
                     <div className="summary-label">Total</div>
                   </div>
                   <div className="summary-item active">
-                    <div className="summary-number">{products.active || '0'}</div>
+                    <div className="summary-number">
+                      {products.active || "0"}
+                    </div>
                     <div className="summary-label">Active</div>
                   </div>
                   <div className="summary-item pending">
-                    <div className="summary-number">{products.pending || '0'}</div>
+                    <div className="summary-number">
+                      {products.pending || "0"}
+                    </div>
                     <div className="summary-label">Pending</div>
                   </div>
                   <div className="summary-item inactive">
-                    <div className="summary-number">{products.inactive || '0'}</div>
+                    <div className="summary-number">
+                      {products.inactive || "0"}
+                    </div>
                     <div className="summary-label">Inactive</div>
                   </div>
                 </div>
@@ -363,7 +455,7 @@ const SupplierDashboardPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SupplierDashboardPage
+export default SupplierDashboardPage;

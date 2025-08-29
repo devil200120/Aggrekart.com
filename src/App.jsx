@@ -1,73 +1,87 @@
-import {React,useEffect}  from 'react'
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { ReactQueryDevtools } from 'react-query/devtools'
-import { Toaster } from 'react-hot-toast'
-import SuspensionBanner from './components/common/SuspensionBanner';
-
-import { AuthProvider } from './context/AuthContext'
-import { CartProvider } from './context/CartContext'
-import Navbar from './components/layout/Navbar'
-import ProtectedRoute from './components/common/ProtectedRoute'
-import { useSupplierSuspensionCheck } from './hooks/useSupplierSuspensionCheck';
-
+import { React, useEffect } from "react";
+import SupplierDetailPage from "./pages/SupplierDetailPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { Toaster } from "react-hot-toast";
+import SuspensionBanner from "./components/common/SuspensionBanner";
+import SupportWidget from "./components/common/SupportWidget";
+import { LanguageProvider } from "./context/LanguageContext";
+// Add with other supplier imports
+import SupplierLoyaltyManagement from "./components/supplier/SupplierLoyaltyManagement";
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import Navbar from "./components/layout/Navbar";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import { useSupplierSuspensionCheck } from "./hooks/useSupplierSuspensionCheck";
+// Replace the import section around lines 15-16 with:
+// Support Pages - FIXED: Use default imports
+import SupportTicketsPage from "./pages/SupportTicketsPage";
+import CreateSupportTicketPage from "./pages/CreateSupportTicketPage";
+import SupportTicketDetailsPage from "./pages/SupportTicketDetailsPage";
 // Pages
 // Add this import with the other imports in App.jsx
-import SupplierRegisterPage from './pages/auth/SupplierRegisterPage'
-import ProfilePage from './pages/ProfilePage'
-import WishlistPage from './pages/WishlistPage'
-import HomePage from './pages/Homepage'
-import ProductsPage from './pages/ProductsPage'
-import CartPage from './pages/CartPage'
-import CheckoutPage from './pages/CheckoutPage'
-import OrdersPage from './pages/OrdersPage'
-import OrderConfirmationPage from './pages/OrderConfirmationPage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import VerifyPhonePage from './pages/auth/VerifyPhonePage'
-import SettingsPage from './pages/SettingsPage'
-import VerifyEmailPage from './pages/auth/VerifyEmailPage'
-import OrderDetailPage from './pages/OrderDetailPage'
-import ProductDetailPage from './pages/ProductDetailPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage'
-import EditProductPage from './pages/supplier/EditProductPage'
-
-
-
-
+import SupplierRegisterPage from "./pages/auth/SupplierRegisterPage";
+import ProfilePage from "./pages/ProfilePage";
+import WishlistPage from "./pages/WishlistPage";
+import HomePage from "./pages/Homepage";
+import ProductsPage from "./pages/ProductsPage";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrdersPage from "./pages/OrdersPage";
+import OrderConfirmationPage from "./pages/OrderConfirmationPage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import VerifyPhonePage from "./pages/auth/VerifyPhonePage";
+import SettingsPage from "./pages/SettingsPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import SupplierOrdersPage from "./pages/supplier/SupplierOrdersPage";
+import EditProductPage from "./pages/supplier/EditProductPage";
+import SupplierProfilePage from "./pages/supplier/SupplierProfilePage";
+import TransportRatesPage from "./pages/supplier/TransportRatesPage";
+import KnowMoreManagementPage from "./pages/admin/KnowMoreManagementPage";
 // Fix the import path for WhatsAppRegister - it's in pages/auth, not components/auth
-
-// 
+import LoyaltyDashboard from "./components/loyalty/LoyaltyDashboard";
+import CustomerOffers from "./components/loyalty/CustomerOffers";
+import ReferralSystem from "./components/loyalty/ReferralSystem";
+import MembershipProgress from "./components/loyalty/MembershipProgress";
+import AdminLoyaltyManagement from "./components/admin/AdminLoyaltyManagement";
+//
 
 // CORRECT:
-import WhatsAppRegister from './pages/auth/WhatsAppRegister'
+import WhatsAppRegister from "./pages/auth/WhatsAppRegister";
 
 // Supplier Pages
-import SupplierDashboardPage from './pages/supplier/SupplierDashboardPage'
-import SupplierProductsPage from './pages/supplier/SupplierProductsPage'
-import AddProductPage from './pages/supplier/AddProductPage'
+import SupplierDashboardPage from "./pages/supplier/SupplierDashboardPage";
+import SupplierProductsPage from "./pages/supplier/SupplierProductsPage";
+import AddProductPage from "./pages/supplier/AddProductPage";
 
 // Admin Pages
-import AdminDashboardPage from './pages/admin/AdminDashboardPage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
-import AdminSuppliersPage from './pages/admin/AdminSuppliersPage'
-import AdminOrdersPage from './pages/admin/AdminOrdersPage'
-import AdminProductsPage from './pages/admin/AdminProductsPage'
-import AdminReportsPage from './pages/admin/AdminReportsPage'
-import AdminSettingsPage from './pages/admin/AdminSettingsPage'
-import AdminProductDetailPage from './pages/admin/AdminProductDetailPage';
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminSuppliersPage from "./pages/admin/AdminSuppliersPage";
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminProductsPage from "./pages/admin/AdminProductsPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminProductDetailPage from "./pages/admin/AdminProductDetailPage";
 
 // Payment Pages - NEW IMPORTS
-import PaymentProcessingPage from './pages/payment/PaymentProcessingPage'
-import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
-import PaymentFailedPage from './pages/payment/PaymentFailedPage'
-import RoleBasedLanding from './components/common/RoleBasedLanding'
+import PaymentProcessingPage from "./pages/payment/PaymentProcessingPage";
+import PaymentSuccessPage from "./pages/payment/PaymentSuccessPage";
+import PaymentFailedPage from "./pages/payment/PaymentFailedPage";
+import RoleBasedLanding from "./components/common/RoleBasedLanding";
+import OrderTracking from "./components/orders/OrderTracking";
+
 // Styles
-import './styles/variables.css'
-import './styles/global.css'
-import './styles/components.css'
+import "./styles/variables.css";
+import "./styles/global.css";
+import "./styles/components.css";
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -81,23 +95,22 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
+});
 
 function App() {
-    const suspensionCheck = useSupplierSuspensionCheck();
+  const suspensionCheck = useSupplierSuspensionCheck();
 
-      useEffect(() => {
+  useEffect(() => {
     if (suspensionCheck.showSuspensionDialog) {
-      document.body.classList.add('suspension-banner-active');
+      document.body.classList.add("suspension-banner-active");
     } else {
-      document.body.classList.remove('suspension-banner-active');
+      document.body.classList.remove("suspension-banner-active");
     }
-    
+
     return () => {
-      document.body.classList.remove('suspension-banner-active');
+      document.body.classList.remove("suspension-banner-active");
     };
   }, [suspensionCheck.showSuspensionDialog]);
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -105,7 +118,7 @@ function App() {
         <AuthProvider>
           <CartProvider>
             {suspensionCheck.showSuspensionDialog && (
-              <SuspensionBanner 
+              <SuspensionBanner
                 suspensionData={suspensionCheck.suspensionData}
                 onClose={suspensionCheck.handleClose}
                 onLogout={suspensionCheck.handleLogout}
@@ -113,249 +126,366 @@ function App() {
             )}
             <div className="app">
               <Navbar />
-              
+
               <main className="main-content">
                 <Routes>
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   {/* Public Routes */}
-                  <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-                  <Route path="/auth/supplier-register" element={<SupplierRegisterPage />} />
+                  <Route
+                    path="/auth/verify-email"
+                    element={<VerifyEmailPage />}
+                  />
+                  <Route
+                    path="/suppliers/:supplierId"
+                    element={<SupplierDetailPage />}
+                  />
+                  <Route
+                    path="/auth/supplier-register"
+                    element={<SupplierRegisterPage />}
+                  />
                   <Route path="/" element={<RoleBasedLanding />} />
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/auth/login" element={<LoginPage />} />
-                  <Route path="/products/:productId" element={<ProductDetailPage />} />
+                  <Route
+                    path="/products/:productId"
+                    element={<ProductDetailPage />}
+                  />
                   <Route path="/auth/register" element={<RegisterPage />} />
-                  <Route path="/auth/verify-phone" element={<VerifyPhonePage />} />
-<Route path="/auth/whatsapp-register" element={<WhatsAppRegister />} />
-                  <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-
+                  <Route
+                    path="/auth/verify-phone"
+                    element={<VerifyPhonePage />}
+                  />
+                  <Route
+                    path="/auth/whatsapp-register"
+                    element={<WhatsAppRegister />}
+                  />
+                  <Route
+                    path="/auth/forgot-password"
+                    element={<ForgotPasswordPage />}
+                  />
                   {/* Protected Routes - Customer Only */}
-                  <Route 
-                    path="/cart" 
+                  <Route
+                    path="/cart"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <CartPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/checkout" 
+                  <Route
+                    path="/checkout"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <CheckoutPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  <Route 
-  path="/orders/:orderId" 
-  element={
-    <ProtectedRoute allowedRoles={['customer']}>
-      <OrderDetailPage />
-    </ProtectedRoute>
-  } 
-/>
-                  
-                  <Route 
-                    path="/orders" 
+                  <Route
+                    path="/orders/:orderId/track"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <OrderTracking />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders/:orderId"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <OrderDetailPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <OrdersPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/order-confirmation/:orderId" 
+                  {/* Loyalty Routes - Customer Only */}
+                  <Route
+                    path="/loyalty/dashboard"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <LoyaltyDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/loyalty/offers"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <CustomerOffers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/loyalty/referrals"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <ReferralSystem />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/loyalty/membership"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <MembershipProgress />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/order-confirmation/:orderId"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <OrderConfirmationPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-
                   {/* Payment Routes - NEW PAYMENT ROUTES */}
-                  <Route 
-                    path="/payment/processing/:orderId" 
+                  <Route
+                    path="/payment/processing/:orderId"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <PaymentProcessingPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/payment/success/:orderId" 
+                  <Route
+                    path="/payment/success/:orderId"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <PaymentSuccessPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/payment/failed/:orderId" 
+                  <Route
+                    path="/payment/failed/:orderId"
                     element={
-                      <ProtectedRoute allowedRoles={['customer']}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
                         <PaymentFailedPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-
                   {/* Protected Routes - Supplier Only */}
-                  <Route 
-                    path="/supplier/dashboard" 
+                  <Route
+                    path="/supplier/dashboard"
                     element={
-                      <ProtectedRoute allowedRoles={['supplier']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
                         <SupplierDashboardPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/supplier/products" 
+                  <Route
+                    path="/supplier/loyalty"
                     element={
-                      <ProtectedRoute allowedRoles={['supplier']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
+                        <SupplierLoyaltyManagement />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/supplier/products"
+                    element={
+                      <ProtectedRoute allowedRoles={["supplier"]}>
                         <SupplierProductsPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/supplier/products/add" 
+                  <Route
+                    path="/supplier/products/add"
                     element={
-                      <ProtectedRoute allowedRoles={['supplier']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
                         <AddProductPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/supplier/products/:productId/edit" 
+                  <Route
+                    path="/supplier/products/:productId/edit"
                     element={
-                      <ProtectedRoute allowedRoles={['supplier']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
                         <EditProductPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-
-                  <Route 
-                    path="/supplier/orders" 
+                  <Route
+                    path="/supplier/orders"
                     element={
-                      <ProtectedRoute allowedRoles={['supplier']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
                         <SupplierOrdersPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-
-                  {/* Protected Routes - Admin Only */}
-                  <Route 
-                    path="/admin/dashboard" 
+                  <Route
+                    path="/supplier/transport-rates"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["supplier"]}>
+                        <TransportRatesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/supplier/profile"
+                    element={
+                      <ProtectedRoute allowedRoles={["supplier"]}>
+                        <SupplierProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Protected Routes - Admin Only */}
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminDashboardPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/users" 
+                  <Route
+                    path="/admin/know-more"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
+                        <KnowMoreManagementPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminUsersPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/suppliers" 
+                  <Route
+                    path="/admin/suppliers"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminSuppliersPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/orders" 
+                  <Route
+                    path="/admin/orders"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminOrdersPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/products" 
+                  <Route
+                    path="/admin/loyalty"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
+                        <AdminLoyaltyManagement />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/products"
+                    element={
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminProductsPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  <Route 
-                    path="/admin/products/:productId" 
+                  <Route
+                    path="/admin/products/:productId"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminProductDetailPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/reports" 
+                  <Route
+                    path="/admin/reports"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminReportsPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  <Route 
-                    path="/admin/settings" 
+                  <Route
+                    path="/admin/settings"
                     element={
-                      <ProtectedRoute allowedRoles={['admin']}>
+                      <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminSettingsPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  <Route 
-                    path="/settings" 
+                  <Route
+                    path="/settings"
                     element={
                       <ProtectedRoute>
                         <SettingsPage />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-
                   {/* Protected Routes - General */}
-                  <Route 
-                    path="/dashboard" 
+                  <Route
+                    path="/dashboard"
                     element={
                       <ProtectedRoute>
-                        <div style={{ padding: '2rem' }}>
+                        <div style={{ padding: "2rem" }}>
                           <h1>Dashboard</h1>
                           <p>Welcome to your dashboard!</p>
                         </div>
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-
-                  {/* 404 Route */}
-                  <Route 
-                    path="*" 
+                  {/* Support Routes - Customer Only */}
+                  <Route
+                    path="/support/tickets"
                     element={
-                      <div style={{ 
-                        textAlign: 'center', 
-                        padding: '4rem 2rem',
-                        minHeight: '60vh',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center'
-                      }}>
-                        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>404</h1>
-                        <h2 style={{ marginBottom: '1rem' }}>Page Not Found</h2>
-                        <p style={{ color: 'var(--gray-600)', marginBottom: '2rem' }}>
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <SupportTicketsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/support/create"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <CreateSupportTicketPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/support/tickets/:ticketId"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <SupportTicketDetailsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* 404 Route */}
+                  <Route
+                    path="*"
+                    element={
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "4rem 2rem",
+                          minHeight: "60vh",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>
+                          404
+                        </h1>
+                        <h2 style={{ marginBottom: "1rem" }}>Page Not Found</h2>
+                        <p
+                          style={{
+                            color: "var(--gray-600)",
+                            marginBottom: "2rem",
+                          }}
+                        >
                           The page you're looking for doesn't exist.
                         </p>
                         <div>
@@ -364,45 +494,42 @@ function App() {
                           </a>
                         </div>
                       </div>
-                    } 
+                    }
                   />
-                  // Find the section with other routes and add these 4 missing routes:
-
+                  routes:
                   {/* Missing Routes - Add these before the 404 route */}
-                  <Route 
-  path="/profile" 
-  element={
-    <ProtectedRoute allowedRoles={['customer']}>
-      <ProfilePage />
-    </ProtectedRoute>
-  } 
-/>
-
-<Route 
-  path="/wishlist" 
-  element={
-    <ProtectedRoute allowedRoles={['customer']}>
-      <WishlistPage />
-    </ProtectedRoute>
-  } 
-/>
-                  <Route 
-                    path="/settings" 
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/wishlist"
+                    element={
+                      <ProtectedRoute allowedRoles={["customer"]}>
+                        <WishlistPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
                     element={
                       <ProtectedRoute>
-                        <div style={{ padding: '2rem' }}>
+                        <div style={{ padding: "2rem" }}>
                           <h1>Settings</h1>
                           <p>Settings page coming soon!</p>
                         </div>
                       </ProtectedRoute>
-                    } 
+                    }
                   />
-                  
-                  
-                  
-                  
                 </Routes>
               </main>
+
+              {/* Support Widget - Customer Only */}
+              <SupportWidget />
 
               {/* Toast Notifications */}
               <Toaster
@@ -410,14 +537,14 @@ function App() {
                 toastOptions={{
                   duration: 4000,
                   style: {
-                    background: '#363636',
-                    color: '#fff',
+                    background: "#363636",
+                    color: "#fff",
                   },
                   success: {
                     duration: 3000,
                     theme: {
-                      primary: 'green',
-                      secondary: 'black',
+                      primary: "green",
+                      secondary: "black",
                     },
                   },
                   error: {
@@ -427,7 +554,7 @@ function App() {
               />
 
               {/* React Query DevTools - Only in development */}
-              {import.meta.env.MODE === 'development' && (
+              {import.meta.env.MODE === "development" && (
                 <ReactQueryDevtools initialIsOpen={false} />
               )}
             </div>
@@ -435,7 +562,7 @@ function App() {
         </AuthProvider>
       </Router>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

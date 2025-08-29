@@ -32,12 +32,12 @@ const [isSubmitting, setIsSubmitting] = useState(false); // Add this line
   ];
 
   const subcategories = {
-    aggregate: ['Stone Aggregate', 'Metal Aggregate', 'Stone Dust'],
-    sand: ['River Sand', 'M Sand', 'P Sand'],
-    tmt_steel: ['FE-415', 'FE-500', 'FE-550'],
-    bricks_blocks: ['Red Bricks', 'Fly Ash Bricks', 'AAC Blocks'],
-    cement: ['OPC Cement', 'PPC Cement', 'PSC Cement']
-  };
+  aggregate: ['Dust', '10 MM Metal', '20 MM Metal', '40 MM Metal', 'GSB', 'WMM', 'M.sand'],
+  sand: ['River sand (Plastering)', 'River sand'],
+  tmt_steel: ['FE-415', 'FE-500', 'FE-550', 'FE-600'],
+  bricks_blocks: ['Red Bricks', 'Fly Ash Bricks', 'Concrete Blocks', 'AAC Blocks'],
+  cement: ['OPC Cement', 'PPC Cement', 'OPC 53 Grade', 'OPC 43 Grade', 'White Cement']
+};
 
   const getDefaultUnit = (category) => {
     switch(category) {

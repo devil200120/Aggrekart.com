@@ -1,333 +1,284 @@
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import './GSTAutoFill.css';
+import './GSTAutoFill.css'
 
-const GSTAutoFill = ({ 
-  onDataFilled, 
-  initialGST = '', 
-  onValidationChange = () => {} 
-}) => {
-  const [gstNumber, setGstNumber] = useState(initialGST);
-  const [isVerifying, setIsVerifying] = useState(false);
+import React, { useState, useCallback } from 'react';
+import { Search, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import axios from 'axios';
+
+const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => {
+  const [gstNumber, setGstNumber] = useState(formData?.gstNumber || '');
+  const [loading, setLoading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null);
-  const [autoFillData, setAutoFillData] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [validationIssues, setValidationIssues] = useState([]);
+  const [error, setError] = useState(null);
+  const [validationMessage, setValidationMessage] = useState('');
+
+  // Get API base URL
+  const getAPIBaseURL = () => {
+    if (window.location.hostname.includes('onrender.com')) {
+      return 'https://aggrekart-com-backend.onrender.com/api';
+    }
+    return 'https://aggrekart-com-backend.onrender.com/api';
+  };
 
   // Format GST number as user types
   const formatGSTNumber = (value) => {
-    const cleaned = value.replace(/[^A-Z0-9]/g, '').toUpperCase();
-    return cleaned.substring(0, 15);
+    const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (cleaned.length <= 15) {
+      return cleaned;
+    }
+    return cleaned.slice(0, 15);
   };
 
-  // Validate GST format
-  const isValidGSTFormat = (gst) => {
-    const cleaned = gst.replace(/[^A-Z0-9]/g, '');
-    return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(cleaned);
+  // Validate GST format in real-time
+  const validateGSTFormat = (gst) => {
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    return gstRegex.test(gst);
   };
 
   // Handle GST input change
   const handleGSTChange = (e) => {
-    const formatted = formatGSTNumber(e.target.value);
+    const value = e.target.value;
+    const formatted = formatGSTNumber(value);
     setGstNumber(formatted);
     
-    // Reset states when input changes
+    // Update form data
+    if (setFormData) {
+      setFormData(prev => ({ ...prev, gstNumber: formatted }));
+    }
+    
+    // Real-time validation
+    if (formatted.length === 15) {
+      if (validateGSTFormat(formatted)) {
+        setValidationMessage('✓ Valid GST format');
+        setError(null);
+      } else {
+        setValidationMessage('✗ Invalid GST format');
+        setError('Please enter a valid GST number');
+      }
+    } else if (formatted.length > 0) {
+      setValidationMessage(`${formatted.length}/15 characters`);
+      setError(null);
+    } else {
+      setValidationMessage('');
+      setError(null);
+    }
+    
+    // Reset verification status when user changes GST
     if (verificationStatus) {
       setVerificationStatus(null);
-      setAutoFillData(null);
-      setShowPreview(false);
-      setValidationIssues([]);
-    }
-
-    // Auto-verify when 15 characters are entered
-    if (formatted.length === 15 && isValidGSTFormat(formatted)) {
-      setTimeout(() => verifyGST(formatted), 500);
     }
   };
 
-  // Simplified GST verification
-  const verifyGST = async (gstNum = gstNumber) => {
-    if (!gstNum || !isValidGSTFormat(gstNum)) {
-      setVerificationStatus('error');
-      setValidationIssues(['Invalid GST number format. Please enter a valid 15-digit GST number.']);
-      onValidationChange(false);
+  // Verify GST and auto-fill details
+  const verifyGST = useCallback(async () => {
+    if (!gstNumber || gstNumber.length !== 15) {
+      setError('Please enter a complete 15-digit GST number');
       return;
     }
 
-    setIsVerifying(true);
+    if (!validateGSTFormat(gstNumber)) {
+      setError('Please enter a valid GST number format');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
     setVerificationStatus(null);
-    setValidationIssues([]);
 
     try {
-      console.log('🔍 Starting GST verification for:', gstNum);
-
-      const response = await fetch('/api/gst/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ gstNumber: gstNum })
-      });
-
-      // Handle response
-      let result;
-      if (response.ok) {
-        const textResponse = await response.text();
-        try {
-          result = JSON.parse(textResponse);
-        } catch (parseError) {
-          console.error('JSON parse error:', parseError);
-          throw new Error('Invalid server response format');
+      console.log('🔍 Verifying GST:', gstNumber);
+      
+      const response = await axios.post(`${getAPIBaseURL()}/gst/verify`, 
+        { gstNumber },
+        {
+          timeout: 30000,
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
-      } else {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-      }
+      );
 
-      console.log('📡 GST Verification Response:', result);
+      console.log('✅ GST verification response:', response.data);
 
-      if (result.success && result.data?.gstDetails) {
-        const details = result.data.gstDetails;
+      if (response.data.success && response.data.data) {
+        const gstData = response.data.data;
         
-        setVerificationStatus('fallback');
-        setValidationIssues([
-          'Sample data provided based on GST format',
-          'Please review and update the details below'
-        ]);
-
-        // Extract auto-fill data
-        const extractedData = {
-          gstNumber: details.gstNumber || '',
-          businessName: details.businessName || details.legalName || '',
-          businessAddress: details.businessAddress?.fullAddress || '',
-          city: details.businessAddress?.city || details.businessAddress?.location || '',
-          state: details.businessAddress?.state || '',
-          pincode: details.businessAddress?.pincode || '',
-          tradeName: details.tradeName || '',
-          legalName: details.legalName || '',
-          businessType: details.businessType || '',
-          accountHolderName: details.legalName || details.businessName || ''
+        setVerificationStatus('verified');
+        setValidationMessage('✓ GST verified successfully');
+        
+        // FIXED: Map the API response to the correct form fields
+        const autoFillData = {
+          // Core GST data
+          gstNumber: gstData.gstNumber,
+          
+          // FIXED: Map to correct field names for supplier registration
+          businessName: gstData.legalName || gstData.companyName, // Form expects 'businessName'
+          tradeName: gstData.tradeName || gstData.legalName,
+          
+          // FIXED: Map address correctly
+          businessAddress: gstData.address, // Form expects 'businessAddress'
+          city: gstData.city,
+          state: gstData.state,
+          pincode: gstData.pincode,
+          
+          // Additional business info
+          businessType: gstData.taxpayerType,
+          businessNature: gstData.businessNature,
+          registrationDate: gstData.registrationDate,
+          gstStatus: gstData.gstStatus,
+          
+          // Extra fields from API
+          stateJurisdiction: gstData.stateJurisdiction,
+          constitutionOfBusiness: gstData.constitutionOfBusiness,
+          legalName: gstData.legalName // Keep original for reference
         };
 
-        setAutoFillData(extractedData);
-        setShowPreview(true);
-        onValidationChange(true);
+        console.log('📝 Prepared auto-fill data:', autoFillData);
 
-        toast('GST format verified! Sample data provided for review', { 
-          icon: '⚠️',
-          duration: 4000 
-        });
+        // Update form data if setFormData is provided
+        if (setFormData) {
+          setFormData(prev => ({
+            ...prev,
+            ...autoFillData
+          }));
+          console.log('✅ Updated form data via setFormData');
+        }
 
+        // FIXED: Support both callback names for backward compatibility
+        if (onDataFill) {
+          onDataFill(autoFillData);
+          console.log('✅ Called onDataFill callback');
+        }
+        
+        if (onGSTDataFilled) {
+          onGSTDataFilled(autoFillData);
+          console.log('✅ Called onGSTDataFilled callback');
+        }
+
+        console.log('🎉 Auto-fill completed successfully!');
+        
       } else {
-        throw new Error(result.message || 'GST verification failed');
+        throw new Error(response.data.message || 'GST verification failed');
       }
 
     } catch (error) {
-      console.error('❌ GST Verification Error:', error);
+      console.error('❌ GST verification error:', error);
       
-      setVerificationStatus('error');
-      setValidationIssues(['Failed to verify GST number. Please try again.']);
-      onValidationChange(false);
+      setVerificationStatus('failed');
       
-      toast.error('Failed to verify GST number. Please try again.', { duration: 5000 });
-
+      if (error.response?.status === 404) {
+        setError('GST number not found in the government registry. Please check the number and try again.');
+      } else if (error.response?.status === 400) {
+        setError('Invalid GST number format. Please enter a valid 15-digit GST number.');
+      } else if (error.response?.status === 401) {
+        setError('GST verification service is temporarily unavailable. Please try again later.');
+      } else if (error.code === 'ECONNABORTED') {
+        setError('Verification request timed out. Please try again.');
+      } else {
+        setError(error.response?.data?.message || 'Failed to verify GST number. Please try again.');
+      }
+      
+      setValidationMessage('✗ Verification failed');
     } finally {
-      setIsVerifying(false);
+      setLoading(false);
+    }
+  }, [gstNumber, onDataFill, onGSTDataFilled, setFormData]);
+
+  // Handle Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      verifyGST();
     }
   };
 
-  // Apply auto-fill data
-  const applyAutoFill = () => {
-    if (autoFillData && onDataFilled) {
-      console.log('✅ Applying auto-fill data:', autoFillData);
-      onDataFilled(autoFillData);
-      setShowPreview(false);
-      
-      toast.success('Sample data applied! Please review and update as needed', { duration: 5000 });
-    }
+  // Get status icon
+  const getStatusIcon = () => {
+    if (loading) return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
+    if (verificationStatus === 'verified') return <CheckCircle className="w-5 h-5 text-green-500" />;
+    if (verificationStatus === 'failed') return <XCircle className="w-5 h-5 text-red-500" />;
+    if (error) return <AlertCircle className="w-5 h-5 text-red-500" />;
+    return <Search className="w-5 h-5 text-gray-400" />;
   };
-
-  // Get status display
-  const getStatusDisplay = () => {
-    switch (verificationStatus) {
-      case 'fallback':
-        return { 
-          icon: '⚠️', 
-          color: '#f59e0b', 
-          text: 'Sample Data Mode',
-          bgColor: '#fefbf0',
-          borderColor: '#f59e0b'
-        };
-      case 'error':
-        return { 
-          icon: '❌', 
-          color: '#ef4444', 
-          text: 'Verification Failed',
-          bgColor: '#fef2f2',
-          borderColor: '#ef4444'
-        };
-      default:
-        return null;
-    }
-  };
-
-  const statusDisplay = getStatusDisplay();
-
-  // Update GST number if initialGST changes
-  useEffect(() => {
-    if (initialGST !== gstNumber) {
-      setGstNumber(initialGST);
-    }
-  }, [initialGST, gstNumber]);
 
   return (
-    <div className="gst-autofill">
-      <div className="gst-input-section">
-        <div className="input-header">
-          <label htmlFor="gst-number" className="gst-label">
-            GST Number <span className="required">*</span>
-            <span className="help-icon" title="Enter your 15-digit GST number for automatic business verification">
-              ?
-            </span>
-          </label>
-          <p className="gst-description">
-            Enter your GST number to auto-fill business details
-          </p>
-        </div>
-
-        <div className="gst-input-wrapper">
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="gstNumber" className="block text-sm font-medium text-gray-700 mb-2">
+          GST Number *
+        </label>
+        
+        <div className="gst-inp relative">
           <input
-            id="gst-number"
             type="text"
+            id="gstNumber"
             value={gstNumber}
             onChange={handleGSTChange}
-            placeholder="e.g., 27AAACA3918N1ZX"
-            className={`gst-input ${verificationStatus ? `status-${verificationStatus}` : ''}`}
+            onKeyPress={handleKeyPress}
+            placeholder="(e.g., 21AAGCL2673M1ZD)"
+            className={`gst-inp-field ${
+              error ? 'border-red-300' : 
+              verificationStatus === 'verified' ? 'border-green-300' : 
+              'border-gray-300'
+            }`}
             maxLength={15}
-            disabled={isVerifying}
+            disabled={loading}
           />
           
-          {isVerifying && (
-            <div className="verification-spinner">
-              <div className="spinner"></div>
-            </div>
-          )}
+          <div style={{cursor: 'pointer'}} className="gst-search-icon">
+            {getStatusIcon()}
+          </div>
         </div>
 
-        {/* Verification Status */}
-        {statusDisplay && (
-          <div 
-            className="verification-status"
-            style={{
-              backgroundColor: statusDisplay.bgColor,
-              borderColor: statusDisplay.borderColor,
-              color: statusDisplay.color
-            }}
-          >
-            <span className="status-icon">{statusDisplay.icon}</span>
-            <span className="status-text">{statusDisplay.text}</span>
-          </div>
+        {/* Validation message */}
+        {validationMessage && (
+          <p className={`mt-1 text-sm ${
+            validationMessage.includes('✓') ? 'text-green-600' : 
+            validationMessage.includes('✗') ? 'text-red-600' : 
+            'text-gray-500'
+          }`}>
+            {validationMessage}
+          </p>
         )}
 
-        {/* Validation Issues */}
-        {validationIssues.length > 0 && (
-          <div className="validation-issues">
-            {validationIssues.map((issue, index) => (
-              <div key={index} className="validation-issue">
-                <span className="issue-icon">
-                  {verificationStatus === 'error' ? '❌' : '⚠️'}
-                </span>
-                <span className="issue-text">{issue}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Manual Verify Button */}
-        {gstNumber.length === 15 && isValidGSTFormat(gstNumber) && !isVerifying && !verificationStatus && (
-          <button
-            onClick={() => verifyGST()}
-            className="verify-button"
-            disabled={isVerifying}
-          >
-            <span className="button-icon">🔍</span>
-            VERIFY GST NUMBER
-          </button>
+        {/* Error message */}
+        {error && (
+          <p className="mt-1 text-sm text-red-600">
+            {error}
+          </p>
         )}
       </div>
 
-      {/* Auto-fill Preview */}
-      {showPreview && autoFillData && (
-        <div className="autofill-preview">
-          <div className="preview-header">
-            <h4>
-              <span className="preview-icon">📋</span>
-              Sample Business Details
-              <span className="fallback-badge">Sample Data</span>
-            </h4>
-            <p className="preview-description">
-              Review the sample data below and click "Apply Auto-fill" to populate your form
-            </p>
+      {/* Verify button */}
+      <button
+        type="button"
+        onClick={verifyGST}
+        disabled={!gstNumber || gstNumber.length !== 15 || loading || !validateGSTFormat(gstNumber)}
+        className={`gst-submit ${
+          !gstNumber || gstNumber.length !== 15 || loading || !validateGSTFormat(gstNumber)
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500'
+        }`}
+      >
+        {loading ? (
+          <span className="flex items-center justify-center">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Verifying GST...
+          </span>
+        ) : (
+          'Verify GST & Auto-Fill Details'
+        )}
+      </button>
+
+      {/* Success message */}
+      {verificationStatus === 'verified' && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+            <span className="text-green-800 font-medium">GST Verified Successfully!</span>
           </div>
-
-          <div className="preview-content">
-            <div className="preview-grid">
-              <div className="preview-item">
-                <label>Business Name:</label>
-                <span>{autoFillData.businessName || 'Not available'}</span>
-              </div>
-              
-              <div className="preview-item">
-                <label>Business Address:</label>
-                <span>{autoFillData.businessAddress || 'Not available'}</span>
-              </div>
-              
-              <div className="preview-item">
-                <label>City:</label>
-                <span>{autoFillData.city || 'Not available'}</span>
-              </div>
-              
-              <div className="preview-item">
-                <label>State:</label>
-                <span>{autoFillData.state || 'Not available'}</span>
-              </div>
-              
-              <div className="preview-item">
-                <label>Pincode:</label>
-                <span>{autoFillData.pincode || 'Not available'}</span>
-              </div>
-
-              {autoFillData.businessType && (
-                <div className="preview-item">
-                  <label>Business Type:</label>
-                  <span>{autoFillData.businessType}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="fallback-notice">
-              <span className="notice-icon">⚠️</span>
-              <div className="notice-content">
-                <strong>Please Note:</strong> This is sample data generated based on your GST number format. 
-                Please verify and update the business details as needed after applying the auto-fill.
-              </div>
-            </div>
-          </div>
-
-          <div className="preview-actions">
-            <button
-              onClick={() => setShowPreview(false)}
-              className="cancel-button"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={applyAutoFill}
-              className="apply-button"
-            >
-              <span className="button-icon">✨</span>
-              Apply Auto-fill
-            </button>
-          </div>
+          <p className="text-green-700 text-sm mt-1">
+            Business details have been automatically filled from government records.
+          </p>
         </div>
       )}
     </div>

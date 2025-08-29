@@ -16,7 +16,7 @@ const AdvancedProductSearch = () => {
   const [filters, setFilters] = useState({
     search: urlParams.get('search') || '',
     category: urlParams.get('category') || '',
-    subCategory: urlParams.get('subCategory') || '',
+    subcategory: urlParams.get('subcategory') || '',
     priceRange: urlParams.get('priceRange') || '',
     tonnage: urlParams.get('tonnage') || '',
     brand: urlParams.get('brand') || '',
@@ -32,50 +32,42 @@ const AdvancedProductSearch = () => {
 
   // Categories with construction-specific subcategories
   const categories = {
-    'cement': {
-      name: 'Cement',
-      icon: '🏗️',
-      subCategories: ['OPC Cement', 'PPC Cement', 'White Cement', 'Quick Setting Cement'],
-      tonnageOptions: ['1-10 bags', '11-50 bags', '51-100 bags', '100+ bags'],
-      brands: ['ACC', 'UltraTech', 'Ambuja', 'Shree Cement', 'JK Lakshmi']
-    },
-    'tmt-steel': {
-      name: 'TMT Steel',
-      icon: '🔧',
-      subCategories: ['Fe-415 Grade', 'Fe-500 Grade', 'Fe-550 Grade', 'Galvanized Steel'],
-      tonnageOptions: ['1-5 tons', '6-15 tons', '16-50 tons', '50+ tons'],
-      brands: ['TATA Steel', 'JSW Steel', 'SAIL', 'Rashtriya Ispat', 'Kamdhenu']
-    },
-    'bricks': {
-      name: 'Bricks',
-      icon: '🧱',
-      subCategories: ['Red Bricks', 'Fly Ash Bricks', 'AAC Blocks', 'Concrete Blocks'],
-      tonnageOptions: ['1K-5K pieces', '5K-15K pieces', '15K-50K pieces', '50K+ pieces'],
-      brands: ['Bharathi Cement', 'ACC Blocks', 'Siporex', 'Magicrete']
-    },
-    'sand-aggregates': {
-      name: 'Sand & Aggregates',
-      icon: '⛏️',
-      subCategories: ['River Sand', 'M-Sand', 'Stone Chips', 'Gravel'],
-      tonnageOptions: ['1-10 tons', '11-25 tons', '26-100 tons', '100+ tons'],
-      brands: ['Local Suppliers', 'Certified M-Sand', 'River Sand Co.']
-    },
-    'ready-mix-concrete': {
-      name: 'Ready Mix Concrete',
-      icon: '🚛',
-      subCategories: ['M20 Grade', 'M25 Grade', 'M30 Grade', 'M35 Grade'],
-      tonnageOptions: ['1-5 cubic meters', '6-20 cubic meters', '21-100 cubic meters', '100+ cubic meters'],
-      brands: ['ACC RMC', 'UltraTech RMC', 'Dalmia RMC', 'JK Lakshmi RMC']
-    },
-    'roofing-materials': {
-      name: 'Roofing Materials',
-      icon: '🏠',
-      subCategories: ['Clay Tiles', 'Concrete Tiles', 'Metal Sheets', 'Asbestos Sheets'],
-      tonnageOptions: ['100-500 sq ft', '500-1000 sq ft', '1000-5000 sq ft', '5000+ sq ft'],
-      brands: ['Mangalore Tiles', 'Elegant Tiles', 'Tata Shaktee', 'Everest Industries']
-    }
+  'aggregate': {
+    name: 'Aggregate',
+    icon: '⛏️',
+    subCategories: ['Dust', '10 MM Metal', '20 MM Metal', '40 MM Metal', 'GSB', 'WMM', 'M.sand'],
+    tonnageOptions: ['1-10 tons', '11-25 tons', '26-100 tons', '100+ tons'],
+    brands: ['Local Suppliers', 'Certified Aggregate']
+  },
+  'sand': {
+    name: 'Sand',
+    icon: '🏖️',
+    subCategories: ['River sand (Plastering)', 'River sand'],
+    tonnageOptions: ['1-10 tons', '11-25 tons', '26-100 tons', '100+ tons'],
+    brands: ['Local Suppliers', 'River Sand Co.']
+  },
+  'tmt_steel': {
+    name: 'TMT Steel',
+    icon: '🔧',
+    subCategories: ['FE-415', 'FE-500', 'FE-550', 'FE-600'],
+    tonnageOptions: ['1-5 tons', '6-15 tons', '16-50 tons', '50+ tons'],
+    brands: ['TATA Steel', 'JSW Steel', 'SAIL', 'Kamdhenu']
+  },
+  'bricks_blocks': {
+    name: 'Bricks & Blocks',
+    icon: '🧱',
+    subCategories: ['Red Bricks', 'Fly Ash Bricks', 'Concrete Blocks', 'AAC Blocks'],
+    tonnageOptions: ['1K-5K pieces', '5K-15K pieces', '15K-50K pieces', '50K+ pieces'],
+    brands: ['Local Suppliers', 'ACC Blocks', 'Siporex', 'Magicrete']
+  },
+  'cement': {
+    name: 'Cement',
+    icon: '🏗️',
+    subCategories: ['OPC', 'PPC'],
+    tonnageOptions: ['1-10 bags', '11-50 bags', '51-100 bags', '100+ bags'],
+    brands: ['ACC', 'UltraTech', 'Ambuja', 'Shree Cement', 'JK Lakshmi']
   }
-
+}
   const priceRanges = [
     { value: '0-1000', label: '₹0 - ₹1,000' },
     { value: '1000-5000', label: '₹1,000 - ₹5,000' },
@@ -138,7 +130,7 @@ const AdvancedProductSearch = () => {
     const clearedFilters = {
       search: '',
       category: '',
-      subCategory: '',
+      subcategory: '',
       priceRange: '',
       tonnage: '',
       brand: '',
@@ -263,7 +255,7 @@ const AdvancedProductSearch = () => {
                         type="radio"
                         name="subCategory"
                         checked={filters.subCategory === subCat}
-                        onChange={() => handleFilterChange('subCategory', subCat)}
+                        onChange={() => handleFilterChange('subcategory', subCat)}
                       />
                       <span>{subCat}</span>
                     </label>

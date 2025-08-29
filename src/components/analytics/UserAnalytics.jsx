@@ -1,18 +1,63 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { usersAPI, ordersAPI, loyaltyAPI } from '../../services/api'
+import { usersAPI, ordersAPI, loyaltyAPI, supplierAPI } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 import LoadingSpinner from '../common/LoadingSpinner'
 import './UserAnalytics.css'
 
 const UserAnalytics = ({ user }) => {
+  const { user: contextUser } = useAuth()
+  const currentUser = user || contextUser
+  const isSupplier = currentUser?.role === 'supplier'
+  
   const [timeRange, setTimeRange] = useState('3months') // 1month, 3months, 6months, 1year, all
 
-  // Fetch user dashboard data with error handling
+  // Helper function to convert time range to days
+  const getDaysFromTimeRange = (range) => {
+    switch(range) {
+      case '1month': return 30
+      case '3months': return 90
+      case '6months': return 180
+      case '1year': return 365
+      case 'all': return 3650
+      default: return 90
+    }
+  }
+
+  // Supplier Analytics Queries
+  const { data: supplierDashboard, isLoading: supplierDashboardLoading, error: supplierDashboardError } = useQuery(
+    ['supplierDashboard', timeRange],
+    () => supplierAPI.getDashboard({ days: getDaysFromTimeRange(timeRange) }),
+    {
+      enabled: isSupplier,
+      staleTime: 300000,
+      retry: 2,
+      onError: (error) => {
+        console.warn('Supplier dashboard API error:', error)
+      }
+    }
+  )
+
+  const { data: supplierAnalytics, isLoading: supplierAnalyticsLoading, error: supplierAnalyticsError } = useQuery(
+    ['supplierAnalytics', timeRange],
+    () => supplierAPI.getProductAnalytics({ period: getDaysFromTimeRange(timeRange) }),
+    {
+      enabled: isSupplier,
+      staleTime: 300000,
+      retry: 2,
+      onError: (error) => {
+        console.warn('Supplier analytics API error:', error)
+      }
+    }
+  )
+
+  // Regular User Analytics Queries
   const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery(
     ['userDashboard', timeRange],
     () => usersAPI.getDashboard({ timeRange }),
     {
-      staleTime: 300000, // 5 minutes
+      enabled: !isSupplier,
+      staleTime: 300000,
       retry: 2,
       onError: (error) => {
         console.warn('Dashboard API error:', error)
@@ -20,11 +65,11 @@ const UserAnalytics = ({ user }) => {
     }
   )
 
-  // Fetch order analytics with error handling
   const { data: orderAnalytics, isLoading: ordersLoading, error: ordersError } = useQuery(
     ['userOrderAnalytics', timeRange],
     () => ordersAPI.getOrderHistory({ analytics: true, timeRange, limit: 100 }),
     {
+      enabled: !isSupplier,
       staleTime: 300000,
       retry: 2,
       onError: (error) => {
@@ -33,12 +78,12 @@ const UserAnalytics = ({ user }) => {
     }
   )
 
-  // Fetch loyalty data with error handling
   const { data: loyaltyData, isLoading: loyaltyLoading, error: loyaltyError } = useQuery(
     'userLoyaltyAnalytics',
     loyaltyAPI.getMyCoins,
     {
-      staleTime: 60000, // 1 minute
+      enabled: !isSupplier,
+      staleTime: 60000,
       retry: 2,
       onError: (error) => {
         console.warn('Loyalty API error:', error)
@@ -46,37 +91,53 @@ const UserAnalytics = ({ user }) => {
     }
   )
 
-  const isLoading = dashboardLoading || ordersLoading || loyaltyLoading
+  const isLoading = isSupplier 
+    ? (supplierDashboardLoading || supplierAnalyticsLoading)
+    : (dashboardLoading || ordersLoading || loyaltyLoading)
 
   // Calculate analytics from available data
   const analytics = useMemo(() => {
-    // Try to get data from multiple sources
-    const dashboardStats = dashboardData?.data?.stats || {};
-    const orderAnalyticsData = orderAnalytics?.data?.analytics || {};
-    const orders = orderAnalytics?.data?.orders || [];
+    if (isSupplier) {
+      // Supplier Analytics
+      const dashboardStats = supplierDashboard?.data?.stats || {}
+      const analyticsData = supplierAnalytics?.data || {}
+      
+      return {
+        totalOrders: dashboardStats.totalOrders || 0,
+        totalSpent: dashboardStats.totalRevenue || 0,
+        averageOrderValue: dashboardStats.averageOrderValue || 0,
+        completedOrders: dashboardStats.totalOrders || 0, // For suppliers, all orders are "completed" from their perspective
+        monthlySpending: {},
+        topCategories: [],
+        recentActivity: supplierDashboard?.data?.products?.recent || []
+      }
+    } else {
+      // Regular User Analytics
+      const dashboardStats = dashboardData?.data?.stats || {}
+      const orderAnalyticsData = orderAnalytics?.data?.analytics || {}
+      const orders = orderAnalytics?.data?.orders || []
 
-    // Use dashboard data as primary source, order analytics as secondary
-    const totalOrders = dashboardStats.totalOrders || orderAnalyticsData.totalOrders || orders.length || 0;
-    const totalSpent = dashboardStats.totalSpent || orderAnalyticsData.totalSpent || 0;
-    const completedOrders = dashboardStats.completedOrders || orderAnalyticsData.completedOrders || 0;
-    const averageOrderValue = dashboardStats.averageOrderValue || orderAnalyticsData.averageOrderValue || 
-                              (totalOrders > 0 ? totalSpent / totalOrders : 0);
+      const totalOrders = dashboardStats.totalOrders || orderAnalyticsData.totalOrders || orders.length || 0
+      const totalSpent = dashboardStats.totalSpent || orderAnalyticsData.totalSpent || 0
+      const completedOrders = dashboardStats.completedOrders || orderAnalyticsData.completedOrders || 0
+      const averageOrderValue = dashboardStats.averageOrderValue || orderAnalyticsData.averageOrderValue || 
+                                (totalOrders > 0 ? totalSpent / totalOrders : 0)
 
-    // Get other analytics data
-    const monthlySpending = orderAnalyticsData.monthlySpending || {};
-    const topCategories = orderAnalyticsData.topCategories || [];
-    const recentActivity = dashboardData?.data?.recentOrders || orders.slice(0, 5) || [];
+      const monthlySpending = orderAnalyticsData.monthlySpending || {}
+      const topCategories = orderAnalyticsData.topCategories || []
+      const recentActivity = dashboardData?.data?.recentOrders || orders.slice(0, 5) || []
 
-    return {
-      totalOrders,
-      totalSpent,
-      averageOrderValue,
-      completedOrders,
-      monthlySpending,
-      topCategories,
-      recentActivity
-    };
-  }, [dashboardData, orderAnalytics])
+      return {
+        totalOrders,
+        totalSpent,
+        averageOrderValue,
+        completedOrders,
+        monthlySpending,
+        topCategories,
+        recentActivity
+      }
+    }
+  }, [isSupplier, supplierDashboard, supplierAnalytics, dashboardData, orderAnalytics])
 
   if (isLoading) {
     return (
@@ -89,8 +150,37 @@ const UserAnalytics = ({ user }) => {
     )
   }
 
-  // Show analytics even if some APIs fail
-  const stats = [
+  // Different stats for suppliers vs customers
+  const stats = isSupplier ? [
+    {
+      label: 'Total Orders',
+      value: analytics.totalOrders,
+      icon: '📦',
+      color: '#667eea',
+      description: 'Orders received from customers'
+    },
+    {
+      label: 'Total Revenue',
+      value: `₹${Math.round(analytics.totalSpent).toLocaleString()}`,
+      icon: '💰',
+      color: '#10b981',
+      description: 'Total sales revenue'
+    },
+    {
+      label: 'Average Order Value',
+      value: `₹${Math.round(analytics.averageOrderValue).toLocaleString()}`,
+      icon: '📊',
+      color: '#f59e0b',
+      description: 'Average order value'
+    },
+    {
+      label: 'Active Orders',
+      value: analytics.completedOrders,
+      icon: '✅',
+      color: '#06b6d4',
+      description: 'Currently active orders'
+    }
+  ] : [
     {
       label: 'Total Orders',
       value: analytics.totalOrders,
@@ -100,7 +190,7 @@ const UserAnalytics = ({ user }) => {
     },
     {
       label: 'Total Spent',
-      value: `₹${analytics.totalSpent.toLocaleString()}`,
+      value: `₹${Math.round(analytics.totalSpent).toLocaleString()}`,
       icon: '💰',
       color: '#10b981',
       description: 'Total amount spent'
@@ -124,7 +214,7 @@ const UserAnalytics = ({ user }) => {
   return (
     <div className="user-analytics">
       <div className="analytics-header">
-        <h3>Analytics Overview</h3>
+        <h3>{isSupplier ? 'Supplier Analytics' : 'Analytics Overview'}</h3>
         <div className="time-range-selector">
           <select 
             value={timeRange} 
@@ -155,29 +245,48 @@ const UserAnalytics = ({ user }) => {
         ))}
       </div>
 
-      {/* Recent Activity Section */}
+      {/* Recent Activity Section - Different for suppliers vs customers */}
       {analytics.recentActivity && analytics.recentActivity.length > 0 && (
         <div className="analytics-section">
-          <h4>Recent Orders</h4>
+          <h4>{isSupplier ? 'Recent Products' : 'Recent Orders'}</h4>
           <div className="recent-orders">
-            {analytics.recentActivity.slice(0, 5).map((order, index) => (
+            {analytics.recentActivity.slice(0, 5).map((item, index) => (
               <div key={index} className="order-item">
-                <div className="order-info">
-                  <span className="order-id">{order.orderId}</span>
-                  <span className="order-supplier">{order.supplier}</span>
-                </div>
-                <div className="order-details">
-                  <span className="order-amount">₹{(order.totalAmount || order.pricing?.totalAmount || 0).toLocaleString()}</span>
-                  <span className={`order-status status-${order.status}`}>{order.status}</span>
-                </div>
+                {isSupplier ? (
+                  // Supplier: Show recent products
+                  <>
+                    <div className="order-info">
+                      <span className="order-id">{item.name || `Product ${index + 1}`}</span>
+                      <span className="order-supplier">{item.category || 'N/A'}</span>
+                    </div>
+                    <div className="order-details">
+                      <span className="order-amount">₹{(item.pricing?.basePrice || 0).toLocaleString()}</span>
+                      <span className={`order-status ${item.isActive ? 'status-active' : 'status-inactive'}`}>
+                        {item.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  // Customer: Show recent orders
+                  <>
+                    <div className="order-info">
+                      <span className="order-id">{item.orderId || `Order ${index + 1}`}</span>
+                      <span className="order-supplier">{item.supplier || 'N/A'}</span>
+                    </div>
+                    <div className="order-details">
+                      <span className="order-amount">₹{(item.totalAmount || item.pricing?.totalAmount || 0).toLocaleString()}</span>
+                      <span className={`order-status status-${item.status}`}>{item.status || 'N/A'}</span>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Top Categories Section */}
-      {analytics.topCategories && analytics.topCategories.length > 0 && (
+      {/* Top Categories Section - Only for customers */}
+      {!isSupplier && analytics.topCategories && analytics.topCategories.length > 0 && (
         <div className="analytics-section">
           <h4>Top Categories</h4>
           <div className="category-list">
@@ -200,8 +309,8 @@ const UserAnalytics = ({ user }) => {
         </div>
       )}
 
-      {/* Loyalty Overview Section */}
-      {loyaltyData?.data && !loyaltyError && (
+      {/* Loyalty Overview Section - Only for customers */}
+      {!isSupplier && loyaltyData?.data && !loyaltyError && (
         <div className="analytics-section">
           <h4>Loyalty Overview</h4>
           <div className="loyalty-stats">
@@ -222,14 +331,17 @@ const UserAnalytics = ({ user }) => {
       )}
 
       {/* Error States */}
-      {dashboardError && ordersError && (
+      {((isSupplier && supplierDashboardError && supplierAnalyticsError) || 
+        (!isSupplier && dashboardError && ordersError)) && (
         <div className="analytics-section">
           <div className="analytics-unavailable">
             <div className="unavailable-message">
               <h4>📊 Analytics Temporarily Unavailable</h4>
-              <p>We're working on bringing you detailed analytics. Your data will show here once you place some orders!</p>
+              <p>We're working on bringing you detailed analytics. 
+                {isSupplier ? ' Your data will show here once you receive some orders!' : ' Your data will show here once you place some orders!'}
+              </p>
               {analytics.totalOrders === 0 && (
-                <p><strong>Start shopping to see your analytics!</strong></p>
+                <p><strong>{isSupplier ? 'Start selling to see your analytics!' : 'Start shopping to see your analytics!'}</strong></p>
               )}
             </div>
           </div>

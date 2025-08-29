@@ -15,51 +15,51 @@ const AddProductPage = () => {
 
   // Product categories that match backend
   const productCategories = {
-    aggregate: {
-      name: 'Aggregate',
-      subcategories: {
-        dust: 'Dust',
-        '10mm_metal': '10 MM Metal',
-        '20mm_metal': '20 MM Metal',
-        '40mm_metal': '40 MM Metal',
-        gsb: 'GSB',
-        wmm: 'WMM',
-        m_sand: 'M.sand'
-      }
-    },
-    sand: {
-      name: 'Sand',
-      subcategories: {
-        river_sand_plastering: 'River sand (Plastering)',
-        river_sand: 'River sand'
-      }
-    },
-    tmt_steel: {
-      name: 'TMT Steel',
-      subcategories: {
-        fe_415: 'FE-415',
-        fe_500: 'FE-500',
-        fe_550: 'FE-550',
-        fe_600: 'FE-600'
-      }
-    },
-    bricks_blocks: {
-      name: 'Bricks & Blocks',
-      subcategories: {
-        red_bricks: 'Red Bricks',
-        fly_ash_bricks: 'Fly Ash Bricks',
-        concrete_blocks: 'Concrete Blocks',
-        aac_blocks: 'AAC Blocks'
-      }
-    },
-    cement: {
-      name: 'Cement',
-      subcategories: {
-        opc: 'OPC',
-        ppc: 'PPC'
-      }
+  aggregate: {
+    name: 'Aggregate',
+    subcategories: {
+      dust: 'Dust',
+      '10_mm_metal': '10 MM Metal',
+      '20_mm_metal': '20 MM Metal',
+      '40_mm_metal': '40 MM Metal',
+      gsb: 'GSB',
+      wmm: 'WMM',
+      'm_sand': 'M.sand'
+    }
+  },
+  sand: {
+    name: 'Sand',
+    subcategories: {
+      river_sand_plastering: 'River sand (Plastering)',
+      river_sand: 'River sand'
+    }
+  },
+  tmt_steel: {
+    name: 'TMT Steel',
+    subcategories: {
+      fe_415: 'FE-415',
+      fe_500: 'FE-500',
+      fe_550: 'FE-550',
+      fe_600: 'FE-600'
+    }
+  },
+  bricks_blocks: {
+    name: 'Bricks & Blocks',
+    subcategories: {
+      red_bricks: 'Red Bricks',
+      fly_ash_bricks: 'Fly Ash Bricks',
+      concrete_blocks: 'Concrete Blocks',
+      aac_blocks: 'AAC Blocks'
+    }
+  },
+  cement: {
+    name: 'Cement',
+    subcategories: {
+      opc: 'OPC',
+      ppc: 'PPC'
     }
   }
+}
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {

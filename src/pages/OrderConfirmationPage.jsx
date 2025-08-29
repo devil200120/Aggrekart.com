@@ -4,6 +4,7 @@ import { useQuery } from 'react-query'
 import { ordersAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import OrderSuccessAnimation from '../components/common/OrderSuccessAnimation'
 import './OrderConfirmationPage.css'
 
 const OrderConfirmationPage = () => {
@@ -97,9 +98,11 @@ const OrderConfirmationPage = () => {
       <div className="container">
         {/* Success Header */}
         <div className="confirmation-header">
-          <div className="success-animation">
-            <div className="checkmark">✓</div>
-          </div>
+          <OrderSuccessAnimation 
+            isVisible={true}
+            size="large"
+            showConfetti={true}
+          />
           
           <h1>Order Confirmed!</h1>
           <p className="confirmation-message">

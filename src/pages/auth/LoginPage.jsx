@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import './AuthPages.css'
+import './LoginPage.css'
 
 const LoginPage = () => {
   const { login, isAuthenticated, loading } = useAuth()
@@ -163,7 +163,7 @@ const LoginPage = () => {
         <div className="auth-header">
           <Link to="/" className="auth-logo">
             <span className="logo-icon">🏗️</span>
-            <span className="logo-text">Aggrekart</span>
+            <span className="logo-text"></span>
           </Link>
           <h1 className="auth-title">Welcome Back</h1>
           <p className="auth-subtitle">

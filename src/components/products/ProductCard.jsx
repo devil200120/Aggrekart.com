@@ -9,16 +9,27 @@ import "./ProductCard.css";
 import { useNavigate } from "react-router-dom";
 import useDynamicDistance from "../../hooks/useDynamicDistance";
 import { FaTruck, FaClock, FaMapMarkerAlt } from "react-icons/fa";
-import { Heart, Star, ShoppingCart, MapPin, Truck } from "lucide-react";
+import { Heart, Star, ShoppingCart, MapPin, Truck, Zap } from "lucide-react";
+import { useDistancePricing } from "../../hooks/useDistancePricing";
+// Add this line around line 16, after the existing imports
+import KnowMoreModal from "../common/KnowMoreModal";
+import { FaInfoCircle } from "react-icons/fa";
 
 const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showKnowMoreModal, setShowKnowMoreModal] = useState(false);
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  // const [isWishlisted, setIsWishlisted] = useState(false);
+  const [showDistanceCalculator, setShowDistanceCalculator] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
+
+  const { userLocation, getCurrentLocation, calculateDistance, loading } =
+    useDistancePricing();
 
   // Safe rendering functions to handle undefined/null values
   const safeRender = (value, fallback = "") => {
@@ -30,6 +41,29 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
   const safeNumber = (value, fallback = 0) => {
     if (value === null || value === undefined || isNaN(value)) return fallback;
     return Number(value);
+  };
+
+const inferSubcategoryFromName = (productName) => {
+    if (!productName) return null;
+    
+    const name = productName.toLowerCase();
+    
+    // Map product names to subcategories
+    if (name.includes('20mm') || name.includes('20 mm')) return '20_mm_metal';
+    if (name.includes('10mm') || name.includes('10 mm')) return '10mm_metal';
+    if (name.includes('40mm') || name.includes('40 mm')) return '40mm_metal';
+    if (name.includes('dust')) return 'dust';
+    if (name.includes('gsb')) return 'gsb';
+    if (name.includes('wmm')) return 'wmm';
+    if (name.includes('m sand') || name.includes('m.sand')) return 'm_sand';
+    if (name.includes('river sand')) return 'river_sand';
+    if (name.includes('fe-415') || name.includes('fe 415')) return 'fe_415';
+    if (name.includes('fe-500') || name.includes('fe 500')) return 'fe_500';
+    if (name.includes('opc 53') || name.includes('53 grade')) return 'opc_53';
+    if (name.includes('opc 43') || name.includes('43 grade')) return 'opc_43';
+    if (name.includes('ppc')) return 'ppc';
+    
+    return null;
   };
 
   // Extract product data with enhanced quantity controls
@@ -111,18 +145,15 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
     setQuantity(productData.minOrderQuantity);
   }, [productData.minOrderQuantity]);
 
+  // Regular Add to Cart mutation (adds to cart and stays on current page)
   const addToCartMutation = useMutation((data) => cartAPI.addToCart(data), {
     onSuccess: () => {
       toast.success(
-        `Added ${quantity} ${productData.unit}${quantity > 1 ? "s" : ""} to cart!`
+        `Added ${quantity} ${productData.unit}${
+          quantity > 1 ? "s" : ""
+        } to cart!`
       );
       queryClient.invalidateQueries("cart");
-
-      // 🆕 REDIRECT TO CART PAGE AFTER SUCCESS
-      setTimeout(() => {
-        navigate("/cart");
-      }, 1500); // Wait 1.5 seconds to show success message
-
       // Reset quantity to minimum after successful add
       setQuantity(productData.minOrderQuantity);
     },
@@ -134,12 +165,80 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
     },
   });
 
+  // Buy Now mutation (adds to cart and redirects to checkout)
+  const buyNowMutation = useMutation((data) => cartAPI.addToCart(data), {
+    onSuccess: () => {
+      toast.success("Redirecting to checkout...");
+      queryClient.invalidateQueries("cart");
+
+      // Redirect to checkout page
+      setTimeout(() => {
+        navigate("/checkout");
+      }, 1000);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || "Failed to proceed to checkout"
+      );
+    },
+    onSettled: () => {
+      setIsBuyingNow(false);
+    },
+  });
+
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!user) {
       toast.error("Please login to add items to cart");
+      navigate("/auth/login");
+      return;
+    }
+
+    if (user.role === "supplier") {
+      toast.error("Suppliers cannot purchase products");
+      return;
+    }
+    if (user.role === "admin") {
+      toast.error("Admin cannot purchase products");
+      return;
+    }
+
+    // Validate quantity
+    if (quantity < productData.minOrderQuantity) {
+      toast.error(
+        `Minimum order quantity is ${productData.minOrderQuantity} ${
+          productData.unit
+        }${productData.minOrderQuantity > 1 ? "s" : ""}`
+      );
+      return;
+    }
+
+    if (quantity > productData.maxOrderQuantity) {
+      toast.error(
+        `Maximum available quantity is ${productData.maxOrderQuantity} ${
+          productData.unit
+        }${productData.maxOrderQuantity > 1 ? "s" : ""}`
+      );
+      return;
+    }
+
+    setIsAddingToCart(true);
+    addToCartMutation.mutate({
+      productId: product._id,
+      quantity,
+    });
+  };
+
+  // New Buy Now handler
+  const handleBuyNow = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast.error("Please login to purchase");
+      navigate("/auth/login");
       return;
     }
 
@@ -151,20 +250,24 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
     // Validate quantity
     if (quantity < productData.minOrderQuantity) {
       toast.error(
-        `Minimum order quantity is ${productData.minOrderQuantity} ${productData.unit}${productData.minOrderQuantity > 1 ? "s" : ""}`
+        `Minimum order quantity is ${productData.minOrderQuantity} ${
+          productData.unit
+        }${productData.minOrderQuantity > 1 ? "s" : ""}`
       );
       return;
     }
 
     if (quantity > productData.maxOrderQuantity) {
       toast.error(
-        `Maximum available quantity is ${productData.maxOrderQuantity} ${productData.unit}${productData.maxOrderQuantity > 1 ? "s" : ""}`
+        `Maximum available quantity is ${productData.maxOrderQuantity} ${
+          productData.unit
+        }${productData.maxOrderQuantity > 1 ? "s" : ""}`
       );
       return;
     }
 
-    setIsAddingToCart(true);
-    addToCartMutation.mutate({
+    setIsBuyingNow(true);
+    buyNowMutation.mutate({
       productId: product._id,
       quantity,
     });
@@ -203,26 +306,26 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
     }
   };
 
-  const getQuantitySteps = () => {
-    // Quick quantity options based on product type
-    const steps = [productData.minOrderQuantity];
-    const max = Math.min(productData.maxOrderQuantity, 50);
+  // // const getQuantitySteps = () => {
+  // //   // Quick quantity options based on product type
+  // //   const steps = [productData.minOrderQuantity];
+  // //   const max = Math.min(productData.maxOrderQuantity, 50);
 
-    if (productData.unit === "MT" || productData.unit === "bags") {
-      // For bulk items like cement/steel
-      steps.push(5, 10, 25, 50);
-    } else if (productData.unit === "numbers") {
-      // For bricks/blocks
-      steps.push(100, 500, 1000, 5000);
-    } else {
-      // Default steps
-      steps.push(5, 10, 20, 50);
-    }
+  // //   if (productData.unit === "MT" || productData.unit === "bags") {
+  // //     // For bulk items like cement/steel
+  // //     steps.push(5, 10, 25, 50);
+  // //   } else if (productData.unit === "numbers") {
+  // //     // For bricks/blocks
+  // //     steps.push(100, 500, 1000, 5000);
+  // //   } else {
+  // //     // Default steps
+  // //     steps.push(5, 10, 20, 50);
+  // //   }
 
-    return [...new Set(steps)]
-      .filter((step) => step <= max && step >= productData.minOrderQuantity)
-      .sort((a, b) => a - b);
-  };
+  //   return [...new Set(steps)]
+  //     .filter((step) => step <= max && step >= productData.minOrderQuantity)
+  //     .sort((a, b) => a - b);
+  // };
 
   const formatPrice = (price) => {
     const numPrice = safeNumber(price);
@@ -336,30 +439,13 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
         </button>
       </div>
 
-      <div className="quantity-info">
-        <span className="quantity-unit">{productData.unit}</span>
-        {productData.minOrderQuantity > 1 && (
-          <span className="min-order">Min: {productData.minOrderQuantity}</span>
-        )}
-      </div>
-
-      {/* Quick quantity buttons */}
-      <div className="quantity-quick-select">
-        {getQuantitySteps().map((step) => (
-          <button
-            key={step}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setQuantity(step);
-            }}
-            className={`quick-qty-btn ${quantity === step ? "active" : ""}`}
-            disabled={step > productData.maxOrderQuantity}
-          >
-            {step}
-          </button>
-        ))}
-      </div>
+      {productData.minOrderQuantity > 1 && (
+        <div className="quantity-infos">
+          <span className="min-orders">
+            Min: {productData.minOrderQuantity}
+          </span>
+        </div>
+      )}
     </div>
   );
 
@@ -403,10 +489,14 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
         </div>
         <div className="delivery-item">
           <FaTruck
-            className={`delivery-icon ${deliveryTime.hours <= 4 ? "same-day" : "next-day"}`}
+            className={`delivery-icon ${
+              deliveryTime.hours <= 4 ? "same-day" : "next-day"
+            }`}
           />
           <span
-            className={`delivery-text ${deliveryTime.hours <= 4 ? "same-day" : "next-day"}`}
+            className={`delivery-text ${
+              deliveryTime.hours <= 4 ? "same-day" : "next-day"
+            }`}
           >
             {deliveryTime.text}
           </span>
@@ -420,6 +510,142 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
         {distance.isFallback && (
           <div className="fallback-info">
             <span className="fallback-text">Estimated</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Enhanced Action Buttons Component
+  const ActionButtons = ({ variant = "grid" }) => {
+    const isOutOfStock = product.stock?.available <= 0 || !productData.inStock;
+    return (
+      <div className="action-buttons-container">
+        <div className="buy-cart">
+          <button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || isOutOfStock}
+            className={`add-to-cart-btn ${isOutOfStock ? "out-of-stock" : ""}`}
+          >
+            <ShoppingCart size={16} />
+            {isOutOfStock
+              ? "Out of Stock"
+              : isAddingToCart
+                ? "Adding..."
+                : "Add to Cart"}
+          </button>
+
+          {!isOutOfStock && (
+            <button
+              onClick={handleBuyNow}
+              disabled={isBuyingNow}
+              className="buy-now-btn"
+            >
+              <Zap size={16} />
+              {isBuyingNow ? "Processing..." : "Buy Now"}
+            </button>
+          )}
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            setShowKnowMoreModal(true);
+          }}
+          className="know-more-btn-grid"
+          title="View detailed information"
+        >
+          <FaInfoCircle size={14} />
+          Know More
+        </button>
+      </div>
+    );
+  };
+
+  // Delivery Information Component
+  const DeliveryInfo = () => {
+    const handleCalculateDelivery = async () => {
+      if (!userLocation) {
+        try {
+          await getCurrentLocation();
+        } catch (error) {
+          console.error("Failed to get location:", error);
+          return;
+        }
+      }
+
+      if (product.supplier?.coordinates) {
+        try {
+          const result = await calculateDistance(
+            product.supplier.coordinates,
+            userLocation,
+            product.specifications?.weight || 1
+          );
+          setDeliveryInfo(result);
+        } catch (error) {
+          console.error("Failed to calculate delivery:", error);
+        }
+      }
+    };
+
+    return (
+      <div className="mb-4">
+        {!showDistanceCalculator ? (
+          <button
+            onClick={() => setShowDistanceCalculator(true)}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
+          >
+            <Calculator className="w-4 h-4" />
+            Calculate Delivery Cost
+          </button>
+        ) : (
+          <div className="bg-gray-50 rounded-lg p-3">
+            {!deliveryInfo ? (
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Get delivery cost and time estimate
+                </p>
+                <button
+                  onClick={handleCalculateDelivery}
+                  disabled={loading}
+                  className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? "Calculating..." : "Calculate"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin className="w-3 h-3" />
+                    <span>{deliveryInfo.distance.value} km away</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-green-600">
+                    <Truck className="w-3 h-3" />
+                    <span className="font-medium">
+                      ₹{deliveryInfo.pricing.transportCost}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-orange-600">
+                  <Clock className="w-3 h-3" />
+                  <span>
+                    {deliveryInfo.delivery.estimatedHours.min}-
+                    {deliveryInfo.delivery.estimatedHours.max} hours
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setShowDistanceCalculator(false)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Hide details
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -452,8 +678,8 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
               <h3 className="product-name">{productData.name}</h3>
             </Link>
 
-            <div className="product-category">
-              <span className="category-badge">{productData.category}</span>
+            <div className="product-categorys">
+              <span className="category-badges">{productData.category}</span>
             </div>
 
             <p className="product-description">{productData.description}</p>
@@ -482,14 +708,16 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
               <div className="stars">
                 {renderStars(productData.averageRating)}
               </div>
-              <span className="rating-count">
+              <span className="rating-counts">
                 ({productData.reviewCount} reviews)
               </span>
             </div>
 
             <div className="stock-info">
               <span
-                className={`stock-status ${productData.inStock ? "in-stock" : "out-of-stock"}`}
+                className={`stock-status ${
+                  productData.inStock ? "in-stock" : "out-of-stock"
+                }`}
               >
                 {productData.inStock
                   ? `${productData.stockQuantity} available`
@@ -519,30 +747,14 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
 
             <QuantityControls />
 
-            <button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart || !productData.inStock}
-              className="btn btn-primary add-to-cart-btn"
-            >
-              {isAddingToCart ? (
-                <>
-                  <span className="loading-spinner"></span>
-                  ADDING...
-                </>
-              ) : (
-                <>
-                  ADD {quantity} {productData.unit.toUpperCase()}
-                  {quantity > 1 ? "S" : ""} TO CART
-                </>
-              )}
-            </button>
+            <ActionButtons variant="list" />
           </div>
         </div>
       </div>
     );
   }
 
-  // Grid view (default)
+  // Grid view (default) - FIXED VERSION
   return (
     <div className="product-card grid-view">
       <Link to={`/products/${productData._id}`} className="product-link">
@@ -560,10 +772,19 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
           )}
         </div>
       </Link>
-
       <div className="product-info">
-        <Link to={`/products/${productData._id}`} className="product-link">
+        <Link
+          style={{ textDecoration: "none" }}
+          to={`/products/${productData._id}`}
+          className="product-link"
+        >
           <h3 className="product-name">{productData.name}</h3>
+          <div className="product-ratings">
+            <div className="stars">
+              {renderStars(productData.averageRating)}
+            </div>
+            <span className="rating-count">({productData.reviewCount})</span>
+          </div>
         </Link>
 
         <div className="product-category">
@@ -580,11 +801,6 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
           </Link>
         </div>
 
-        <div className="product-rating">
-          <div className="stars">{renderStars(productData.averageRating)}</div>
-          <span className="rating-count">({productData.reviewCount})</span>
-        </div>
-
         <div className="product-pricing">
           <div className="price-info">
             <div className="price-main">
@@ -594,23 +810,28 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
             {quantity > 1 && (
               <div className="total-price">Total: {getTotalPrice()}</div>
             )}
-            {productData.originalPrice &&
+            {/* {productData.originalPrice &&
               productData.originalPrice > productData.price && (
                 <div className="price-original">
                   {formatPrice(productData.originalPrice)}
                 </div>
-              )}
+              )} */}
           </div>
         </div>
 
-        <div className="stock-info">
-          <span
-            className={`stock-status ${productData.inStock ? "in-stock" : "out-of-stock"}`}
-          >
-            {productData.inStock
-              ? `${productData.stockQuantity} available`
-              : "Out of stock"}
-          </span>
+        <div className="stocks-select">
+          <div className="stock-info">
+            <span
+              className={`stock-text ${
+                productData.inStock ? "in-stock" : "out-of-stock"
+              }`}
+            >
+              {productData.inStock
+                ? `${productData.stockQuantity} available`
+                : "Out of stock"}
+            </span>
+          </div>
+          <QuantityControls />
         </div>
 
         {/* Stock Badge */}
@@ -619,27 +840,25 @@ const ProductCard = ({ product, viewMode = "grid", showDistance = false }) => {
         )}
 
         {product.stock?.available > 0 &&
-          product.stock?.available <= (product.stock?.lowStockThreshold || 10) && (
+          product.stock?.available <=
+            (product.stock?.lowStockThreshold || 10) && (
             <div className="stock-badge low-stock">Low Stock</div>
           )}
 
         <div className="product-actions">
-          <button
-            className={`add-to-cart-btn ${
-              product.stock?.available <= 0 ? "out-of-stock" : ""
-            }`}
-            onClick={handleAddToCart}
-            disabled={isAddingToCart || product.stock?.available <= 0}
-          >
-            <ShoppingCart size={16} />
-            {product.stock?.available <= 0
-              ? "Out of Stock"
-              : isAddingToCart
-              ? "Adding..."
-              : "Add to Cart"}
-          </button>
+          {/* ADD THE MISSING QUANTITY CONTROLS */}
+          <ActionButtons />
         </div>
       </div>
+
+      <KnowMoreModal
+        isOpen={showKnowMoreModal}
+        onClose={() => setShowKnowMoreModal(false)}
+        productId={productData._id}
+        category={product.category}
+        subcategory={product.subcategory || inferSubcategoryFromName(productData.name)}
+        title={productData.name}
+      />
 
       {/* Distance and Delivery Info */}
       {showDistance && renderDistanceInfo()}

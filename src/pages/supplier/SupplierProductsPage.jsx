@@ -100,7 +100,25 @@ const SupplierProductsPage = () => {
       }
     }
   )
+  // Add after the updatePricingMutation (around line 98)
 
+  // Replace the toggleStockMutation (around line 104)
+
+  const toggleStockMutation = useMutation(
+    (productId) => supplierAPI.toggleProductStock(productId),
+    {
+      onSuccess: (response) => {
+        // Handle both possible response structures
+        const message = response?.data?.message || response?.message || 'Stock status updated successfully';
+        toast.success(`✅ ${message}`)
+        queryClient.invalidateQueries(['supplier-products'])
+      },
+      onError: (error) => {
+        console.error('Toggle stock error:', error);
+        toast.error(error.response?.data?.message || 'Failed to toggle stock status')
+      }
+    }
+  )
   // Event handlers
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -176,43 +194,43 @@ const SupplierProductsPage = () => {
 
   return (
     <div className="swiggy-products-page">
-      <div className="swiggy-container">
+      <div className="product-management-container">
         {/* Swiggy-style Header */}
-        <div className="swiggy-page-header">
+        <div className="product-management-header">
           <div className="header-main">
             <div className="header-icon">📦</div>
-            <div className="header-content">
+            <div className="product-header-content">
               <h1>Product Management</h1>
               <p>Manage your product catalog and pricing</p>
             </div>
           </div>
           
           {/* Stats Overview */}
-          <div className="header-stats">
-            <div className="stat-item">
-              <div className="stat-number">{baseProducts.length}</div>
+          <div className="product-header-stats">
+            <div className="product-stat-item">
+              <div className="product-stat-number">{baseProducts.length}</div>
               <div className="stat-label">Available</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">{products.length}</div>
+            <div className="product-stat-item">
+              <div className="product-stat-number">{products.length}</div>
               <div className="stat-label">My Products</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">{stats.active || 0}</div>
+            <div className="product-stat-item">
+              <div className="product-stat-number">{stats.active || 0}</div>
               <div className="stat-label">Active</div>
             </div>
           </div>
         </div>
 
         {/* Swiggy-style Tab Navigation */}
-        <div className="swiggy-tabs-container">
-          <div className="swiggy-tabs">
+        <div className="product-tabs-container">
+          <div className="product-tabs">
             <button 
               className={`swiggy-tab ${activeTab === 'available' ? 'active' : ''}`}
               onClick={() => setActiveTab('available')}
             >
               <span className="tab-icon">🛍️</span>
-              <span className="tab-content">
+              <span className="product-tab-content">
                 <span className="tab-title">Available Products</span>
                 <span className="tab-count">{baseProducts.length} products</span>
               </span>
@@ -223,7 +241,7 @@ const SupplierProductsPage = () => {
               onClick={() => setActiveTab('my-products')}
             >
               <span className="tab-icon">💰</span>
-              <span className="tab-content">
+              <span className="product-tab-content">
                 <span className="tab-title">My Products</span>
                 <span className="tab-count">{products.length} products</span>
               </span>
@@ -459,6 +477,8 @@ const SupplierProductsPage = () => {
                           className="product-image"
                           onError={(e) => { e.target.src = '/placeholder-product.jpg'; }}
                         />
+                        // Update the product-image-container section (around lines 457-469)
+
                         <div className={`status-badge ${product.status}`}>
                           <span className="status-icon">
                             {product.status === 'active' ? '✅' :
@@ -467,10 +487,18 @@ const SupplierProductsPage = () => {
                           {product.status === 'active' ? 'Active' :
                            product.status === 'pending' ? 'Pending' : 'Inactive'}
                         </div>
+                        
+                        <div className={`stock-badge ${product.isActive ? 'in-stock' : 'out-of-stock'}`}>
+                          <span className="stock-icon">
+                            {product.isActive ? '📦' : '❌'}
+                          </span>
+                          {product.isActive ? 'In Stock' : 'Out of Stock'}
+                        </div>
+                        
                         <div className="pricing-badge">
                           <span className="badge-icon">💰</span>
                           Pricing Set
-                        </div>
+                          </div>
                       </div>
 
                       <div className="product-content">
@@ -504,6 +532,7 @@ const SupplierProductsPage = () => {
                           </div>
                         </div>
 
+
                         <div className="product-actions">
                           <button
                             onClick={() => handleEditPricing(product)}
@@ -512,6 +541,16 @@ const SupplierProductsPage = () => {
                           >
                             <span className="btn-icon">✏️</span>
                             Edit Pricing
+                          </button>
+                          
+                          <button
+                            onClick={() => toggleStockMutation.mutate(product._id)}
+                            className={`swiggy-btn ${product.isActive ? 'swiggy-btn-danger' : 'swiggy-btn-success'}`}
+                            disabled={toggleStockMutation.isLoading}
+                            title={product.isActive ? 'Mark as Out of Stock' : 'Mark as In Stock'}
+                          >
+                            <span className="btn-icon">{product.isActive ? '📦' : '❌'}</span>
+                            {product.isActive ? 'In Stock' : 'Out of Stock'}
                           </button>
                           
                           <button
@@ -898,6 +937,100 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               value={formData.brand}
               onChange={(e) => handleInputChange('brand', e.target.value)}
               placeholder="Enter brand name"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Bricks & Blocks specific fields */}
+      {baseProduct.category === 'bricks_blocks' && (
+        <div className="form-section">
+          <div className="section-header">
+            <h4>🧱 Bricks & Blocks Specifications</h4>
+            <p>Required specifications for Bricks & Blocks</p>
+          </div>
+          
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Size *</label>
+              <select
+                value={formData.specifications.size}
+                onChange={(e) => handleInputChange('specifications.size', e.target.value)}
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select size</option>
+                <option value="230x110x70mm">Standard (230x110x70mm)</option>
+                <option value="230x110x100mm">Modular (230x110x100mm)</option>
+                <option value="190x90x90mm">Common (190x90x90mm)</option>
+                <option value="200x100x100mm">Engineering (200x100x100mm)</option>
+                <option value="custom">Custom Size</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label>Brand *</label>
+            <input
+              type="text"
+              value={formData.brand}
+              onChange={(e) => handleInputChange('brand', e.target.value)}
+              placeholder="Enter brand name (e.g., ACC, Ultratech, etc.)"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Cement specific fields */}
+      {baseProduct.category === 'cement' && (
+        <div className="form-section">
+          <div className="section-header">
+            <h4>🏗️ Cement Specifications</h4>
+            <p>Required specifications for Cement</p>
+          </div>
+          
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Cement Grade *</label>
+              <select
+                value={formData.specifications.cementGrade}
+                onChange={(e) => handleInputChange('specifications.cementGrade', e.target.value)}
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select cement grade</option>
+                <option value="33_grade">33 Grade</option>
+                <option value="43_grade">43 Grade</option>
+                <option value="53_grade">53 Grade</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Cement Type *</label>
+              <select
+                value={formData.specifications.cementType}
+                onChange={(e) => handleInputChange('specifications.cementType', e.target.value)}
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select cement type</option>
+                <option value="OPC">OPC (Ordinary Portland Cement)</option>
+                <option value="PPC">PPC (Portland Pozzolana Cement)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label>Brand *</label>
+            <input
+              type="text"
+              value={formData.brand}
+              onChange={(e) => handleInputChange('brand', e.target.value)}
+              placeholder="Enter brand name (e.g., UltraTech, ACC, Ambuja, etc.)"
               required
               className="swiggy-input"
             />

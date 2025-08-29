@@ -393,6 +393,118 @@ const OrderManagement = ({
         </table>
       </div>
 
+
+      {/* Mobile Orders View */}
+      <div className="orders-mobile">
+        {filteredOrders && filteredOrders.length > 0 ? filteredOrders.map((order) => (
+          <div key={order._id} className="order-card">
+            <div className="order-card-header">
+              <div className="order-card-left">
+                <div className="order-number">#{(order.orderId || order._id).slice(-8).toUpperCase()}</div>
+                <div className="order-date">
+                  <Calendar size={14} />
+                  {formatDate(order.createdAt)}
+                </div>
+              </div>
+              <div className="order-card-right">
+                {getStatusBadge(order.status)}
+              </div>
+            </div>
+
+            <div className="order-card-body">
+              <div className="customer-section">
+                <h4>
+                  <User size={16} />
+                  Customer
+                </h4>
+                <div className="customer-name">{order.customer?.name || 'Unknown Customer'}</div>
+                <div className="customer-email">{order.customer?.email || 'No email'}</div>
+                {order.deliveryAddress && (
+                  <div className="customer-location">
+                    <MapPin size={12} />
+                    {order.deliveryAddress.city}, {order.deliveryAddress.state}
+                  </div>
+                )}
+              </div>
+
+              <div className="order-section">
+                <h4>
+                  <Package size={16} />
+                  Order Details
+                </h4>
+                <div className="order-meta">
+                  <div className="order-items">{getItemCount(order)} items</div>
+                  <div className="payment-method">{order.paymentMethod || 'N/A'}</div>
+                </div>
+              </div>
+
+              <div className="total-section">
+                <h4>
+                  <DollarSign size={16} />
+                  Total Amount
+                </h4>
+                <div className="total-amount">{formatCurrency(getOrderTotal(order))}</div>
+              </div>
+            </div>
+
+            <div className="order-card-footer">
+              <button 
+                className="btn btn-outline btn-sm"
+                onClick={() => handleViewOrder(order)}
+                disabled={actionLoading[order._id]}
+              >
+                <Eye size={14} />
+                {actionLoading[order._id] === 'viewing' ? 'Loading...' : 'VIEW'}
+              </button>
+              
+              {order.status === 'pending' && (
+                <button 
+                  className="btn btn-success btn-sm"
+                  onClick={() => handleConfirmOrder(order)}
+                  disabled={actionLoading[order._id] || updateOrderMutation.isLoading}
+                >
+                  {actionLoading[order._id] === 'confirming' ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      Confirming...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={14} />
+                      CONFIRM
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {order.status === 'confirmed' && (
+                <button 
+                  className="btn btn-primary btn-sm"
+                  onClick={() => {
+                    if (onOrderAction) {
+                      onOrderAction('process', order._id, { status: 'processing' })
+                    }
+                  }}
+                  disabled={actionLoading[order._id]}
+                >
+                  <Package size={14} />
+                  Process
+                </button>
+              )}
+            </div>
+          </div>
+        )) : (
+          <div className="no-orders">
+            <div className="no-orders-icon">📦</div>
+            <h4>No orders found</h4>
+            <p>
+              {searchTerm 
+                ? 'Try adjusting your search criteria.' 
+                : 'No orders available at the moment.'}
+            </p>
+          </div>
+        )}
+      </div>
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className="pagination">

@@ -1,23 +1,28 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { useAuth } from '../context/AuthContext'
-import CartItem from '../components/cart/CartItem'
-import CartSummary from '../components/cart/CartSummary'
-import LoadingSpinner from '../components/common/LoadingSpinner'
-import './CartPage.css'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import CartItem from "../components/cart/CartItem";
+import CartSummary from "../components/cart/CartSummary";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import "./CartPage.css";
 
 const CartPage = () => {
-  const { user } = useAuth()
-  const { 
-    items, 
-    total, 
-    itemCount, 
-    isLoading, 
-    clearCart, 
-    isClearing 
-  } = useCart()
-  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const { user } = useAuth();
+  const {
+    items,
+    total,
+    itemCount,
+    isLoading,
+    clearCart,
+    isClearing,
+    finalAmount, // Add this
+    appliedCoupon, // Add this
+    appliedCoins, // Add this
+    appliedSupplierPromotion, // Add this
+    refreshCart, // ADD THIS LINE
+  } = useCart();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   if (!user) {
     return (
@@ -33,10 +38,10 @@ const CartPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  if (user.role !== 'customer') {
+  if (user.role !== "customer") {
     return (
       <div className="cart-page">
         <div className="container">
@@ -50,7 +55,7 @@ const CartPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading) {
@@ -60,7 +65,7 @@ const CartPage = () => {
           <LoadingSpinner size="large" text="Loading your cart..." />
         </div>
       </div>
-    )
+    );
   }
 
   if (!items || items.length === 0) {
@@ -77,17 +82,17 @@ const CartPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   const handleClearCart = async () => {
     try {
-      await clearCart()
-      setShowClearConfirm(false)
+      await clearCart();
+      setShowClearConfirm(false);
     } catch (error) {
-      console.error('Failed to clear cart:', error)
+      console.error("Failed to clear cart:", error);
     }
-  }
+  };
 
   return (
     <div className="cart-page">
@@ -97,17 +102,17 @@ const CartPage = () => {
           <div className="cart-header-left">
             <h1 className="cart-title">Shopping Cart</h1>
             <p className="cart-subtitle">
-              {itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart
+              {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
             </p>
           </div>
-          
+
           <div className="cart-header-actions">
             <button
               onClick={() => setShowClearConfirm(true)}
               className="btn btn-outline btn-sm"
               disabled={isClearing}
             >
-              {isClearing ? '...' : 'Clear Cart'}
+              {isClearing ? "..." : "Clear Cart"}
             </button>
           </div>
         </div>
@@ -128,23 +133,28 @@ const CartPage = () => {
             <div className="cart-items-header">
               <h3>Items in Cart</h3>
             </div>
-            
+
             <div className="cart-items">
               {items.map((item) => (
-                <CartItem 
-                  key={item._id} 
-                  item={item}
-                />
+                <CartItem key={item._id} item={item} />
               ))}
             </div>
           </div>
 
           {/* Cart Summary */}
           <div className="cart-summary-section">
-            <CartSummary 
+            <CartSummary
               items={items}
               total={total}
               itemCount={itemCount}
+              cart={{
+                items: items,
+                finalAmount,
+                appliedCoupon,
+                appliedCoins,
+                appliedSupplierPromotion,
+              }}
+              onCartUpdate={refreshCart} // ADD THIS LINE
             />
           </div>
         </div>
@@ -174,7 +184,7 @@ const CartPage = () => {
                   className="btn btn-primary"
                   disabled={isClearing}
                 >
-                  {isClearing ? 'Clearing...' : 'Clear Cart'}
+                  {isClearing ? "Clearing..." : "Clear Cart"}
                 </button>
               </div>
             </div>
@@ -182,7 +192,7 @@ const CartPage = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CartPage
+export default CartPage;

@@ -6,14 +6,14 @@ import EnhancedCategoryCard from "../components/products/EnhancedCategoryCard";
 import "./HomePage.css";
 import AggregatesImg from "../Aggregates.JPG";
 import TopRatedProducts from "../components/TopRatedProducts"; // Add this import
-import {  newsletterAPI } from "../services/api";
+import { newsletterAPI } from "../services/api";
 import CCBlocksImg from "../CC Blocks.JPG";
 import TMTSteelImg from "../TMT Steel.webp";
-import RedBricksImg from "../Red Bricks.JPG";
+import RedBricksImg from "../red_bricks.jpg";
 import CementImg from "../Cement.jpg";
 import DSC0200Img from "../DSC_0200.JPG";
 
-import GoogleMapsLocationDetector from '../components/location/GoogleMapsLocationDetector'
+import GoogleMapsLocationDetector from "../components/location/GoogleMapsLocationDetector";
 
 import DSC0141Img from "../DSC_0141.JPG";
 import DSC0158Img from "../DSC_0158.JPG";
@@ -36,14 +36,37 @@ import { toast } from "react-toastify"; // Make sure you have react-toastify ins
 const HomePage = () => {
   const { user } = useAuth();
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
-const [showAllCities, setShowAllCities] = useState(false);
-const citiesData = [
-  "Bangalore", "Gurgaon", "Hyderabad", "Delhi", "Mumbai", "Pune",
-  "Kolkata", "Chennai", "Ahmedabad", "Chandigarh", "Jaipur", "Lucknow",
-  "Indore", "Bhopal", "Nagpur", "Surat", "Vadodara", "Rajkot",
-  "Coimbatore", "Kochi", "Thiruvananthapuram", "Visakhapatnam", "Vijayawada",
-  "Guntur", "Warangal", "Mysore", "Mangalore", "Hubli"
-];
+  const [showAllCities, setShowAllCities] = useState(false);
+  const citiesData = [
+    "Bangalore",
+    "Gurgaon",
+    "Hyderabad",
+    "Delhi",
+    "Mumbai",
+    "Pune",
+    "Kolkata",
+    "Chennai",
+    "Ahmedabad",
+    "Chandigarh",
+    "Jaipur",
+    "Lucknow",
+    "Indore",
+    "Bhopal",
+    "Nagpur",
+    "Surat",
+    "Vadodara",
+    "Rajkot",
+    "Coimbatore",
+    "Kochi",
+    "Thiruvananthapuram",
+    "Visakhapatnam",
+    "Vijayawada",
+    "Guntur",
+    "Warangal",
+    "Mysore",
+    "Mangalore",
+    "Hubli",
+  ];
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentProductSlide, setCurrentProductSlide] = useState(0);
   const productScrollRef = useRef(null);
@@ -52,10 +75,10 @@ const citiesData = [
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [userLocation, setUserLocation] = useState(null)
-const [suppliers, setSuppliers] = useState([])
-const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [userLocation, setUserLocation] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
   const navigate = useNavigate();
   const sliderImages = [
     { src: CrusherImg, alt: "Construction Site 2015" },
@@ -89,23 +112,22 @@ const [newsletterLoading, setNewsletterLoading] = useState(false);
     fetchProducts();
   }, []);
   useEffect(() => {
-  if (products && products.length > 0) {
-    const uniqueSuppliers = []
-    const supplierIds = new Set()
-    
-    products.forEach(product => {
-      if (product.supplier && !supplierIds.has(product.supplier._id)) {
-        supplierIds.add(product.supplier._id)
-        uniqueSuppliers.push(product.supplier)
-      }
-    })
-    
-    setSuppliers(uniqueSuppliers)
-    console.log(`📍 Found ${uniqueSuppliers.length} suppliers on homepage`)
-  }
-}, [products])
+    if (products && products.length > 0) {
+      const uniqueSuppliers = [];
+      const supplierIds = new Set();
 
-  
+      products.forEach((product) => {
+        if (product.supplier && !supplierIds.has(product.supplier._id)) {
+          supplierIds.add(product.supplier._id);
+          uniqueSuppliers.push(product.supplier);
+        }
+      });
+
+      setSuppliers(uniqueSuppliers);
+      console.log(`📍 Found ${uniqueSuppliers.length} suppliers on homepage`);
+    }
+  }, [products]);
+
   const productCategories = {
     aggregate: "aggregate",
     bricks: "bricks_blocks",
@@ -270,86 +292,96 @@ const [newsletterLoading, setNewsletterLoading] = useState(false);
     },
   ];
   // Add this test function after handleNewsletterSubmit
-const testNewsletterAPI = async () => {
-  try {
-    console.log('Testing newsletter API...');
-    
-    // Test 1: Check if backend is reachable
-    const testResponse = await fetch('http://localhost:5000/api/newsletter/test-email');
-    const testResult = await testResponse.json();
-    
-    console.log('Email test result:', testResult);
-    
-    if (testResult.success) {
-      toast.success('Email configuration test passed! Check your email.');
-    } else {
-      toast.error('Email configuration test failed: ' + testResult.error);
+  const testNewsletterAPI = async () => {
+    try {
+      console.log("Testing newsletter API...");
+
+      // Test 1: Check if backend is reachable
+      const testResponse = await fetch(
+        "/api/newsletter/test-email"
+      );
+      const testResult = await testResponse.json();
+
+      console.log("Email test result:", testResult);
+
+      if (testResult.success) {
+        toast.success("Email configuration test passed! Check your email.");
+      } else {
+        toast.error("Email configuration test failed: " + testResult.error);
+      }
+    } catch (error) {
+      console.error("Test failed:", error);
+      toast.error("Backend connection failed: " + error.message);
     }
-  } catch (error) {
-    console.error('Test failed:', error);
-    toast.error('Backend connection failed: ' + error.message);
-  }
-};
+  };
 
-// Add this temporary button in your newsletter section (after the form)
-{process.env.NODE_ENV === 'development' && (
-  <button 
-    onClick={testNewsletterAPI}
-    style={{
-      marginTop: '10px',
-      padding: '8px 16px',
-      background: '#007bff',
-      color: 'white',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer'
-    }}
-  >
-    🧪 Test Email Config
-  </button>
-)}
-  
-
-const handleNewsletterSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!newsletterEmail.trim()) {
-    toast.error('Please enter your email address');
-    return;
+  // Add this temporary button in your newsletter section (after the form)
+  {
+    process.env.NODE_ENV === "development" && (
+      <button
+        onClick={testNewsletterAPI}
+        style={{
+          marginTop: "10px",
+          padding: "8px 16px",
+          background: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        🧪 Test Email Config
+      </button>
+    );
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(newsletterEmail)) {
-    toast.error('Please enter a valid email address');
-    return;
-  }
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
 
-  setNewsletterLoading(true);
-
-  try {
-    const response = await newsletterAPI.subscribe(newsletterEmail, 'homepage');
-    
-    if (response && response.success) {
-      // Show success state
-      setNewsletterSuccess(true);
-      setNewsletterEmail('');
-      
-      // Hide success state after 3 seconds
-      setTimeout(() => {
-        setNewsletterSuccess(false);
-      }, 3000);
-      
-      toast.success(response.message || 'Successfully subscribed to newsletter!');
-    } else {
-      toast.error(response?.message || 'Failed to subscribe. Please try again.');
+    if (!newsletterEmail.trim()) {
+      toast.error("Please enter your email address");
+      return;
     }
-  } catch (error) {
-    console.error('Newsletter subscription error:', error);
-    toast.error('Failed to subscribe. Please try again.');
-  } finally {
-    setNewsletterLoading(false);
-  }
-};
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newsletterEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setNewsletterLoading(true);
+
+    try {
+      const response = await newsletterAPI.subscribe(
+        newsletterEmail,
+        "homepage"
+      );
+
+      if (response && response.success) {
+        // Show success state
+        setNewsletterSuccess(true);
+        setNewsletterEmail("");
+
+        // Hide success state after 3 seconds
+        setTimeout(() => {
+          setNewsletterSuccess(false);
+        }, 3000);
+
+        toast.success(
+          response.message || "Successfully subscribed to newsletter!"
+        );
+      } else {
+        toast.error(
+          response?.message || "Failed to subscribe. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      toast.error("Failed to subscribe. Please try again.");
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   const handleWhatsAppClick = () => {
     const phoneNumber = "918837788388"; // Your phone number
@@ -375,9 +407,9 @@ const handleNewsletterSubmit = async (e) => {
     return "/placeholder-product.jpg";
   };
   const handleLocationChange = (location) => {
-  setUserLocation(location)
-  console.log('📍 User location updated on homepage:', location)
-}
+    setUserLocation(location);
+    console.log("📍 User location updated on homepage:", location);
+  };
   const scrollToProduct = (direction) => {
     const container = productScrollRef.current;
     if (!container) return;
@@ -393,7 +425,6 @@ const handleNewsletterSubmit = async (e) => {
     } else {
       newSlide = Math.min(maxSlide, currentProductSlide + 1);
     }
-    
 
     setCurrentProductSlide(newSlide);
     container.scrollTo({
@@ -438,7 +469,7 @@ const handleNewsletterSubmit = async (e) => {
           <div className="aggregate-hero-overlay"></div>
         </div>
 
-        <div className="container">
+        <div className="aggregate-container">
           <div className="aggregate-hero-content">
             <div className="aggregate-hero-text">
               <h1 className="aggregate-hero-title">
@@ -475,12 +506,9 @@ const handleNewsletterSubmit = async (e) => {
         </div>
       </section>
 
-      {/* Membership Card Section */}
-
-      {/* Enhanced Features Section */}
+      
       {/* Our Products Section */}
-      {/* Our Products Section */}
-            {/* Our Products Section - Optimized Responsive */}
+      {/* Our Products Section - Optimized Responsive */}
       <section className="product-showcase-section">
         <div className="showcase-container">
           <h2 className="showcase-title">Our Products</h2>
@@ -574,7 +602,11 @@ const handleNewsletterSubmit = async (e) => {
                     />
                   </div>
                   <div className="secondary-product-info">
-                    <h4>Bricks<br />(Concrete/Clay)</h4>
+                    <h4>
+                      Bricks
+                      <br />
+                      (Concrete/Clay)
+                    </h4>
                   </div>
                 </div>
               </Link>
@@ -582,12 +614,13 @@ const handleNewsletterSubmit = async (e) => {
           </div>
         </div>
       </section>
+
       <section className="product-gallery-section">
         <div className="container">
           {/* Header with Title and Navigation Arrows */}
           <div className="gallery-header">
             <h2 className="gallery-title">
-              Shop Premium Construction Materials
+              Top Selling Products 
             </h2>
             <div className="gallery-navigation">
               <button
@@ -744,7 +777,7 @@ const handleNewsletterSubmit = async (e) => {
       </section>
 
       <section className="advertisement-section">
-        <div className="container">
+        <div className="advertisement-container">
           <div className="advertisement-content">
             <div className="advertisement-image-container">
               <img
@@ -801,33 +834,50 @@ const handleNewsletterSubmit = async (e) => {
       </section>
 
       {/* Enhanced CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-card">
-            <div className="cta-content">
-              <div className="cta-icon">🚀</div>
-              <h2 className="cta-title">
+      {/* Replace the existing product-showcase-section with this Swiggy-style section */}
+      <section className="swiggy-cta-section">
+        <div className="swiggy-cta-container">
+          <div className="swiggy-cta-content">
+            <div className="swiggy-cta-visual">
+              <div className="swiggy-rocket-icon">🚀</div>
+              <div className="swiggy-gradient-bg"></div>
+            </div>
+
+            <div className="swiggy-cta-text">
+              <h2 className="swiggy-cta-title">
                 Ready to Transform Your Construction Process?
               </h2>
-              <p className="cta-subtitle">
+              <p className="swiggy-cta-subtitle">
                 Join thousands of contractors, builders, and architects who
                 trust Aggrekart for their construction material needs. Start
                 your journey today!
               </p>
-              <div className="cta-actions">
-                <Link to="/products" className="btn btn-primary btn-lg">
-                  <span className="btn-icon">🛍️</span>
-                  Start Shopping Now →
+
+              <div className="swiggy-cta-actions">
+                <Link to="/products" className="swiggy-primary-btn">
+                  <span className="swiggy-btn-text">Explore Materials</span>
+                  <span className="swiggy-btn-icon">→</span>
                 </Link>
-                {!user && (
-                  <Link
-                    to="/auth/whatsapp-register"
-                    className="btn btn-success btn-lg"
-                  >
-                    <span className="btn-icon">📱</span>
-                    Quick Register →
-                  </Link>
-                )}
+
+                <Link to="/suppliers" className="swiggy-secondary-btn">
+                  <span className="swiggy-btn-text">Become a Supplier</span>
+                  <span className="swiggy-btn-icon">🏢</span>
+                </Link>
+              </div>
+
+              <div className="swiggy-trust-indicators">
+                <div className="swiggy-trust-item">
+                  <span className="swiggy-trust-icon">✅</span>
+                  <span className="swiggy-trust-text">Verified Suppliers</span>
+                </div>
+                <div className="swiggy-trust-item">
+                  <span className="swiggy-trust-icon">⚡</span>
+                  <span className="swiggy-trust-text">Fast Delivery</span>
+                </div>
+                <div className="swiggy-trust-item">
+                  <span className="swiggy-trust-icon">💯</span>
+                  <span className="swiggy-trust-text">Quality Assured</span>
+                </div>
               </div>
             </div>
           </div>
@@ -835,106 +885,116 @@ const handleNewsletterSubmit = async (e) => {
       </section>
 
       {/* Cities Service Delivery Section */}
-      <section className="cities-service-section">
-  <div className="container">
-    <div className="cities-header">
-      <h2 className="cities-title">Cities with Construction Material Delivery</h2>
-    </div>
-    
-    <div className="cities-grid">
-      {citiesData
-        .slice(0, showAllCities ? citiesData.length : 11)
-        .map((city, index) => (
-          <div 
-            key={city} 
-            className={`city-card ${index === 7 ? 'highlighted' : ''}`}
-          >
-            <span className="city-text">
-              Order materials online in <strong>{city}</strong>
-            </span>
+      {/* <section className="cities-service-section">
+        <div className="container">
+          <div className="cities-header">
+            <h2 className="cities-title">
+              Cities with Construction Material Delivery
+            </h2>
           </div>
-        ))}
-      
-      {!showAllCities && (
-        <div 
-          className="city-card show-more-card"
-          onClick={() => setShowAllCities(true)}
-        >
-          <span className="show-more-text">Show More ▼</span>
-        </div>
-      )}
-      
-      {showAllCities && (
-        <div 
-          className="city-card show-less-card"
-          onClick={() => setShowAllCities(false)}
-        >
-          <span className="show-less-text">Show Less ▲</span>
-        </div>
-      )}
-    </div>
-  </div>
-</section>
-      {/* Enhanced Newsletter Section */}
-            {/* Enhanced Newsletter Section */}
-      {/* Enhanced Newsletter Section */}
-<section className="newsletter-section">
-  <div className="container">
-    <div className="newsletter-card">
-      <div className="newsletter-icon">📧</div>
-      <h3 className="newsletter-title">Stay Ahead of the Curve</h3>
-      <p className="newsletter-subtitle">
-        Get exclusive updates on new materials, industry insights, price
-        alerts, and special offers
-      </p>
-      
-      {/* Success State */}
-      {newsletterSuccess ? (
-        <div className="newsletter-success">
-          <div className="success-animation">
-            <div className="checkmark-circle">
-              <div className="checkmark">✓</div>
-            </div>
+
+          <div className="cities-grid">
+            {citiesData
+              .slice(0, showAllCities ? citiesData.length : 11)
+              .map((city, index) => (
+                <div
+                  key={city}
+                  className={`city-card ${index === 7 ? "highlighted" : ""}`}
+                >
+                  <span className="city-text">
+                    Order materials online in <strong>{city}</strong>
+                  </span>
+                </div>
+              ))}
+
+            {!showAllCities && (
+              <div
+                className="city-card show-more-card"
+                onClick={() => setShowAllCities(true)}
+              >
+                <span className="show-more-text">Show More ▼</span>
+              </div>
+            )}
+
+            {showAllCities && (
+              <div
+                className="city-card show-less-card"
+                onClick={() => setShowAllCities(false)}
+              >
+                <span className="show-less-text">Show Less ▲</span>
+              </div>
+            )}
           </div>
-          <h4 className="success-title">Successfully Subscribed! 🎉</h4>
-          <p className="success-message">
-            Thank you for joining our newsletter! Check your email for a welcome message.
+        </div>
+      </section> */}
+      {/* Enhanced Newsletter Section */}
+      {/* Enhanced Newsletter Section */}
+      {/* Enhanced Newsletter Section */}
+      
+
+{/* Swiggy-Style Newsletter Section */}
+
+{/* Compact Swiggy-Style Newsletter Section */}
+<section className="newsletter-compact-section">
+  <div className="newsletter-compact-container">
+    <div className="newsletter-compact-card">
+      <div className="newsletter-compact-left">
+        <div className="newsletter-compact-icon">📧</div>
+        <div className="newsletter-compact-content">
+          <h3 className="newsletter-compact-title">Stay Ahead of the Curve</h3>
+          <p className="newsletter-compact-subtitle">
+            Get exclusive updates on new materials, industry insights, and special offers
           </p>
         </div>
-      ) : (
-        /* Original Form */
-        <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="newsletter-input"
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              disabled={newsletterLoading}
-              required
-            />
-            <button
-              type="submit"
-              className="btn btn-primary newsletter-btn"
-              disabled={newsletterLoading || !newsletterEmail.trim()}
-            >
-              {newsletterLoading ? (
-                <>
-                  <span className="loading-spinner">⏳</span>
-                  Subscribing...
-                </>
-              ) : (
-                'Subscribe Now'
-              )}
-            </button>
+      </div>
+
+      <div className="newsletter-compact-right">
+        {/* Success State */}
+        {newsletterSuccess ? (
+          <div className="newsletter-compact-success">
+            <div className="newsletter-compact-check">✓</div>
+            <span className="newsletter-compact-success-text">Successfully Subscribed! 🎉</span>
           </div>
-        </form>
-      )}
-      
-      <p className="newsletter-privacy">
-        🔒 We respect your privacy. Unsubscribe at any time.
-      </p>
+        ) : (
+          /* Form */
+          <form
+            className="newsletter-compact-form"
+            onSubmit={handleNewsletterSubmit}
+          >
+            <div className="newsletter-compact-input-wrapper">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                className="newsletter-compact-input"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                disabled={newsletterLoading}
+                required
+              />
+              <button
+                type="submit"
+                className="newsletter-compact-btn"
+                disabled={newsletterLoading || !newsletterEmail.trim()}
+              >
+                {newsletterLoading ? (
+                  <>
+                    <span className="newsletter-compact-spinner">⏳</span>
+                    Subscribing...
+                  </>
+                ) : (
+                  <>
+                    Subscribe Now
+                    <span className="newsletter-compact-arrow">→</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="newsletter-compact-privacy">
+              🔒 We respect your privacy. Unsubscribe at any time.
+            </p>
+          </form>
+        )}
+      </div>
     </div>
   </div>
 </section>
@@ -945,44 +1005,44 @@ const handleNewsletterSubmit = async (e) => {
         <div className="container">
           <div className="footer-content">
             {/* Logo and Company Info */}
-<div className="footer-column main-column">
-<div className="footer-logo">
-    <Link to="/" className="footer-logo-link">
-      <img 
-        src={ImagePng} 
-        alt="Aggrekart Logo" 
-        className="footer-logo-image"
-        style={{
-          border: 'none',
-          boxShadow: 'none',
-          outline: 'none'
-        }}
-      />
-    </Link>
-  </div>
-  <p className="footer-description">
-    India's most trusted platform for construction materials. 
-    Connect with verified suppliers and get quality materials 
-    delivered directly to your construction site.
-  </p>
-  <div className="social-links">
-    <a href="#" aria-label="Facebook" className="social-link">
-      <i className="fab fa-facebook-f"></i>
-    </a>
-    <a href="#" aria-label="Twitter" className="social-link">
-      <i className="fab fa-twitter"></i>
-    </a>
-    <a href="#" aria-label="Instagram" className="social-link">
-      <i className="fab fa-instagram"></i>
-    </a>
-    <a href="#" aria-label="LinkedIn" className="social-link">
-      <i className="fab fa-linkedin-in"></i>
-    </a>
-    <a href="#" aria-label="YouTube" className="social-link">
-      <i className="fab fa-youtube"></i>
-    </a>
-  </div>
-</div>
+            <div className="footer-column main-column">
+              <div className="footer-logo">
+                <Link to="/" className="footer-logo-link">
+                  <img
+                    src={ImagePng}
+                    alt="Aggrekart Logo"
+                    className="footer-logo-image"
+                    style={{
+                      border: "none",
+                      boxShadow: "none",
+                      outline: "none",
+                    }}
+                  />
+                </Link>
+              </div>
+              <p className="footer-description">
+                India's most trusted platform for construction materials.
+                Connect with verified suppliers and get quality materials
+                delivered directly to your construction site.
+              </p>
+              <div className="social-links">
+                <a href="https://www.facebook.com/profile.php?id=61578384710309" aria-label="Facebook" className="social-link">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://x.com/aggrekart_com" aria-label="Twitter" className="social-link">
+            <svg className="x-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM457.1 180L353.3 298.6L475.4 460L379.8 460L305 362.1L219.3 460L171.8 460L282.8 333.1L165.7 180L263.7 180L331.4 269.5L409.6 180L457.1 180zM419.3 431.6L249.4 206.9L221.1 206.9L392.9 431.6L419.3 431.6z"/></svg>
+            </a>
+                <a href="https://www.instagram.com/aggrekart_/" aria-label="Instagram" className="social-link">
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="#" aria-label="LinkedIn" className="social-link">
+                  <i className="fab fa-linkedin-in"></i>
+                </a>
+                <a href="#" aria-label="YouTube" className="social-link">
+                  <i className="fab fa-youtube"></i>
+                </a>
+              </div>
+            </div>
             {/* Quick Links */}
             <div className="footer-column">
               <h4 className="footer-title">Quick Links</h4>
@@ -1036,6 +1096,10 @@ const handleNewsletterSubmit = async (e) => {
               <h4 className="footer-title">Support</h4>
               <ul className="footer-links">
                 <li>
+                  <Link to="/support/tickets">Support Tickets</Link>{" "}
+                  {/* 🔥 NEW: Add this line */}
+                </li>
+                <li>
                   <Link to="/help-center">Help Center</Link>
                 </li>
                 <li>
@@ -1058,30 +1122,32 @@ const handleNewsletterSubmit = async (e) => {
             {/* Contact Info */}
             <div className="footer-column contact-column">
               <h4 className="footer-title">Contact Info</h4>
-              <div className="contact-info">
-                <div className="contact-item">
+              <div className="contact-infos">
+                <div className="contact-items">
                   <div className="contact-icon">
                     <i className="fas fa-map-marker-alt"></i>
                   </div>
+
                   <div className="contact-text">
                     <strong>Address</strong>
                     <span>
                       1-58/81&82, Flat # 503, V Floor, Savithramma Plaza,
-                      Madinaguda, Hyderabad, Telangana - 500 050.
+                      Madinaguda, Hyderabad, <br />Telangana - 500 050.
                     </span>
                   </div>
                 </div>
-                <div className="contact-item">
+                <div className="contact-items">
+                  
                   <div className="contact-icon">
                     <i className="fas fa-phone"></i>
                   </div>
                   <div className="contact-text">
                     <strong>Phone</strong>
-                    <span>+91 8837788388</span>
-                    <br />
+                    <span>+91 9989048899</span>
+
                   </div>
                 </div>
-                <div className="contact-item">
+                <div className="contact-items">
                   <div className="contact-icon">
                     <i className="fas fa-envelope"></i>
                   </div>
@@ -1090,19 +1156,11 @@ const handleNewsletterSubmit = async (e) => {
                     <span>support@aggrekart.com</span>
                   </div>
                 </div>
-                <div className="contact-item">
-                  <div className="contact-icon">
-                    <i className="fas fa-clock"></i>
-                  </div>
-                  <div className="contact-text">
-                    <strong>Working Hours</strong>
-                    <span>Mon - Sat: 9:00 AM - 7:00 PM</span>
-                  </div>
-                </div>
+                
               </div>
             </div>
           </div>
-
+                    
           {/* Footer Bottom */}
           <div className="footer-bottom">
             <div className="footer-bottom-content">

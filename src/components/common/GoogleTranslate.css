@@ -1,0 +1,79 @@
+/* Hide ALL Google Translate banner variations */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-te-menu-frame,
+.goog-te-banner-frame.skiptranslate,
+.goog-te-ftab-frame.skiptranslate,
+.goog-te-ftab-frame,
+#goog-gt-vt,
+div#goog-gt-,
+div#goog-gt-c,
+div#goog-gt-tt,
+div#goog-gt-vt {
+  display: none !important;
+}
+
+/* Prevent body from being pushed down */
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+/* Additional rules to handle dynamic banner creation */
+body > .skiptranslate {
+  display: none !important;
+}
+
+/* Target any iframe that might be the banner */
+iframe[src*="translate.googleapis.com"] {
+  display: none !important;
+}
+
+/* Hide any element with Google Translate banner characteristics */
+[style*="translate.googleapis.com"] {
+  display: none !important;
+}
+
+/* Your existing container styles */
+.google-translate-container {
+  width: 100%;
+  margin: 16px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.translate-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.translate-icon {
+  font-size: 16px;
+}
+
+.translate-text {
+  color: #ff6b35;
+}
+
+#google_translate_element select {
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+#google_translate_element select:hover {
+  border-color: #ff6b35 !important;
+}

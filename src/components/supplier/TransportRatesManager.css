@@ -1,0 +1,457 @@
+.transport-rates-manager {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  margin-top: 2rem;
+}
+
+.transport-rates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  font-size: 24px;
+  color: #059669;
+}
+
+.header-info h3 {
+  margin: 0 0 4px 0;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header-info p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-edit {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #2563eb;
+}
+
+.btn-save {
+  background: #059669;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #047857;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #4b5563;
+}
+
+.btn-calculate {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-calculate:hover {
+  background: #7c3aed;
+}
+
+.transport-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.transport-zone-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  border-top: 4px solid;
+  transition: all 0.2s;
+}
+
+.transport-zone-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.zone-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.zone-header svg {
+  font-size: 18px;
+}
+
+.zone-header h4 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.zone-fields {
+  display: grid;
+  gap: 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field-group label svg {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.field-group input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.field-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.field-group input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.field-group input.error {
+  border-color: #ef4444;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 12px;
+}
+
+.zone-summary {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.zone-summary p {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.cost-calculator-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.cost-calculator-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px 0;
+  color: #1e293b;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cost-calculator-section h4 svg {
+  color: #8b5cf6;
+}
+
+.cost-calculator-section > p {
+  margin: 0 0 20px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.calculator-inputs {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.calc-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.calc-input-group label {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.calc-input-group input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.calculation-result {
+  margin-top: 24px;
+  background: white;
+  border: 1px solid #d1fae5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: #ecfdf5;
+  border-bottom: 1px solid #d1fae5;
+}
+
+.success-icon {
+  color: #059669;
+  font-size: 16px;
+}
+
+.result-header h5 {
+  margin: 0;
+  color: #065f46;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.result-details {
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item.total-cost {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  border-top: 2px solid #e5e7eb;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.zone-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.transport-rates-help {
+  background: #fffbeb;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.help-header svg {
+  color: #d97706;
+  font-size: 18px;
+}
+
+.help-header h4 {
+  margin: 0;
+  color: #92400e;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.transport-rates-help ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #78350f;
+}
+
+.transport-rates-help li {
+  margin-bottom: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.transport-rates-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: #6b7280;
+}
+
+.transport-rates-loading svg {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .transport-rates-manager {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .transport-rates-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .transport-rates-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .calculator-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calc-input-group {
+    min-width: auto;
+  }
+
+  .btn-calculate {
+    margin-top: 8px;
+  }
+
+  .result-details {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-info {
+    gap: 12px;
+  }
+
+  .header-icon {
+    font-size: 20px;
+  }
+
+  .header-info h3 {
+    font-size: 18px;
+  }
+
+  .transport-zone-card {
+    padding: 16px;
+  }
+
+  .cost-calculator-section {
+    padding: 16px;
+  }
+}

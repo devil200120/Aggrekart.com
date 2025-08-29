@@ -4,7 +4,10 @@
   border-bottom: 1px solid #e9ecef;
   margin-bottom: 0; /* Ensure no additional margin */
 }
-
+.top-rated-products-section .container .section-header .header-contents{
+  font-size: 11px;
+  background:white;
+}
 /* ...existing code... */
 
 /* View All Section */
@@ -15,10 +18,6 @@
   padding-bottom: 0; /* Remove any bottom padding */
 }
 
-/* ...rest of existing code... */
-
-
-/* ...existing code... */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -35,6 +34,7 @@
 
 .header-content h2.section-title {
   font-size: 1.75rem;
+  
   font-weight: 700;
   color: #282c3f;
   margin: 0 0 5px 0;
@@ -426,7 +426,8 @@
     height: 280px;
   }
   
-  .section-title {
+  .section-titles {
+    background:#7e808c;
     font-size: 1.3rem !important;
   }
   

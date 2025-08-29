@@ -1,0 +1,382 @@
+.supplier-address-manager {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.supplier-address-display {
+  padding: 1.5rem;
+}
+
+.address-form-header {
+  background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.address-form-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-700);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.address-form-header p {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+.address-form-content {
+  padding: 1.5rem;
+}
+
+/* Address Sections */
+.address-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--gray-50);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-500);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.address-section h3,
+.address-section h4 {
+  margin: 0 0 1rem 0;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* Address Display */
+.address-details {
+  space-y: 1rem;
+}
+
+.address-item {
+  margin-bottom: 1rem;
+}
+
+.address-item strong {
+  display: block;
+  color: var(--gray-700);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.address-item p {
+  margin: 0;
+  color: var(--gray-600);
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid var(--gray-200);
+}
+
+.address-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+/* Coordinates Display */
+.coordinates-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+}
+
+.coordinates-valid {
+  color: var(--green-600);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.coordinates-invalid {
+  color: var(--red-600);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.coordinates-status {
+  font-size: 0.8rem;
+  color: var(--green-600);
+  margin-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-help {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+/* Address Input Container */
+.address-input-container {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+/* Map Section */
+.map-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--gray-50);
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.map-header h4 {
+  margin: 0;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.google-map {
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+.map-loading,
+.map-error,
+.map-unavailable,
+.location-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  background: var(--gray-100);
+  border: 2px dashed var(--gray-300);
+  border-radius: 8px;
+  color: var(--gray-600);
+  gap: 1rem;
+}
+
+.map-error,
+.location-error {
+  color: var(--red-600);
+  border-color: var(--red-300);
+  background: var(--red-50);
+}
+
+.coordinates-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
+  border-radius: 6px;
+  color: var(--green-700);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.map-instructions {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: 6px;
+  padding: 1rem;
+  color: var(--blue-800);
+}
+
+.map-instructions p {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.map-instructions ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.map-instructions li {
+  margin-bottom: 0.25rem;
+  color: var(--blue-700);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--primary-600);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-700);
+  transform: translateY(-1px);
+}
+
+.btn-secondaries{
+ position: relative;
+ left: 40px;
+ 
+ height: 40px;
+  
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--gray-300);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Animations */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .address-form-content {
+    padding: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .map-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .coordinates-display {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .address-section {
+    padding: 1rem;
+  }
+
+  .address-form-header {
+    padding: 1rem;
+  }
+
+  .map-section {
+    padding: 1rem;
+  }
+}
