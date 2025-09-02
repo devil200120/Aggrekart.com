@@ -59,7 +59,9 @@ PURPOSE: Complete styling for order management component
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Order Controls */
@@ -413,24 +415,24 @@ PURPOSE: Complete styling for order management component
   .order-controls {
     flex-direction: column;
   }
-  
+
   .search-box {
     max-width: none;
   }
-  
+
   .filter-panel {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 0.75rem;
   }
-  
+
   .order-actions {
     flex-direction: column;
   }
-  
+
   .order-actions .btn {
     width: 100%;
     justify-content: center;
@@ -443,29 +445,29 @@ PURPOSE: Complete styling for order management component
     gap: 1rem;
     align-items: flex-start;
   }
-  
+
   .header-actions {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .filter-panel {
     grid-template-columns: 1fr;
   }
-  
+
   .orders-table {
     font-size: 0.875rem;
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 0.5rem;
   }
-  
+
   .customer-info {
     min-width: 150px;
   }
-  
+
   .order-actions {
     min-width: 120px;
   }
@@ -474,95 +476,151 @@ PURPOSE: Complete styling for order management component
 @media (max-width: 640px) {
   /* Hide table and show card layout on mobile */
   .orders-table-container {
-    display: none;
+    display: none !important;
   }
-  
+
   .orders-mobile {
     display: block;
-    padding: 1rem;
+    padding: 0;
   }
-  
+
   .order-card {
     background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 12px;
     margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
-  
+
   .order-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 1rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
   }
-  
+
+  .order-card-left .order-number {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .order-card-left .order-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
   .order-card-body {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .order-card-body h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .customer-section,
+  .order-section,
+  .total-section {
     margin-bottom: 1rem;
   }
-  
-  .order-card-field {
+
+  .customer-section:last-child,
+  .order-section:last-child,
+  .total-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .customer-name {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .customer-email {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+
+  .customer-location {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .order-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  
-  .order-card-label {
-    font-weight: 500;
+
+  .order-items {
+    font-size: 0.875rem;
     color: #6b7280;
-    font-size: 0.875rem;
   }
-  
-  .order-card-value {
-    color: #1f2937;
-    font-size: 0.875rem;
+
+  .payment-method {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    background: #f3f4f6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
   }
-  
+
+  .total-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #059669;
+  }
+
   .order-card-footer {
     display: flex;
     gap: 0.5rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
     flex-wrap: wrap;
   }
-  
+
   .order-card-footer .btn {
     flex: 1;
     min-width: 100px;
+    justify-content: center;
+  }
+
+  .no-orders {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
   }
 }
 
 @media (max-width: 480px) {
-  .order-management {
-    margin: 0;
-    border-radius: 0;
-  }
-  
-  .order-management-header {
-    padding: 1rem;
-  }
-  
-  .order-controls {
-    padding: 1rem;
-  }
-  
-  .filter-panel {
-    padding: 1rem;
-  }
-  
-  .order-card {
-    padding: 0.75rem;
-  }
-  
   .order-card-footer {
     flex-direction: column;
   }
-  
+
   .order-card-footer .btn {
     width: 100%;
+    min-width: auto;
   }
 }
 
@@ -574,16 +632,16 @@ PURPOSE: Complete styling for order management component
   .order-actions {
     display: none;
   }
-  
+
   .orders-table {
     font-size: 0.75rem;
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 0.25rem;
   }
-  
+
   .status-badge {
     background: #f3f4f6 !important;
     color: #374151 !important;
@@ -614,7 +672,7 @@ PURPOSE: Complete styling for order management component
 }
 
 .btn.loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;

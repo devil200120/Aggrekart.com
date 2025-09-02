@@ -197,7 +197,7 @@ const ProductFilters = ({ filters, categories, onFilterChange }) => {
                 <div className="distance-selector">
                   <label>Show suppliers within:</label>
                   <div className="distance-options">
-                    {[5, 10, 20, 50].map(distance => (
+                    {[5, 10, 20, 50,100, 150, 300].map(distance => (
                       <button
                         key={distance}
                         className={`distance-btn ${locationState.maxDistance === distance ? 'active' : ''}`}

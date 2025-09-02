@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supplierAPI } from '../services/api';
+import api from '../services/api'; // Add this import at the top
 
 export const useSupplierSuspensionCheck = () => {
   const { user, logout } = useAuth();
-  const [suspensionData, setSuspensionData] = useState(null);
-  const [showSuspensionDialog, setShowSuspensionDialog] = useState(false);
+  const [statusData, setStatusData] = useState(null);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [statusType, setStatusType] = useState(null); // 'suspended' or 'pending'
 
-  // CHECK SUSPENSION ON EVERY PAGE LOAD/USER CHANGE
+  // CHECK SUPPLIER STATUS ON EVERY PAGE LOAD/USER CHANGE
   useEffect(() => {
     const checkSupplierStatus = async () => {
       if (user?.role === 'supplier') {
@@ -15,10 +17,21 @@ export const useSupplierSuspensionCheck = () => {
           // This will trigger the middleware check immediately
           await supplierAPI.getProfile();
         } catch (error) {
-          if (error.response?.status === 403 && error.response?.data?.error === 'SUPPLIER_SUSPENDED') {
-            console.log('🚫 Supplier suspended detected:', error.response.data);
-            setSuspensionData(error.response.data.data);
-            setShowSuspensionDialog(true);
+          if (error.response?.status === 403) {
+            const errorType = error.response?.data?.error;
+            
+            // Handle both suspended and pending approval
+            if (errorType === 'SUPPLIER_SUSPENDED') {
+              console.log('🚫 Supplier suspended detected:', error.response.data);
+              setStatusType('suspended');
+              setStatusData(error.response.data.data);
+              setShowStatusDialog(true);
+            } else if (errorType === 'SUPPLIER_PENDING_APPROVAL') {
+              console.log('⏳ Supplier pending approval detected:', error.response.data);
+              setStatusType('pending');
+              setStatusData(error.response.data.data);
+              setShowStatusDialog(true);
+            }
           }
         }
       }
@@ -31,15 +44,24 @@ export const useSupplierSuspensionCheck = () => {
   // Set up axios interceptor for future API calls
   useEffect(() => {
     const setupInterceptor = () => {
-      const { default: api } = require('../services/api');
-      
       const interceptor = api.interceptors.response.use(
         (response) => response,
         (error) => {
-          if (error.response?.status === 403 && error.response?.data?.error === 'SUPPLIER_SUSPENDED') {
-            console.log('🚫 Suspension intercepted:', error.response.data);
-            setSuspensionData(error.response.data.data);
-            setShowSuspensionDialog(true);
+          if (error.response?.status === 403) {
+            const errorType = error.response?.data?.error;
+            
+            // Handle both error types in interceptor too
+            if (errorType === 'SUPPLIER_SUSPENDED') {
+              console.log('🚫 Suspension intercepted:', error.response.data);
+              setStatusType('suspended');
+              setStatusData(error.response.data.data);
+              setShowStatusDialog(true);
+            } else if (errorType === 'SUPPLIER_PENDING_APPROVAL') {
+              console.log('⏳ Pending approval intercepted:', error.response.data);
+              setStatusType('pending');
+              setStatusData(error.response.data.data);
+              setShowStatusDialog(true);
+            }
           }
           return Promise.reject(error);
         }
@@ -58,17 +80,18 @@ export const useSupplierSuspensionCheck = () => {
 
   const handleLogout = () => {
     logout();
-    setShowSuspensionDialog(false);
+    setShowStatusDialog(false);
     window.location.href = '/login';
   };
 
   const handleClose = () => {
-    setShowSuspensionDialog(false);
+    setShowStatusDialog(false);
   };
 
   return {
-    showSuspensionDialog,
-    suspensionData,
+    showStatusDialog,
+    statusData,
+    statusType,
     handleLogout,
     handleClose
   };

@@ -230,6 +230,7 @@
 .table-row {
   font-size: 14px;
   color: #6b7280;
+  /* height: 200px; */
 }
 
 .status-delivered { color: #10b981; }

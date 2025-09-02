@@ -1,0 +1,387 @@
+.order-success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2rem;
+}
+
+/* Size Variants */
+.order-success-small {
+  --circle-size: 80px;
+  --checkmark-size: 40px;
+  --font-size-title: 1.25rem;
+  --font-size-subtitle: 0.875rem;
+}
+
+.order-success-medium {
+  --circle-size: 120px;
+  --checkmark-size: 60px;
+  --font-size-title: 1.5rem;
+  --font-size-subtitle: 1rem;
+}
+
+.order-success-large {
+  --circle-size: 160px;
+  --checkmark-size: 80px;
+  --font-size-title: 2rem;
+  --font-size-subtitle: 1.125rem;
+}
+
+/* Main Success Circle */
+.success-circle {
+  position: relative;
+  width: var(--circle-size);
+  height: var(--circle-size);
+  margin-bottom: 1.5rem;
+}
+
+/* Animated Background Rings */
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(34, 197, 94, 0.2);
+  opacity: 0;
+}
+
+.ring-1 {
+  width: 100%;
+  height: 100%;
+}
+
+.ring-2 {
+  width: 120%;
+  height: 120%;
+}
+
+.ring-3 {
+  width: 140%;
+  height: 140%;
+}
+
+/* Ring Animations */
+.order-success-container.preparing .ring {
+  animation: ringExpand 1.5s ease-out infinite;
+}
+
+.ring-1 { animation-delay: 0s; }
+.ring-2 { animation-delay: 0.5s; }
+.ring-3 { animation-delay: 1s; }
+
+@keyframes ringExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+    border-color: rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    opacity: 0.4;
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+    border-color: rgba(34, 197, 94, 0);
+  }
+}
+
+/* Success Icon Container */
+.success-icon-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Success Checkmark SVG */
+.success-checkmark {
+  width: var(--checkmark-size);
+  height: var(--checkmark-size);
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* Circle Background */
+.success-circle-bg {
+  fill: #22c55e;
+  transform-origin: center;
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* Checkmark Path */
+.success-checkmark-path {
+  stroke: white;
+  stroke-width: 4;
+  fill: none;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+/* Drawing Phase Animation */
+.order-success-container.drawing .success-checkmark {
+  transform: scale(1);
+  opacity: 1;
+  transition: all 0.3s ease-out;
+}
+
+.order-success-container.drawing .success-circle-bg {
+  transform: scale(1);
+  opacity: 1;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.order-success-container.drawing .success-checkmark-path {
+  animation: drawCheckmark 0.6s 0.2s ease-out forwards;
+}
+
+@keyframes drawCheckmark {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Complete Phase Animation */
+.order-success-container.complete .success-checkmark {
+  animation: checkmarkBounce 0.6s ease-out;
+}
+
+@keyframes checkmarkBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Celebrate Phase Animation */
+.order-success-container.celebrate .success-circle {
+  animation: celebrationPulse 2s ease-out infinite;
+}
+
+@keyframes celebrationPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pulse Effect */
+.pulse-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.3);
+  opacity: 0;
+}
+
+.order-success-container.celebrate .pulse-effect {
+  animation: pulseEffect 1.5s ease-out infinite;
+}
+
+@keyframes pulseEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Success Text */
+.success-text {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.order-success-container.complete .success-text,
+.order-success-container.celebrate .success-text {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s ease-out 0.3s;
+}
+
+.success-title {
+  font-size: var(--font-size-title);
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.success-subtitle {
+  font-size: var(--font-size-subtitle);
+  color: var(--gray-600);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Loading Dots */
+.loading-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-500);
+  animation: dotBounce 1.4s ease-in-out infinite both;
+}
+
+.dot-1 { animation-delay: -0.32s; }
+.dot-2 { animation-delay: -0.16s; }
+.dot-3 { animation-delay: 0s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Confetti Animation */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  top: -10px;
+  width: 8px;
+  height: 8px;
+  animation: confettiFall 3s linear infinite;
+}
+
+.confetti-1 {
+  background: #ff6b6b;
+  left: 10%;
+  animation-delay: 0s;
+  animation-duration: 2.5s;
+}
+
+.confetti-2 {
+  background: #4ecdc4;
+  left: 30%;
+  animation-delay: 0.3s;
+  animation-duration: 3s;
+}
+
+.confetti-3 {
+  background: #45b7d1;
+  left: 50%;
+  animation-delay: 0.6s;
+  animation-duration: 2.8s;
+}
+
+.confetti-4 {
+  background: #96ceb4;
+  left: 70%;
+  animation-delay: 0.9s;
+  animation-duration: 3.2s;
+}
+
+.confetti-5 {
+  background: #feca57;
+  left: 90%;
+  animation-delay: 1.2s;
+  animation-duration: 2.7s;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .order-success-large {
+    --circle-size: 120px;
+    --checkmark-size: 60px;
+    --font-size-title: 1.5rem;
+    --font-size-subtitle: 1rem;
+  }
+  
+  .order-success-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-success-large {
+    --circle-size: 100px;
+    --checkmark-size: 50px;
+    --font-size-title: 1.25rem;
+    --font-size-subtitle: 0.875rem;
+  }
+}
+
+/* Enhanced Celebration Effects */
+.order-success-container.celebrate {
+  position: relative;
+}
+
+.order-success-container.celebrate::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: celebrationGlow 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes celebrationGlow {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+}

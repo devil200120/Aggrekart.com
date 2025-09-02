@@ -17,6 +17,9 @@
   margin: 0;
   padding: 0;
 }
+/* Add this at the top of your existing index.css */
+
+/* Hide Google Translate banner */
 
 /* Ensure consistent font loading */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -31,14 +34,14 @@
 }
 
 /* Fix for sticky headers across browsers */
-.navbar, .header {
+/* .navbar, .header {
   position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 1000;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
-}
+} */
 
 /* Mobile-first responsive images */
 img {

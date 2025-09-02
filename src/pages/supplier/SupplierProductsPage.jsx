@@ -1,163 +1,195 @@
-import React, { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { Link } from 'react-router-dom'
-import { supplierAPI } from '../../services/api'
-import { useAuth } from '../../context/AuthContext'
-import LoadingSpinner from '../../components/common/LoadingSpinner'
-import { toast } from 'react-hot-toast'
-import './SupplierProductsPage.css'
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { Link } from "react-router-dom";
+import { supplierAPI } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import { toast } from "react-hot-toast";
+import "./SupplierProductsPage.css";
 
 const SupplierProductsPage = () => {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState('available')
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("available");
   const [filters, setFilters] = useState({
-    search: '',
-    category: '',
-    status: 'all',
-    sortBy: 'newest'
-  })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedBaseProduct, setSelectedBaseProduct] = useState(null)
-  const [showPricingModal, setShowPricingModal] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(null)
-  const [showEditModal, setShowEditModal] = useState(false)
+    search: "",
+    category: "",
+    status: "all",
+    sortBy: "newest",
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedBaseProduct, setSelectedBaseProduct] = useState(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Fetch base products available for pricing
   const { data: baseProductsData, isLoading: loadingBase } = useQuery(
-    'supplier-base-products',
+    "supplier-base-products",
     () => supplierAPI.getBaseProducts(),
     {
-      enabled: !!user && user.role === 'supplier',
-      staleTime: 5 * 60 * 1000
+      enabled: !!user && user.role === "supplier",
+      staleTime: 5 * 60 * 1000,
     }
-  )
+  );
 
   // Fetch supplier products
-  const { data: productsData, isLoading, error } = useQuery(
-    ['supplier-products', user?.id, filters, currentPage],
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useQuery(
+    ["supplier-products", user?.id, filters, currentPage],
     () => {
-      const cleanParams = {}
-      
-      if (filters.search && filters.search.trim() !== '') {
-        cleanParams.search = filters.search
+      const cleanParams = {};
+
+      if (filters.search && filters.search.trim() !== "") {
+        cleanParams.search = filters.search;
       }
-      
-      if (filters.category && filters.category.trim() !== '') {
-        cleanParams.category = filters.category
+
+      if (filters.category && filters.category.trim() !== "") {
+        cleanParams.category = filters.category;
       }
-      
-      if (filters.status && filters.status !== '') {
-        cleanParams.status = filters.status
+
+      if (filters.status && filters.status !== "") {
+        cleanParams.status = filters.status;
       } else {
-        cleanParams.status = 'all'
+        cleanParams.status = "all";
       }
-      
-      if (filters.sortBy && filters.sortBy.trim() !== '') {
-        cleanParams.sortBy = filters.sortBy
+
+      if (filters.sortBy && filters.sortBy.trim() !== "") {
+        cleanParams.sortBy = filters.sortBy;
       }
-      
-      cleanParams.page = currentPage
-      cleanParams.limit = 12
-      
-      return supplierAPI.getProducts(cleanParams)
+
+      cleanParams.page = currentPage;
+      cleanParams.limit = 12;
+
+      return supplierAPI.getProducts(cleanParams);
     },
     {
-      enabled: !!user && user.role === 'supplier' && activeTab === 'my-products',
+      enabled:
+        !!user && user.role === "supplier" && activeTab === "my-products",
       keepPreviousData: true,
-      staleTime: 5 * 60 * 1000
+      staleTime: 5 * 60 * 1000,
     }
-  )
+  );
 
   // Mutations (keeping existing logic)
   const setPricingMutation = useMutation(
-    ({ productId, pricingData }) => supplierAPI.setProductPricing(productId, pricingData),
+    ({ productId, pricingData }) =>
+      supplierAPI.setProductPricing(productId, pricingData),
     {
       onSuccess: () => {
-        toast.success('🎉 Pricing set successfully! Product pending approval.')
-        setShowPricingModal(false)
-        setSelectedBaseProduct(null)
-        queryClient.invalidateQueries('supplier-base-products')
-        queryClient.invalidateQueries('supplier-products')
+        toast.success("🎉 Pricing set successfully! Product pending approval.");
+        setShowPricingModal(false);
+        setSelectedBaseProduct(null);
+        queryClient.invalidateQueries("supplier-base-products");
+        queryClient.invalidateQueries("supplier-products");
       },
       onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to set pricing')
-      }
+        toast.error(error.response?.data?.message || "Failed to set pricing");
+      },
     }
-  )
+  );
 
   const updatePricingMutation = useMutation(
-    ({ productId, pricingData }) => supplierAPI.updateProductPricing(productId, pricingData),
+    ({ productId, pricingData }) =>
+      supplierAPI.updateProductPricing(productId, pricingData),
     {
       onSuccess: () => {
-        toast.success('✅ Product pricing updated successfully!')
-        queryClient.invalidateQueries(['supplier-products'])
-        setShowEditModal(false)
-        setSelectedProduct(null)
+        toast.success("✅ Product pricing updated successfully!");
+        queryClient.invalidateQueries(["supplier-products"]);
+        setShowEditModal(false);
+        setSelectedProduct(null);
       },
       onError: (error) => {
-        toast.error(error.response?.data?.message || 'Failed to update pricing')
-      }
+        toast.error(
+          error.response?.data?.message || "Failed to update pricing"
+        );
+      },
     }
-  )
+  );
+  // Add after the updatePricingMutation (around line 98)
 
+  // Replace the toggleStockMutation (around line 104)
+
+  const toggleStockMutation = useMutation(
+    (productId) => supplierAPI.toggleProductStock(productId),
+    {
+      onSuccess: (response) => {
+        // Handle both possible response structures
+        const message =
+          response?.data?.message ||
+          response?.message ||
+          "Stock status updated successfully";
+        toast.success(`✅ ${message}`);
+        queryClient.invalidateQueries(["supplier-products"]);
+      },
+      onError: (error) => {
+        console.error("Toggle stock error:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to toggle stock status"
+        );
+      },
+    }
+  );
   // Event handlers
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
-    setCurrentPage(1)
-  }
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
 
   const handleSetPricing = (baseProduct) => {
-    setSelectedBaseProduct(baseProduct)
-    setShowPricingModal(true)
-  }
+    setSelectedBaseProduct(baseProduct);
+    setShowPricingModal(true);
+  };
 
   const handleEditPricing = (product) => {
-    setSelectedProduct(product)
-    setShowEditModal(true)
-  }
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
 
   const handlePricingSubmit = (pricingData) => {
-    if (!selectedBaseProduct) return
-    
+    if (!selectedBaseProduct) return;
+
     setPricingMutation.mutate({
       productId: selectedBaseProduct._id,
-      pricingData
-    })
-  }
+      pricingData,
+    });
+  };
 
   const handleEditPricingSubmit = (pricingData) => {
-    if (!selectedProduct) return
-    
+    if (!selectedProduct) return;
+
     updatePricingMutation.mutate({
       productId: selectedProduct._id,
-      pricingData
-    })
-  }
+      pricingData,
+    });
+  };
 
   // Utility functions
   const formatCurrency = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(price)
-  }
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-  const products = productsData?.data?.products || []
-  const pagination = productsData?.data?.pagination || {}
-  const stats = productsData?.data?.stats || {}
-  const baseProducts = baseProductsData?.data?.baseProducts || []
+  const products = productsData?.data?.products || [];
+  const pagination = productsData?.data?.pagination || {};
+  const stats = productsData?.data?.stats || {};
+  const baseProducts = baseProductsData?.data?.baseProducts || [];
 
-  if (!user || user.role !== 'supplier') {
+  if (!user || user.role !== "supplier") {
     return (
       <div className="swiggy-products-page">
         <div className="swiggy-container">
@@ -171,59 +203,61 @@ const SupplierProductsPage = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="swiggy-products-page">
-      <div className="swiggy-container">
+      <div className="product-management-container">
         {/* Swiggy-style Header */}
-        <div className="swiggy-page-header">
+        <div className="product-management-header">
           <div className="header-main">
             <div className="header-icon">📦</div>
-            <div className="header-content">
+            <div className="product-header-content">
               <h1>Product Management</h1>
               <p>Manage your product catalog and pricing</p>
             </div>
           </div>
-          
+
           {/* Stats Overview */}
-          <div className="header-stats">
-            <div className="stat-item">
-              <div className="stat-number">{baseProducts.length}</div>
+          <div className="product-header-stats">
+            <div className="product-stat-item">
+              <div className="product-stat-number">{baseProducts.length}</div>
               <div className="stat-label">Available</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">{products.length}</div>
+            <div className="product-stat-item">
+              <div className="product-stat-number">{products.length}</div>
               <div className="stat-label">My Products</div>
             </div>
-            <div className="stat-item">
-              <div className="stat-number">{stats.active || 0}</div>
+            <div className="product-stat-item">
+              <div className="product-stat-number">{stats.active || 0}</div>
               <div className="stat-label">Active</div>
             </div>
           </div>
         </div>
 
         {/* Swiggy-style Tab Navigation */}
-        <div className="swiggy-tabs-container">
-          <div className="swiggy-tabs">
-            <button 
-              className={`swiggy-tab ${activeTab === 'available' ? 'active' : ''}`}
-              onClick={() => setActiveTab('available')}
+        <div className="product-tabs-container">
+          <div className="product-tabs">
+            <button
+              className={`swiggy-tab ${activeTab === "available" ? "active" : ""}`}
+              onClick={() => setActiveTab("available")}
             >
               <span className="tab-icon">🛍️</span>
-              <span className="tab-content">
+              <span className="product-tab-content">
                 <span className="tab-title">Available Products</span>
-                <span className="tab-count">{baseProducts.length} products</span>
+                <span className="tab-count">
+                  {baseProducts.length} products
+                </span>
               </span>
             </button>
-            
-            <button 
-              className={`swiggy-tab ${activeTab === 'my-products' ? 'active' : ''}`}
-              onClick={() => setActiveTab('my-products')}
+
+            <button
+              className={`swiggy-tab ${activeTab === "my-products" ? "active" : ""}`}
+              onClick={() => setActiveTab("my-products")}
             >
               <span className="tab-icon">💰</span>
-              <span className="tab-content">
+              <span className="product-tab-content">
                 <span className="tab-title">My Products</span>
                 <span className="tab-count">{products.length} products</span>
               </span>
@@ -232,14 +266,17 @@ const SupplierProductsPage = () => {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'available' && (
+        {activeTab === "available" && (
           <div className="swiggy-tab-content">
             {/* Info Banner */}
             <div className="swiggy-info-banner">
               <div className="banner-icon">💡</div>
               <div className="banner-content">
                 <strong>How it works:</strong>
-                <p>Admin creates products with images. You can set pricing, delivery time, and stock levels to start selling.</p>
+                <p>
+                  Admin creates products with images. You can set pricing,
+                  delivery time, and stock levels to start selling.
+                </p>
               </div>
             </div>
 
@@ -262,10 +299,15 @@ const SupplierProductsPage = () => {
                 </div>
                 <div className="empty-content">
                   <h3>No Products Available</h3>
-                  <p>No base products are currently available for pricing. Check back later or contact admin.</p>
+                  <p>
+                    No base products are currently available for pricing. Check
+                    back later or contact admin.
+                  </p>
                   <div className="empty-actions">
-                    <button 
-                      onClick={() => queryClient.invalidateQueries('supplier-base-products')}
+                    <button
+                      onClick={() =>
+                        queryClient.invalidateQueries("supplier-base-products")
+                      }
                       className="swiggy-btn swiggy-btn-outline"
                     >
                       <span className="btn-icon">🔄</span>
@@ -276,21 +318,28 @@ const SupplierProductsPage = () => {
               </div>
             ) : (
               <div className="swiggy-products-grid">
-                {baseProducts.map(product => (
-                  <div key={product._id} className="swiggy-product-card available-product">
+                {baseProducts.map((product) => (
+                  <div
+                    key={product._id}
+                    className="swiggy-product-card available-product"
+                  >
                     <div className="product-image-container">
-                      <img 
-                        src={product.images?.[0]?.url || '/placeholder-product.jpg'} 
+                      <img
+                        src={
+                          product.images?.[0]?.url || "/placeholder-product.jpg"
+                        }
                         alt={product.name}
                         className="product-image"
-                        onError={(e) => { e.target.src = '/placeholder-product.jpg'; }}
+                        onError={(e) => {
+                          e.target.src = "/placeholder-product.jpg";
+                        }}
                       />
                       <div className="admin-badge">
                         <span className="badge-icon">👑</span>
                         Admin Created
                       </div>
                       <div className="product-overlay">
-                        <button 
+                        <button
                           className="swiggy-btn swiggy-btn-primary"
                           onClick={() => handleSetPricing(product)}
                           disabled={setPricingMutation.isLoading}
@@ -300,15 +349,19 @@ const SupplierProductsPage = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="product-content">
                       <div className="product-header">
                         <h3 className="product-name">{product.name}</h3>
-                        <div className="product-category">{product.category}</div>
+                        <div className="product-category">
+                          {product.category}
+                        </div>
                       </div>
-                      
-                      <p className="product-description">{product.description}</p>
-                      
+
+                      <p className="product-description">
+                        {product.description}
+                      </p>
+
                       <div className="product-meta">
                         <div className="meta-item">
                           <span className="meta-icon">🏷️</span>
@@ -319,7 +372,7 @@ const SupplierProductsPage = () => {
                           <span>HSN: {product.hsnCode}</span>
                         </div>
                       </div>
-                      
+
                       <div className="product-footer">
                         <div className="footer-text">
                           Ready to add your pricing and start selling?
@@ -333,7 +386,7 @@ const SupplierProductsPage = () => {
           </div>
         )}
 
-        {activeTab === 'my-products' && (
+        {activeTab === "my-products" && (
           <div className="swiggy-tab-content">
             {/* Filters Section */}
             <div className="swiggy-filters-section">
@@ -341,8 +394,8 @@ const SupplierProductsPage = () => {
                 <h3>Filter & Search</h3>
                 <p>Find and manage your products</p>
               </div>
-              
-              <div className="filters-grid">
+
+              <div className="filters-grids">
                 <div className="filter-group">
                   <label>Search Products</label>
                   <div className="search-input-container">
@@ -351,7 +404,9 @@ const SupplierProductsPage = () => {
                       type="text"
                       placeholder="Search by product name..."
                       value={filters.search}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("search", e.target.value)
+                      }
                       className="swiggy-input"
                     />
                   </div>
@@ -361,7 +416,9 @@ const SupplierProductsPage = () => {
                   <label>Category</label>
                   <select
                     value={filters.category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("category", e.target.value)
+                    }
                     className="swiggy-select"
                   >
                     <option value="">All Categories</option>
@@ -377,7 +434,9 @@ const SupplierProductsPage = () => {
                   <label>Status</label>
                   <select
                     value={filters.status}
-                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("status", e.target.value)
+                    }
                     className="swiggy-select"
                   >
                     <option value="all">All Status</option>
@@ -391,7 +450,9 @@ const SupplierProductsPage = () => {
                   <label>Sort By</label>
                   <select
                     value={filters.sortBy}
-                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("sortBy", e.target.value)
+                    }
                     className="swiggy-select"
                   >
                     <option value="newest">Newest First</option>
@@ -414,9 +475,13 @@ const SupplierProductsPage = () => {
               <div className="swiggy-error-state">
                 <div className="error-icon">⚠️</div>
                 <h3>Unable to Load Products</h3>
-                <p>There was an error loading your products. Please try again.</p>
-                <button 
-                  onClick={() => queryClient.invalidateQueries(['supplier-products'])}
+                <p>
+                  There was an error loading your products. Please try again.
+                </p>
+                <button
+                  onClick={() =>
+                    queryClient.invalidateQueries(["supplier-products"])
+                  }
                   className="swiggy-btn swiggy-btn-primary"
                 >
                   <span className="btn-icon">🔄</span>
@@ -435,10 +500,13 @@ const SupplierProductsPage = () => {
                 </div>
                 <div className="empty-content">
                   <h3>No Products Found</h3>
-                  <p>You haven't added any products yet. Set pricing on available base products to start selling.</p>
+                  <p>
+                    You haven't added any products yet. Set pricing on available
+                    base products to start selling.
+                  </p>
                   <div className="empty-actions">
-                    <button 
-                      onClick={() => setActiveTab('available')}
+                    <button
+                      onClick={() => setActiveTab("available")}
                       className="swiggy-btn swiggy-btn-primary"
                     >
                       <span className="btn-icon">🛍️</span>
@@ -450,22 +518,46 @@ const SupplierProductsPage = () => {
             ) : (
               <>
                 <div className="swiggy-products-grid">
-                  {products.map(product => (
-                    <div key={product._id} className="swiggy-product-card my-product">
+                  {products.map((product) => (
+                    <div
+                      key={product._id}
+                      className="swiggy-product-card my-product"
+                    >
                       <div className="product-image-container">
-                        <img 
-                          src={product.primaryImage || product.images?.[0]?.url || '/placeholder-product.jpg'} 
+                        <img
+                          src={
+                            product.primaryImage ||
+                            product.images?.[0]?.url ||
+                            "/placeholder-product.jpg"
+                          }
                           alt={product.name}
                           className="product-image"
-                          onError={(e) => { e.target.src = '/placeholder-product.jpg'; }}
+                          onError={(e) => {
+                            e.target.src = "/placeholder-product.jpg";
+                          }}
                         />
+                        
                         <div className={`status-badge ${product.status}`}>
                           <span className="status-icon">
-                            {product.status === 'active' ? '✅' :
-                             product.status === 'pending' ? '⏳' : '❌'}
+                            {product.status === "active"
+                              ? "✅"
+                              : product.status === "pending"
+                                ? "⏳"
+                                : "❌"}
                           </span>
-                          {product.status === 'active' ? 'Active' :
-                           product.status === 'pending' ? 'Pending' : 'Inactive'}
+                          {product.status === "active"
+                            ? "Active"
+                            : product.status === "pending"
+                              ? "Pending"
+                              : "Inactive"}
+                        </div>
+                        <div
+                          className={`stock-badge ${product.isActive ? "in-stock" : "out-of-stock"}`}
+                        >
+                          <span className="stock-icon">
+                            {product.isActive ? "📦" : "❌"}
+                          </span>
+                          {product.isActive ? "In Stock" : "Out of Stock"}
                         </div>
                         <div className="pricing-badge">
                           <span className="badge-icon">💰</span>
@@ -476,27 +568,41 @@ const SupplierProductsPage = () => {
                       <div className="product-content">
                         <div className="product-header">
                           <h3 className="product-name">{product.name}</h3>
-                          <div className="product-category">{product.category}</div>
+                          <div className="product-category">
+                            {product.category}
+                          </div>
                         </div>
 
                         <div className="product-pricing">
                           <div className="price-main">
-                            {formatCurrency(product.price || product.pricing?.basePrice || 0)}
-                            <span className="price-unit">/{product.unit || product.pricing?.unit || 'unit'}</span>
+                            {formatCurrency(
+                              product.price || product.pricing?.basePrice || 0
+                            )}
+                            <span className="price-unit">
+                              /{product.unit || product.pricing?.unit || "unit"}
+                            </span>
                           </div>
                           <div className="price-details">
-                            <span>Min: {product.pricing?.minimumQuantity || 1} {product.unit || 'units'}</span>
+                            <span>
+                              Min: {product.pricing?.minimumQuantity || 1}{" "}
+                              {product.unit || "units"}
+                            </span>
                           </div>
                         </div>
 
                         <div className="product-stats">
                           <div className="stat">
                             <span className="stat-icon">📦</span>
-                            <span>Stock: {product.stockQuantity || product.stock?.available || 0}</span>
+                            <span>
+                              Stock:{" "}
+                              {product.stockQuantity ||
+                                product.stock?.available ||
+                                0}
+                            </span>
                           </div>
                           <div className="stat">
                             <span className="stat-icon">🚚</span>
-                            <span>{product.deliveryTime || 'Not set'}</span>
+                            <span>{product.deliveryTime || "Not set"}</span>
                           </div>
                           <div className="stat">
                             <span className="stat-icon">👀</span>
@@ -513,10 +619,26 @@ const SupplierProductsPage = () => {
                             <span className="btn-icon">✏️</span>
                             Edit Pricing
                           </button>
-                          
+
                           <button
-                            className="swiggy-btn swiggy-btn-secondary"
+                            onClick={() =>
+                              toggleStockMutation.mutate(product._id)
+                            }
+                            className={`swiggy-btn ${product.isActive ? "swiggy-btn-danger" : "swiggy-btn-success"}`}
+                            disabled={toggleStockMutation.isLoading}
+                            title={
+                              product.isActive
+                                ? "Mark as Out of Stock"
+                                : "Mark as In Stock"
+                            }
                           >
+                            <span className="btn-icon">
+                              {product.isActive ? "📦" : "❌"}
+                            </span>
+                            {product.isActive ? "In Stock" : "Out of Stock"}
+                          </button>
+
+                          <button className="swiggy-btn swiggy-btn-secondary">
                             <span className="btn-icon">📊</span>
                             View Details
                           </button>
@@ -535,20 +657,26 @@ const SupplierProductsPage = () => {
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (
                   <div className="swiggy-pagination">
-                    <button 
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
                       disabled={currentPage === 1}
                       className="pagination-btn"
                     >
                       ← Previous
                     </button>
-                    
+
                     <div className="pagination-numbers">
-                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                        .filter(page => 
-                          page === 1 || 
-                          page === pagination.totalPages || 
-                          Math.abs(page - currentPage) <= 2
+                      {Array.from(
+                        { length: pagination.totalPages },
+                        (_, i) => i + 1
+                      )
+                        .filter(
+                          (page) =>
+                            page === 1 ||
+                            page === pagination.totalPages ||
+                            Math.abs(page - currentPage) <= 2
                         )
                         .map((page, index, array) => (
                           <React.Fragment key={page}>
@@ -557,16 +685,20 @@ const SupplierProductsPage = () => {
                             )}
                             <button
                               onClick={() => setCurrentPage(page)}
-                              className={`pagination-page ${currentPage === page ? 'active' : ''}`}
+                              className={`pagination-page ${currentPage === page ? "active" : ""}`}
                             >
                               {page}
                             </button>
                           </React.Fragment>
                         ))}
                     </div>
-                    
-                    <button 
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(prev + 1, pagination.totalPages)
+                        )
+                      }
                       disabled={currentPage === pagination.totalPages}
                       className="pagination-btn"
                     >
@@ -591,15 +723,15 @@ const SupplierProductsPage = () => {
                     <p>Configure your pricing and delivery options</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowPricingModal(false)}
                   className="modal-close"
                 >
                   ✕
                 </button>
               </div>
-              
-              <PricingForm 
+
+              <PricingForm
                 baseProduct={selectedBaseProduct}
                 onSubmit={handlePricingSubmit}
                 onCancel={() => setShowPricingModal(false)}
@@ -621,15 +753,15 @@ const SupplierProductsPage = () => {
                     <p>Update your pricing and delivery options</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowEditModal(false)}
                   className="modal-close"
                 >
                   ✕
                 </button>
               </div>
-              
-              <EditPricingForm 
+
+              <EditPricingForm
                 product={selectedProduct}
                 onSubmit={handleEditPricingSubmit}
                 onCancel={() => setShowEditModal(false)}
@@ -640,47 +772,47 @@ const SupplierProductsPage = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Enhanced Pricing Form Component
 const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
     pricing: {
-      basePrice: '',
-      unit: baseProduct.pricing?.unit || 'MT',
-      minimumQuantity: '',
+      basePrice: "",
+      unit: baseProduct.pricing?.unit || "MT",
+      minimumQuantity: "",
       includesGST: false,
       transportCost: {
         included: true,
-        costPerKm: 0
-      }
+        costPerKm: 0,
+      },
     },
-    deliveryTime: '',
+    deliveryTime: "",
     stock: {
-      available: '',
-      lowStockThreshold: 10
+      available: "",
+      lowStockThreshold: 10,
     },
-    brand: '',
+    brand: "",
     specifications: {
-      grade: '',
-      diameter: '',
-      cementGrade: '',
-      cementType: '',
-      size: '',
-      weight: '',
+      grade: "",
+      diameter: "",
+      cementGrade: "",
+      cementType: "",
+      size: "",
+      weight: "",
       dimensions: {
-        length: '',
-        width: '',
-        height: ''
-      }
-    }
-  })
+        length: "",
+        width: "",
+        height: "",
+      },
+    },
+  });
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    
-    const category = baseProduct.category
+    e.preventDefault();
+
+    const category = baseProduct.category;
     const submissionData = {
       pricing: {
         basePrice: parseFloat(formData.pricing.basePrice),
@@ -688,49 +820,52 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
         minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
         includesGST: formData.pricing.includesGST,
         gstRate: formData.pricing.gstRate || 18,
-        transportCost: formData.pricing.transportCost
+        transportCost: formData.pricing.transportCost,
       },
       stock: {
         available: parseInt(formData.stock.available),
-        lowStockThreshold: formData.stock.lowStockThreshold || 10
+        lowStockThreshold: formData.stock.lowStockThreshold || 10,
       },
       deliveryTime: formData.deliveryTime,
-      specifications: {}
-    }
-    
+      specifications: {},
+    };
+
     // Add category-specific required fields
     switch (category) {
-      case 'tmt_steel':
-        submissionData.specifications.grade = formData.specifications.grade
-        submissionData.specifications.diameter = formData.specifications.diameter
-        submissionData.brand = formData.brand
-        break
-      case 'cement':
-        submissionData.specifications.cementGrade = formData.specifications.cementGrade
-        submissionData.specifications.cementType = formData.specifications.cementType
-        submissionData.brand = formData.brand
-        break
-      case 'bricks_blocks':
-        submissionData.specifications.size = formData.specifications.size
-        submissionData.brand = formData.brand
-        break
+      case "tmt_steel":
+        submissionData.specifications.grade = formData.specifications.grade;
+        submissionData.specifications.diameter =
+          formData.specifications.diameter;
+        submissionData.brand = formData.brand;
+        break;
+      case "cement":
+        submissionData.specifications.cementGrade =
+          formData.specifications.cementGrade;
+        submissionData.specifications.cementType =
+          formData.specifications.cementType;
+        submissionData.brand = formData.brand;
+        break;
+      case "bricks_blocks":
+        submissionData.specifications.size = formData.specifications.size;
+        submissionData.brand = formData.brand;
+        break;
     }
-    
-    onSubmit(submissionData)
-  }
+
+    onSubmit(submissionData);
+  };
 
   const handleInputChange = (path, value) => {
-    const keys = path.split('.')
-    setFormData(prev => {
-      const newData = { ...prev }
-      let current = newData
+    const keys = path.split(".");
+    setFormData((prev) => {
+      const newData = { ...prev };
+      let current = newData;
       for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]]
+        current = current[keys[i]];
       }
-      current[keys[keys.length - 1]] = value
-      return newData
-    })
-  }
+      current[keys[keys.length - 1]] = value;
+      return newData;
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="swiggy-form">
@@ -739,14 +874,16 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
           <h4>💰 Pricing Information</h4>
           <p>Set your competitive pricing</p>
         </div>
-        
+
         <div className="form-grid">
           <div className="form-group">
             <label>Base Price (₹) *</label>
             <input
               type="number"
               value={formData.pricing.basePrice}
-              onChange={(e) => handleInputChange('pricing.basePrice', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("pricing.basePrice", e.target.value)
+              }
               placeholder="Enter price per unit"
               step="0.01"
               min="0"
@@ -754,13 +891,22 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               className="swiggy-input"
             />
           </div>
-          
+
           <div className="form-group">
-            <label>Unit</label>
-            <div className="unit-display">
-              <span className="unit-icon">📏</span>
-              {baseProduct.pricing?.unit || 'MT'}
-            </div>
+            <label>Unit of Measurement *</label>
+            <select
+              value={formData.pricing.unit}
+              onChange={(e) =>
+                handleInputChange("pricing.unit", e.target.value)
+              }
+              required
+              className="swiggy-select"
+            >
+              <option value="MT">Metric Tons (MT)</option>
+              <option value="bags">Bags</option>
+              <option value="numbers">Numbers/Pieces</option>
+              <option value="Kg">KG</option>
+            </select>
           </div>
         </div>
 
@@ -770,7 +916,9 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
             <input
               type="number"
               value={formData.pricing.minimumQuantity}
-              onChange={(e) => handleInputChange('pricing.minimumQuantity', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("pricing.minimumQuantity", e.target.value)
+              }
               placeholder="Minimum order quantity"
               step="0.1"
               min="0.1"
@@ -778,13 +926,15 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               className="swiggy-input"
             />
           </div>
-          
+
           <div className="form-group">
             <label>GST Rate (%)</label>
             <input
               type="number"
               value={formData.pricing.gstRate || 18}
-              onChange={(e) => handleInputChange('pricing.gstRate', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("pricing.gstRate", e.target.value)
+              }
               placeholder="GST percentage"
               step="0.1"
               min="0"
@@ -799,7 +949,9 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
             <input
               type="checkbox"
               checked={formData.pricing.includesGST}
-              onChange={(e) => handleInputChange('pricing.includesGST', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("pricing.includesGST", e.target.checked)
+              }
             />
             <span className="checkmark"></span>
             Price includes GST
@@ -812,26 +964,30 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
           <h4>📦 Stock & Delivery</h4>
           <p>Manage inventory and delivery options</p>
         </div>
-        
+
         <div className="form-grid">
           <div className="form-group">
             <label>Available Stock *</label>
             <input
               type="number"
               value={formData.stock.available}
-              onChange={(e) => handleInputChange('stock.available', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("stock.available", e.target.value)
+              }
               placeholder="Available quantity"
               min="0"
               required
               className="swiggy-input"
             />
           </div>
-          
+
           <div className="form-group">
             <label>Delivery Time *</label>
             <select
               value={formData.deliveryTime}
-              onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("deliveryTime", e.target.value)
+              }
               required
               className="swiggy-select"
             >
@@ -847,19 +1003,21 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
       </div>
 
       {/* Category-specific fields */}
-      {baseProduct.category === 'tmt_steel' && (
+      {baseProduct.category === "tmt_steel" && (
         <div className="form-section">
           <div className="section-header">
             <h4>🔩 TMT Steel Specifications</h4>
             <p>Required specifications for TMT Steel</p>
           </div>
-          
+
           <div className="form-grid">
             <div className="form-group">
               <label>Grade *</label>
               <select
                 value={formData.specifications.grade}
-                onChange={(e) => handleInputChange('specifications.grade', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("specifications.grade", e.target.value)
+                }
                 required
                 className="swiggy-select"
               >
@@ -870,12 +1028,14 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
                 <option value="Fe600">Fe600</option>
               </select>
             </div>
-            
+
             <div className="form-group">
               <label>Diameter (mm) *</label>
               <select
                 value={formData.specifications.diameter}
-                onChange={(e) => handleInputChange('specifications.diameter', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("specifications.diameter", e.target.value)
+                }
                 required
                 className="swiggy-select"
               >
@@ -890,13 +1050,13 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               </select>
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>Brand *</label>
             <input
               type="text"
               value={formData.brand}
-              onChange={(e) => handleInputChange('brand', e.target.value)}
+              onChange={(e) => handleInputChange("brand", e.target.value)}
               placeholder="Enter brand name"
               required
               className="swiggy-input"
@@ -905,18 +1065,123 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
         </div>
       )}
 
+      {/* Bricks & Blocks specific fields */}
+      {baseProduct.category === "bricks_blocks" && (
+        <div className="form-section">
+          <div className="section-header">
+            <h4>🧱 Bricks & Blocks Specifications</h4>
+            <p>Required specifications for Bricks & Blocks</p>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Size *</label>
+              <select
+                value={formData.specifications.size}
+                onChange={(e) =>
+                  handleInputChange("specifications.size", e.target.value)
+                }
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select size</option>
+                <option value="230x110x70mm">Standard (230x110x70mm)</option>
+                <option value="230x110x100mm">Modular (230x110x100mm)</option>
+                <option value="190x90x90mm">Common (190x90x90mm)</option>
+                <option value="200x100x100mm">
+                  Engineering (200x100x100mm)
+                </option>
+                <option value="custom">Custom Size</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Brand *</label>
+            <input
+              type="text"
+              value={formData.brand}
+              onChange={(e) => handleInputChange("brand", e.target.value)}
+              placeholder="Enter brand name (e.g., ACC, Ultratech, etc.)"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Cement specific fields */}
+      {baseProduct.category === "cement" && (
+        <div className="form-section">
+          <div className="section-header">
+            <h4>🏗️ Cement Specifications</h4>
+            <p>Required specifications for Cement</p>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Cement Grade *</label>
+              <select
+                value={formData.specifications.cementGrade}
+                onChange={(e) =>
+                  handleInputChange(
+                    "specifications.cementGrade",
+                    e.target.value
+                  )
+                }
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select cement grade</option>
+                <option value="33_grade">33 Grade</option>
+                <option value="43_grade">43 Grade</option>
+                <option value="53_grade">53 Grade</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Cement Type *</label>
+              <select
+                value={formData.specifications.cementType}
+                onChange={(e) =>
+                  handleInputChange("specifications.cementType", e.target.value)
+                }
+                required
+                className="swiggy-select"
+              >
+                <option value="">Select cement type</option>
+                <option value="OPC">OPC (Ordinary Portland Cement)</option>
+                <option value="PPC">PPC (Portland Pozzolana Cement)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Brand *</label>
+            <input
+              type="text"
+              value={formData.brand}
+              onChange={(e) => handleInputChange("brand", e.target.value)}
+              placeholder="Enter brand name (e.g., UltraTech, ACC, Ambuja, etc.)"
+              required
+              className="swiggy-input"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="form-actions">
-        <button 
-          type="button" 
-          onClick={onCancel} 
+        <button
+          type="button"
+          onClick={onCancel}
           className="swiggy-btn swiggy-btn-outline"
           disabled={isLoading}
         >
           Cancel
         </button>
-        <button 
-          type="submit" 
-          className="swiggy-btn swiggy-btn-primary" 
+        <button
+          type="submit"
+          className="swiggy-btn swiggy-btn-primary"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -933,57 +1198,60 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
         </button>
       </div>
     </form>
-  )
-}
+  );
+};
 
 // Edit Pricing Form Component (similar structure)
 const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
     pricing: {
-      basePrice: product.pricing?.basePrice || '',
-      minimumQuantity: product.pricing?.minimumQuantity || '',
+      unit: product.pricing?.unit || "MT", // ADD THIS LINE
+
+      basePrice: product.pricing?.basePrice || "",
+      minimumQuantity: product.pricing?.minimumQuantity || "",
       includesGST: product.pricing?.includesGST || false,
-      gstRate: product.pricing?.gstRate || 18
+      gstRate: product.pricing?.gstRate || 18,
     },
-    deliveryTime: product.deliveryTime || '',
+    deliveryTime: product.deliveryTime || "",
     stock: {
-      available: product.stock?.available || '',
-      lowStockThreshold: product.stock?.lowStockThreshold || 10
-    }
-  })
+      available: product.stock?.available || "",
+      lowStockThreshold: product.stock?.lowStockThreshold || 10,
+    },
+  });
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     const submissionData = {
       pricing: {
+        unit: formData.pricing.unit,  // ADD THIS LINE
         basePrice: parseFloat(formData.pricing.basePrice),
         minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
         includesGST: formData.pricing.includesGST,
-        gstRate: formData.pricing.gstRate
+        gstRate: formData.pricing.gstRate,
       },
       stock: {
         available: parseInt(formData.stock.available),
-        lowStockThreshold: formData.stock.lowStockThreshold
+        lowStockThreshold: formData.stock.lowStockThreshold,
       },
-      deliveryTime: formData.deliveryTime
-    }
-    
-    onSubmit(submissionData)
-  }
+      deliveryTime: formData.deliveryTime,
+    };
+
+    onSubmit(submissionData);
+  };
 
   const handleInputChange = (path, value) => {
-    const keys = path.split('.')
-    setFormData(prev => {
-      const newData = { ...prev }
-      let current = newData
+    const keys = path.split(".");
+    setFormData((prev) => {
+      const newData = { ...prev };
+      let current = newData;
       for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]]
+        current = current[keys[i]];
       }
-      current[keys[keys.length - 1]] = value
-      return newData
-    })
-  }
+      current[keys[keys.length - 1]] = value;
+      return newData;
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="swiggy-form">
@@ -992,14 +1260,16 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
           <h4>💰 Update Pricing</h4>
           <p>Modify your pricing information</p>
         </div>
-        
+
         <div className="form-grid">
           <div className="form-group">
             <label>Base Price (₹) *</label>
             <input
               type="number"
               value={formData.pricing.basePrice}
-              onChange={(e) => handleInputChange('pricing.basePrice', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("pricing.basePrice", e.target.value)
+              }
               placeholder="Enter price per unit"
               step="0.01"
               min="0"
@@ -1007,13 +1277,30 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
               className="swiggy-input"
             />
           </div>
-          
+          <div className="form-group">
+            <label>Unit of Measurement *</label>
+            <select
+              value={formData.pricing.unit}
+              onChange={(e) =>
+                handleInputChange("pricing.unit", e.target.value)
+              }
+              required
+              className="swiggy-select"
+            >
+              <option value="MT">Metric Tons (MT)</option>
+              <option value="bags">Bags</option>
+              <option value="numbers">Numbers/Pieces</option>
+            </select>
+          </div>
+
           <div className="form-group">
             <label>Minimum Quantity *</label>
             <input
               type="number"
               value={formData.pricing.minimumQuantity}
-              onChange={(e) => handleInputChange('pricing.minimumQuantity', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("pricing.minimumQuantity", e.target.value)
+              }
               placeholder="Minimum order quantity"
               step="0.1"
               min="0.1"
@@ -1029,19 +1316,23 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
             <input
               type="number"
               value={formData.stock.available}
-              onChange={(e) => handleInputChange('stock.available', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("stock.available", e.target.value)
+              }
               placeholder="Available quantity"
               min="0"
               required
               className="swiggy-input"
             />
           </div>
-          
+
           <div className="form-group">
             <label>Delivery Time *</label>
             <select
               value={formData.deliveryTime}
-              onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("deliveryTime", e.target.value)
+              }
               required
               className="swiggy-select"
             >
@@ -1060,7 +1351,9 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
             <input
               type="checkbox"
               checked={formData.pricing.includesGST}
-              onChange={(e) => handleInputChange('pricing.includesGST', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("pricing.includesGST", e.target.checked)
+              }
             />
             <span className="checkmark"></span>
             Price includes GST
@@ -1069,17 +1362,17 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
       </div>
 
       <div className="form-actions">
-        <button 
-          type="button" 
-          onClick={onCancel} 
+        <button
+          type="button"
+          onClick={onCancel}
           className="swiggy-btn swiggy-btn-outline"
           disabled={isLoading}
         >
           Cancel
         </button>
-        <button 
-          type="submit" 
-          className="swiggy-btn swiggy-btn-primary" 
+        <button
+          type="submit"
+          className="swiggy-btn swiggy-btn-primary"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -1096,7 +1389,7 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
         </button>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default SupplierProductsPage
+export default SupplierProductsPage;

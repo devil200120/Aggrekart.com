@@ -6,11 +6,16 @@ import WishlistIcon from "../cart/WishlistIcon";
 import AuthDropdown from "../auth/AuthDropdown";
 import "./Navbar.css";
 import SearchBar from "../common/SearchBar";
+import ProfileVisibilitySwitch from "../supplier/ProfileVisibilitySwitch"; // CHANGE THIS LINE
+import { CompactLanguageSelector } from "../common/LanguageSelector";
+// import { useLanguage } from "../../context/LanguageContext";
+import GoogleTranslate from "../common/GoogleTranslate"; // Add this import
 
 // Import the logo image
 import logoImage from "../../image.png";
 
 const Navbar = () => {
+  // const { t, isRTL } = useLanguage();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,8 +62,17 @@ const Navbar = () => {
             ...baseItems,
             { path: "/orders", label: "My Orders", icon: "📋" },
             { path: "/profile", label: "Profile", icon: "👤" },
+            {
+              path: "/loyalty/dashboard",
+              label: "Loyalty Dashboard",
+              icon: "🪙",
+            },
+            { path: "/loyalty/membership", label: "Membership", icon: "👑" },
+            { path: "/loyalty/referrals", label: "Referrals", icon: "🎁" },
+            { path: "/loyalty/offers", label: "Exclusive Offers", icon: "🏷️" },
             { path: "/wishlist", label: "Wishlist", icon: "❤️" },
             { path: "/cart", label: "Cart", icon: "🛒" },
+            { path: "/support/tickets", label: "Support", icon: "🎫" }, // 🔥 ADD THIS LINE
             { path: "/settings", label: "Settings", icon: "⚙️" },
             { type: "divider" },
             {
@@ -73,10 +87,16 @@ const Navbar = () => {
           return [
             ...baseItems,
             { path: "/supplier/dashboard", label: "Dashboard", icon: "📊" },
-            { path: "/supplier/products", label: "Manage Products", icon: "📦" },
+            {
+              path: "/supplier/products",
+              label: "Manage Products",
+              icon: "📦",
+            },
             { path: "/supplier/orders", label: "Orders", icon: "📋" },
-            { path: "/profile", label: "Profile", icon: "👤" },
+            { path: "/supplier/profile", label: "Profile", icon: "👤" },
+            { path: "/supplier/transport-rates", label: "Transport Rates", icon: "🚛" },
             { path: "/settings", label: "Settings", icon: "⚙️" },
+             { path: "/supplier/loyalty", label: "Loyalty & Promotions", icon: "🎯" },
             { type: "divider" },
             {
               type: "action",
@@ -88,13 +108,19 @@ const Navbar = () => {
           ];
         case "admin":
           return [
-            ...baseItems,
+            { path: "/products", label: "Products", icon: "📦" },
             { path: "/admin/dashboard", label: "Admin Panel", icon: "🛡️" },
             { path: "/admin/users", label: "Users", icon: "👥" },
             { path: "/admin/suppliers", label: "Suppliers", icon: "🏪" },
             { path: "/admin/orders", label: "Orders", icon: "📋" },
+            { path: "/admin/loyalty", label: "Loyalty Management", icon: "🪙" },
             { path: "/admin/products", label: "Manage Products", icon: "📦" },
-            { path: "/admin/reports", label: "Reports & Analytics", icon: "📊" },
+            { path: "/admin/know-more", label: "Know More Management", icon: "📝" },
+            {
+              path: "/admin/reports",
+              label: "Reports & Analytics",
+              icon: "📊",
+            },
             { path: "/settings", label: "Settings", icon: "⚙️" },
             { type: "divider" },
             {
@@ -126,15 +152,17 @@ const Navbar = () => {
 
   return (
     <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
-      <div className="container">
+      <div className="navbar-container">
         <div className="navbar-content">
           {/* Logo */}
+          
           <Link to="/" className="navbar-logo" onClick={closeMenu}>
             <img src={logoImage} alt="Aggrekart Logo" className="logo-image" />
           </Link>
           <div className="navbar-search desktop-search">
             <SearchBar />
           </div>
+
 
           {/* Desktop Navigation Links */}
           <div className="navbar-nav desktop-nav">
@@ -150,14 +178,15 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="navbar-actions">
+            
             {/* User Actions for Customers */}
             {/* User Actions for Customers Only */}
-{user?.role === 'customer' && (
-  <div className="user-actions">
-    <WishlistIcon />
-    <CartIcon />
-  </div>
-)}
+            {user?.role === "customer" && (
+              <div className="user-actions">
+                <WishlistIcon />
+                <CartIcon />
+              </div>
+            )}
 
             {/* User Avatar */}
             {user && (
@@ -202,10 +231,11 @@ const Navbar = () => {
                 </div>
               </div>
             )}
+            {user?.role === "supplier" && <ProfileVisibilitySwitch />}
             <div className="mobile-search">
               <SearchBar />
             </div>
-
+            <GoogleTranslate />
             {/* Menu Items */}
             <div className="menu-items">
               {getAllMenuItems().map((item, index) => {

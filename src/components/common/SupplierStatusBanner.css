@@ -1,0 +1,284 @@
+/* Main supplier status notification banner */
+.supplier-account-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: white;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideDownNotification 0.3s ease-out;
+}
+
+/* Different background gradients for different states */
+.account-status-suspended {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.account-status-pending {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Animation for banner entry */
+@keyframes slideDownNotification {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Main content container */
+.account-notification-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 16px;
+}
+
+/* Status icon styling */
+.account-notification-icon {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+/* Message content area */
+.account-notification-content {
+  flex: 1;
+}
+
+.account-notification-title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.account-notification-description {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.account-notification-reason {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Action buttons container */
+.account-notification-controls {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.account-logout-control,
+.account-close-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.account-logout-control {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.account-logout-control:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.account-close-control {
+  background: transparent;
+  color: white;
+  border: 1px solid transparent;
+  padding: 8px;
+}
+
+.account-close-control:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Support contact information section */
+.account-notification-support {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px 12px;
+  font-size: 0.8rem;
+  opacity: 0.9;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.account-support-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.account-support-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.account-support-divider {
+  opacity: 0.6;
+  margin: 0 4px;
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+  .account-notification-wrapper {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding: 16px 20px 12px;
+  }
+
+  .account-notification-title {
+    font-size: 1rem;
+  }
+
+  .account-notification-description {
+    font-size: 0.85rem;
+  }
+
+  .account-notification-controls {
+    justify-content: center;
+  }
+
+  .account-notification-support {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  .account-support-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-notification-wrapper {
+    padding: 16px 16px 12px;
+  }
+
+  .account-notification-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .account-logout-control,
+  .account-close-control {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .account-notification-support {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .account-support-link {
+    justify-content: center;
+  }
+}
+
+/* Body adjustment when banner is active */
+body.supplier-account-notification-active {
+  margin-top: 120px;
+}
+
+@media (max-width: 768px) {
+  body.supplier-account-notification-active {
+    margin-top: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  body.supplier-account-notification-active {
+    margin-top: 160px;
+  }
+}
+
+/* Additional state-specific styling */
+.account-status-suspended .account-notification-icon {
+  animation: pulseWarning 2s infinite;
+}
+
+.account-status-pending .account-notification-icon {
+  animation: pulseInfo 2s infinite;
+}
+
+@keyframes pulseWarning {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseInfo {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Focus states for accessibility */
+.account-logout-control:focus,
+.account-close-control:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .supplier-account-notification {
+    border-bottom: 3px solid currentColor;
+  }
+
+  .account-notification-controls button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .supplier-account-notification {
+    animation: none;
+  }
+
+  .account-notification-icon {
+    animation: none;
+  }
+
+  .account-logout-control:hover,
+  .account-close-control:hover {
+    transform: none;
+  }
+}

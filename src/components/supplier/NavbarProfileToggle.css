@@ -1,0 +1,177 @@
+.navbar-profile-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.profile-toggle-btn {
+  background: none;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  position: relative;
+}
+
+.profile-toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-toggle-btn.enabled {
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.profile-toggle-btn.enabled:hover {
+  background: rgba(40, 167, 69, 0.2);
+  border-color: #218838;
+}
+
+.profile-toggle-btn.disabled {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.profile-toggle-btn.disabled:hover {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: #c82333;
+}
+
+/* Add style for no-data state */
+.profile-toggle-btn.no-data {
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.profile-toggle-btn.no-data:hover {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: #e0a800;
+}
+
+.profile-toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toggle-icon {
+  display: block;
+  line-height: 1;
+}
+
+.toggle-spinner {
+  display: block;
+  animation: spin 1s linear infinite;
+  line-height: 1;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.profile-toggle-tooltip {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeInTooltip 0.2s ease forwards;
+}
+
+.tooltip-content {
+  background: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  min-width: 160px;
+  text-align: center;
+}
+
+.tooltip-content::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #333;
+}
+
+.tooltip-content strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tooltip-content p {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 11px;
+}
+
+@keyframes fadeInTooltip {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(calc(100% - 5px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(100%);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .navbar-profile-toggle {
+    margin-right: 5px;
+  }
+  
+  .profile-toggle-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .profile-toggle-tooltip {
+    display: none; /* Hide tooltip on mobile */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .profile-toggle-btn {
+    border-width: 3px;
+  }
+  
+  .profile-toggle-btn.enabled {
+    background: #28a745;
+    color: white;
+  }
+  
+  .profile-toggle-btn.disabled {
+    background: #dc3545;
+    color: white;
+  }
+  
+  .profile-toggle-btn.no-data {
+    background: #ffc107;
+    color: black;
+  }
+}

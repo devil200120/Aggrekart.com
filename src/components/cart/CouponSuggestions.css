@@ -1,0 +1,541 @@
+.coupon-suggestions {
+  margin: 1rem 0;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f5;
+}
+
+/* Swiggy-style Header */
+.suggestions-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #fc8019 0%, #ff6b35 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.suggestions-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.suggestions-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+}
+
+.expand-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.expand-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(180deg) scale(1.1);
+}
+
+/* Swiggy-style Suggestions List */
+.suggestions-list {
+  padding: 8px 0;
+  background: #fafafe;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.suggestions-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.suggestions-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+  background: #fc8019;
+  border-radius: 2px;
+}
+
+/* FIXED COUPON CARD LAYOUT */
+.suggestion-card {
+  margin: 8px 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f5;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  grid-template-areas: 
+    "icon header button"
+    "icon details button";
+  gap: 12px;
+  align-items: start;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.suggestion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Swiggy-style dashed border effect */
+.suggestion-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e0e0e7;
+}
+
+.suggestion-card.owned::before {
+  background: linear-gradient(to bottom, #60b246, #60b246);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #60b246 0,
+    #60b246 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+.suggestion-card.eligible::before {
+  background: linear-gradient(to bottom, #fc8019, #fc8019);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #fc8019 0,
+    #fc8019 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+.suggestion-card.almost::before {
+  background: linear-gradient(to bottom, #ffa500, #ffa500);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #ffa500 0,
+    #ffa500 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* Coupon Icon */
+.coupon-icon {
+  grid-area: icon;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.suggestion-card.owned .coupon-icon {
+  background: linear-gradient(135deg, #60b246, #4a9435);
+  color: white;
+}
+
+.suggestion-card.eligible .coupon-icon {
+  background: linear-gradient(135deg, #fc8019, #e6720d);
+  color: white;
+}
+
+.suggestion-card.almost .coupon-icon {
+  background: linear-gradient(135deg, #ffa500, #e6940d);
+  color: white;
+}
+
+/* Coupon Header */
+.coupon-header {
+  grid-area: header;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.coupon-type {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  align-self: flex-start;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.suggestion-card.owned .coupon-type {
+  background: #e8f5e8;
+  color: #2d5a2d;
+}
+
+.suggestion-card.eligible .coupon-type {
+  background: #fff4e6;
+  color: #994a00;
+}
+
+.suggestion-card.almost .coupon-type {
+  background: #fff7e6;
+  color: #b36b00;
+}
+
+.coupon-code {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #3d4152;
+  letter-spacing: 0.8px;
+  background: #f9f9fb;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px dashed #c4c4cf;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Coupon Details */
+.coupon-details {
+  grid-area: details;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.discount-text {
+  font-size: 13px;
+  color: #686b78;
+  font-weight: 500;
+  line-height: 1.4;
+  word-wrap: break-word;
+  margin-bottom: 2px;
+}
+
+.min-order {
+  font-size: 11px;
+  color: #93959f;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.potential-savings {
+  font-size: 14px;
+  color: #60b246;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.potential-savings::before {
+  content: '🎉';
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.almost-eligible-info {
+  font-size: 12px;
+  color: #fc8019;
+  font-weight: 600;
+  background: #fff4e6;
+  padding: 8px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border: 1px solid #ffe0b3;
+  line-height: 1.3;
+  word-wrap: break-word;
+}
+
+.almost-eligible-info::before {
+  content: '⚡';
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Apply Button */
+.apply-coupon-btn {
+  grid-area: button;
+  background: linear-gradient(135deg, #fc8019 0%, #ff6b35 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(252, 128, 25, 0.3);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  justify-self: end;
+  align-self: center;
+  min-width: 100px;
+  justify-content: center;
+  height: fit-content;
+}
+
+.apply-coupon-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.apply-coupon-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.apply-coupon-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(252, 128, 25, 0.4);
+}
+
+.apply-coupon-btn:active {
+  transform: translateY(0);
+}
+
+.apply-coupon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner */
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: swiggySpinAnimation 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes swiggySpinAnimation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Loading State */
+.coupon-suggestions.loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: #686b78;
+  background: #fafafe;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f0f0f5;
+  border-top: 3px solid #fc8019;
+  border-radius: 50%;
+  animation: swiggySpinAnimation 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .coupon-suggestions {
+    margin: 12px 0;
+    border-radius: 12px;
+  }
+
+  .suggestions-header {
+    padding: 14px 16px;
+  }
+
+  .suggestions-header h4 {
+    font-size: 15px;
+  }
+
+  .expand-toggle {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .suggestion-card {
+    margin: 8px 12px;
+    padding: 16px;
+    grid-template-columns: 36px 1fr;
+    grid-template-areas: 
+      "icon header"
+      "icon details"
+      "button button";
+    gap: 12px 10px;
+  }
+
+  .coupon-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .coupon-code {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+  .discount-text {
+    font-size: 12px;
+  }
+
+  .potential-savings {
+    font-size: 13px;
+  }
+
+  .apply-coupon-btn {
+    width: 100%;
+    justify-self: stretch;
+    padding: 12px 16px;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .almost-eligible-info {
+    font-size: 11px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .suggestions-header {
+    padding: 12px 14px;
+  }
+
+  .suggestions-header h4 {
+    font-size: 14px;
+  }
+
+  .suggestion-card {
+    margin: 6px 10px;
+    padding: 14px;
+    gap: 10px 8px;
+  }
+
+  .coupon-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .coupon-code {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .discount-text {
+    font-size: 11px;
+  }
+
+  .potential-savings {
+    font-size: 12px;
+  }
+
+  .apply-coupon-btn {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+}
+
+/* Success Animation */
+@keyframes swiggySuccessAnimation {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.suggestion-card.applied {
+  animation: swiggySuccessAnimation 0.3s ease-out;
+  background: #e8f5e8;
+  border-color: #60b246;
+}
+
+/* Slide In Animation */
+@keyframes swiggySlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestions-list {
+  animation: swiggySlideIn 0.3s ease-out;
+}
+
+.suggestion-card {
+  animation: swiggySlideIn 0.3s ease-out;
+}
+
+.suggestion-card:nth-child(1) { animation-delay: 0.05s; }
+.suggestion-card:nth-child(2) { animation-delay: 0.1s; }
+.suggestion-card:nth-child(3) { animation-delay: 0.15s; }
+.suggestion-card:nth-child(4) { animation-delay: 0.2s; }

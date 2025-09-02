@@ -111,7 +111,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
           // FIXED: Map to correct field names for supplier registration
           businessName: gstData.legalName || gstData.companyName, // Form expects 'businessName'
           tradeName: gstData.tradeName || gstData.legalName,
-          
+          panNumber: gstData.panNumber,
           // FIXED: Map address correctly
           businessAddress: gstData.address, // Form expects 'businessAddress'
           city: gstData.city,

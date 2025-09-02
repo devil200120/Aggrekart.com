@@ -1,0 +1,224 @@
+.terms-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 2rem 0;
+}
+
+.terms-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+  line-height: 1.7;
+}
+
+.terms-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.terms-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #f78b29 0%, #ff6b35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.last-updated {
+  font-size: 1rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.terms-section {
+  margin-bottom: 2.5rem;
+}
+
+.terms-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.terms-section h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(135deg, #f78b29 0%, #ff6b35 100%);
+  border-radius: 2px;
+}
+
+.terms-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 1.5rem 0 0.8rem 0;
+}
+
+.terms-section p {
+  font-size: 1rem;
+  color: #475569;
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.terms-section ul {
+  margin: 1rem 0 1.5rem 1.5rem;
+  padding: 0;
+}
+
+.terms-section li {
+  font-size: 1rem;
+  color: #475569;
+  margin-bottom: 0.8rem;
+  position: relative;
+  text-align: justify;
+}
+
+.terms-section li::marker {
+  color: #f78b29;
+}
+
+.terms-section strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.terms-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f1f5f9;
+  text-align: center;
+}
+
+.terms-footer p {
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 500;
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Enhanced styling for numbered sections */
+.terms-section h2:first-child {
+  margin-top: 0;
+}
+
+.terms-section h3:first-child {
+  margin-top: 1rem;
+}
+
+/* Special styling for main title */
+.terms-section h2:contains("TERMS OF SERVICE OF AGGREKART") {
+  font-size: 1.8rem;
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .terms-container {
+    padding: 1rem;
+  }
+
+  .terms-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .terms-header h1 {
+    font-size: 2rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .terms-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .terms-section ul {
+    margin-left: 1rem;
+  }
+
+  .terms-section p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .terms-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .terms-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .terms-section h3 {
+    font-size: 1rem;
+  }
+
+  .terms-section p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Print styles */
+@media print {
+  .terms-container {
+    background: white;
+    padding: 0;
+  }
+
+  .terms-content {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .terms-header h1 {
+    -webkit-text-fill-color: #1e293b;
+    color: #1e293b;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+}
+
+/* Better readability for legal text */
+.terms-section p {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.terms-section li {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}

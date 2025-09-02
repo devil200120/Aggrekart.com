@@ -61,7 +61,20 @@ const SupplierProductPricing = ({ baseProduct, onPricingSet }) => {
             required
           />
         </div>
-
+            <div className="form-group">
+          <label>Unit of Measurement *</label>
+          <select
+            value={pricing.unit}
+            onChange={(e) => setPricing({...pricing, unit: e.target.value})}
+            required
+            className="unit-select"
+          >
+            <option value="MT">Metric Tons (MT)</option>
+            <option value="bags">Bags</option>
+            <option value="numbers">Numbers/Pieces</option>
+            <option value="Kg">Kg</option>
+          </select>
+        </div>
         <div className="form-group">
           <label>Minimum Quantity *</label>
           <input

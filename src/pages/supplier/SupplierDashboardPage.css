@@ -176,7 +176,7 @@
 .swiggy-stat-card {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 30px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -705,6 +705,9 @@
 }
 
 @media (max-width: 480px) {
+  .swiggy-main-content {
+    width: 355px;
+  }
   .swiggy-stats-grid {
     grid-template-columns: 1fr;
   }
@@ -722,4 +725,7 @@
     justify-content: center;
     flex-wrap: wrap;
   }
+}
+.banned_list_groups{
+  line-height: 25px;
 }

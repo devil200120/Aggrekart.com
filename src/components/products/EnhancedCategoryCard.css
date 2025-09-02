@@ -242,3 +242,58 @@
     gap: 8px;
   }
 }
+
+/* Know More Button for Category Cards */
+.know-more-category-btn {
+  background: #fff !important;
+  color: #17a2b8 !important;
+  border: 2px solid #17a2b8 !important;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  min-width: 120px;
+}
+
+.know-more-category-btn:hover {
+  background: #17a2b8 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.3);
+}
+
+.category-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.category-actions .btn {
+  flex: 1;
+  min-width: 110px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .category-actions {
+    flex-direction: column;
+  }
+  
+  .category-actions .btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .know-more-category-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+}

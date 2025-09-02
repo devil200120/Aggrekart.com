@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supplierAPI } from "../../services/api";
 import GSTAutoFill from "../../components/supplier/GSTAutoFill";
 import toast from "react-hot-toast";
-import "./AuthPages.css";
+import "./SupplierRegisterPage.css";
 
 const SupplierRegisterPage = () => {
   const navigate = useNavigate();
@@ -132,57 +132,76 @@ const SupplierRegisterPage = () => {
 
   // Handle GST auto-fill data - ENHANCED WITH DETAILED LOGGING
   const handleGSTAutoFill = (autoFillData) => {
-    console.log('🔄 GST Auto-fill triggered');
-    console.log('📥 Received auto-fill data:', autoFillData);
-    console.log('📝 Current form data before auto-fill:', formData);
-    
+    console.log("🔄 GST Auto-fill triggered");
+    console.log("📥 Received auto-fill data:", autoFillData);
+    console.log("📝 Current form data before auto-fill:", formData);
+
     setFormData((prev) => {
       const updatedData = {
         ...prev,
         // Core GST data
         gstNumber: autoFillData.gstNumber || prev.gstNumber,
-        
+
         // FIXED: Correct field mapping
-        businessName: autoFillData.businessName || autoFillData.legalName || prev.businessName,
-        
+        businessName:
+          autoFillData.businessName ||
+          autoFillData.legalName ||
+          prev.businessName,
+        panNumber: autoFillData.panNumber || prev.panNumber,
         // Address data - FIXED
-        businessAddress: autoFillData.businessAddress || autoFillData.address || prev.businessAddress,
+        businessAddress:
+          autoFillData.businessAddress ||
+          autoFillData.address ||
+          prev.businessAddress,
         city: autoFillData.city || prev.city,
         state: autoFillData.state || prev.state,
         pincode: autoFillData.pincode || prev.pincode,
-        
+
         // Optional fields - only fill if empty to avoid overwriting user input
-        contactPersonName: prev.contactPersonName || autoFillData.legalName || "",
-        accountHolderName: prev.accountHolderName || autoFillData.legalName || "",
-        
+        contactPersonName:
+          prev.contactPersonName || autoFillData.legalName || "",
+        accountHolderName:
+          prev.accountHolderName || autoFillData.legalName || "",
+
         // Additional business info
-        ...(autoFillData.businessType && { businessType: autoFillData.businessType }),
-        ...(autoFillData.businessNature && { businessNature: autoFillData.businessNature }),
+        ...(autoFillData.businessType && {
+          businessType: autoFillData.businessType,
+        }),
+        ...(autoFillData.businessNature && {
+          businessNature: autoFillData.businessNature,
+        }),
       };
-      
-      console.log('✅ Updated form data after auto-fill:', updatedData);
+
+      console.log("✅ Updated form data after auto-fill:", updatedData);
       return updatedData;
     });
 
     // Clear related validation errors
     setErrors((prev) => {
       const newErrors = { ...prev };
-      
+
       // Clear errors for fields that were auto-filled
       if (autoFillData.gstNumber) delete newErrors.gstNumber;
-      if (autoFillData.businessName || autoFillData.legalName) delete newErrors.businessName;
-      if (autoFillData.businessAddress || autoFillData.address) delete newErrors.businessAddress;
+      if (autoFillData.businessName || autoFillData.legalName)
+        delete newErrors.businessName;
+      if (autoFillData.businessAddress || autoFillData.address)
+        delete newErrors.businessAddress;
       if (autoFillData.city) delete newErrors.city;
       if (autoFillData.state) delete newErrors.state;
       if (autoFillData.pincode) delete newErrors.pincode;
-      
-      console.log('🧹 Cleared validation errors:', Object.keys(prev).filter(key => !newErrors[key]));
+
+      console.log(
+        "🧹 Cleared validation errors:",
+        Object.keys(prev).filter((key) => !newErrors[key])
+      );
       return newErrors;
     });
 
     // Show success message
-    toast.success("✅ Business details automatically filled from verified GST records!");
-    console.log('🎉 GST auto-fill completed successfully!');
+    toast.success(
+      "✅ Business details automatically filled from verified GST records!"
+    );
+    console.log("🎉 GST auto-fill completed successfully!");
   };
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -191,7 +210,7 @@ const SupplierRegisterPage = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
@@ -287,7 +306,8 @@ const SupplierRegisterPage = () => {
 
     // Product Categories
     if (formData.productCategories.length === 0) {
-      newErrors.productCategories = "Please select at least one product category";
+      newErrors.productCategories =
+        "Please select at least one product category";
     }
 
     // Banking Information
@@ -366,7 +386,7 @@ const SupplierRegisterPage = () => {
         annualTurnover: formData.annualTurnover,
       };
 
-      console.log('📤 Submitting supplier registration:', submissionData);
+      console.log("📤 Submitting supplier registration:", submissionData);
 
       const response = await supplierAPI.register(submissionData);
 
@@ -402,7 +422,8 @@ const SupplierRegisterPage = () => {
               <div className="auth-header">
                 <h2>🏢 Supplier Registration</h2>
                 <p>
-                  Join Aggrekart as a supplier partner and grow your business with us
+                  Join Aggrekart as a supplier partner and grow your business
+                  with us
                 </p>
               </div>
 
@@ -415,7 +436,8 @@ const SupplierRegisterPage = () => {
                       GST Verification & Auto-Fill
                     </h4>
                     <p className="text-muted">
-                      Enter your GST number to automatically verify and fill business details
+                      Enter your GST number to automatically verify and fill
+                      business details
                     </p>
                   </div>
 
@@ -481,7 +503,9 @@ const SupplierRegisterPage = () => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="form-group">
-                        <label className="form-label required">GST Number</label>
+                        <label className="form-label required">
+                          GST Number
+                        </label>
                         <input
                           type="text"
                           name="gstNumber"
@@ -845,7 +869,9 @@ const SupplierRegisterPage = () => {
 
                     <div className="col-md-4">
                       <div className="form-group">
-                        <label className="form-label">Number of Employees</label>
+                        <label className="form-label">
+                          Number of Employees
+                        </label>
                         <select
                           name="numberOfEmployees"
                           className="form-control"
@@ -979,7 +1005,7 @@ const SupplierRegisterPage = () => {
                 </div>
 
                 {/* Terms and Agreements */}
-                <div className="form-section">
+                <div className="form-section terms-agreements-section">
                   <div className="section-header">
                     <h4>
                       <i className="fas fa-handshake me-2"></i>
@@ -998,11 +1024,19 @@ const SupplierRegisterPage = () => {
                     />
                     <label className="form-check-label" htmlFor="agreeToTerms">
                       I agree to the{" "}
-                      <Link to="/terms" target="_blank" className="text-primary">
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        className="text-primary"
+                      >
                         Terms and Conditions
                       </Link>{" "}
                       and{" "}
-                      <Link to="/privacy" target="_blank" className="text-primary">
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        className="text-primary"
+                      >
                         Privacy Policy
                       </Link>
                     </label>
@@ -1022,7 +1056,10 @@ const SupplierRegisterPage = () => {
                       checked={formData.agreeToCommission}
                       onChange={handleInputChange}
                     />
-                    <label className="form-check-label" htmlFor="agreeToCommission">
+                    <label
+                      className="form-check-label"
+                      htmlFor="agreeToCommission"
+                    >
                       I agree to the commission structure and payment terms as
                       outlined in the supplier agreement
                     </label>
@@ -1040,7 +1077,7 @@ const SupplierRegisterPage = () => {
                     <Link to="/auth/login" className="text-primary">
                       Already have an account? Login here
                     </Link>
-                    
+
                     <button
                       type="submit"
                       disabled={isSubmitting}

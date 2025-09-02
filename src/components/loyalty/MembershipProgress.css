@@ -1,0 +1,742 @@
+.membership-progress {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.membership-headers {
+  border-radius: 20px;
+  padding: 40px 30px;
+  color: white;
+  margin-bottom: 40px;
+  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+}
+
+.header-contents {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.current-tier-display {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.tier-icon {
+  width: 64px;
+  height: 64px;
+  padding: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.tier-icon.silver {
+  color: #c0c0c0;
+}
+
+.tier-icon.gold {
+  color: #ffd700;
+}
+
+.tier-icon.platinum {
+  color: #e1bee7;
+}
+
+.tier-info h2 {
+  font-size: 2.5rem;
+  margin: 0 0 8px 0;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.tier-info p {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Tier Progression */
+.tier-progression {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.tier-progression h3 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.tiers-timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 20px 0;
+}
+
+.tiers-timeline::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: linear-gradient(90deg, #607d8b, #ff9800, #9c27b0);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.tier-milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  max-width: 200px;
+}
+
+.milestone-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border: 4px solid white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.milestone-icon .tier-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+}
+
+.milestone-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+}
+
+.milestone-content h4 {
+  color: #333;
+  font-size: 1.3rem;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.tier-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tier-requirements span {
+  color: #666;
+  font-size: 0.9rem;
+  background: #f8f9fa;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-weight: 500;
+}
+
+.tier-coin-multiplier {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.achievement-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #00cc66, #66ff99);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 204, 102, 0.3);
+}
+
+.tier-milestone.upcoming .milestone-content {
+  opacity: 0.6;
+  background: #f8f9fa;
+}
+
+/* Progress to Next Tier */
+.next-tier-progress {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.next-tier-progress h3 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.progress-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.progress-card {
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border-radius: 16px;
+  padding: 30px;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.progress-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-color: #e0e0e0;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.progress-icon {
+  width: 28px;
+  height: 28px;
+  color: #667eea;
+}
+
+.progress-header span {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+
+.orders-fill {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.spending-fill {
+  background: linear-gradient(90deg, #00cc66, #66ff99);
+}
+
+.progress-text {
+  font-weight: 700;
+  color: #333;
+  font-size: 1.1rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+.progress-details {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Current Benefits */
+.current-benefits {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.current-benefits h3 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.benefit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.benefit-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.benefit-text {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* Upgrade Incentive */
+.upgrade-incentive {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  border-radius: 20px;
+  padding: 40px;
+  color: white;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  box-shadow: 0 15px 35px rgba(255, 107, 53, 0.2);
+}
+
+.incentive-content {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex: 1;
+}
+
+.incentive-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.incentive-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.incentive-text h4 {
+  font-size: 1.5rem;
+  margin: 0 0 15px 0;
+  font-weight: 700;
+}
+
+.upgrade-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.upgrade-benefits span {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.incentive-cta {
+  flex-shrink: 0;
+}
+
+.start-shopping-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  color: #ff6b35;
+  border: none;
+  padding: 16px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.start-shopping-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+}
+
+/* Tier Comparison */
+.tier-comparison {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.tier-comparison h3 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.comparison-table {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #f0f0f0;
+}
+
+.comparison-header {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr 1fr;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.feature-column,
+.tier-column {
+  padding: 20px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.tier-column.silver {
+  background: rgba(192, 192, 192, 0.2);
+}
+
+.tier-column.gold {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.tier-column.platinum {
+  background: rgba(156, 39, 176, 0.2);
+}
+
+.comparison-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr 1fr;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comparison-row:last-child {
+  border-bottom: none;
+}
+
+.feature {
+  padding: 20px;
+  font-weight: 600;
+  color: #333;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+}
+
+.tier-value {
+  padding: 20px;
+  text-align: center;
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.comparison-row:nth-child(even) .tier-value {
+  background: #fafafa;
+}
+
+/* Loading State */
+.membership-progress-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.membership-progress-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  max-width: 500px;
+}
+
+.error-message h3 {
+  color: #dc3545;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.error-message p {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .membership-progress {
+    padding: 15px;
+  }
+
+  .membership-header {
+    padding: 30px 20px;
+  }
+
+  .current-tier-display {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .tier-info h2 {
+    font-size: 2rem;
+  }
+
+  .tiers-timeline {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .tiers-timeline::before {
+    display: none;
+  }
+
+  .tier-milestone {
+    max-width: none;
+    width: 100%;
+  }
+
+  .progress-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upgrade-incentive {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .incentive-content {
+    flex-direction: column;
+  }
+
+  .comparison-table {
+    overflow-x: auto;
+  }
+
+  .comparison-header,
+  .comparison-row {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tier-progression,
+  .next-tier-progress,
+  .current-benefits,
+  .tier-comparison {
+    padding: 25px 20px;
+  }
+
+  .milestone-content {
+    padding: 15px;
+  }
+
+  .progress-card {
+    padding: 20px;
+  }
+
+  .upgrade-incentive {
+    padding: 25px 20px;
+  }
+
+  .upgrade-benefits {
+    justify-content: center;
+  }
+}
+/* Add to MembershipProgress.css */
+.max-tier-achievement {
+  margin: 2rem 0;
+}
+
+.achievement-card {
+  background: linear-gradient(135deg, #9c27b0, #e1bee7);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(156, 39, 176, 0.3);
+}
+
+.achievement-icon {
+  margin-bottom: 1rem;
+}
+
+.crown-icon {
+  width: 48px;
+  height: 48px;
+  color: #ffd700;
+}
+
+.achievement-card h3 {
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.achievement-card p {
+  margin: 1rem 0;
+  opacity: 0.9;
+}
+
+.achievement-benefits {
+  margin-top: 1.5rem;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.achievement-benefits h4 {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.achievement-benefits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.achievement-benefits li {
+  padding: 0.25rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.achievement-benefits li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #ffd700;
+  font-weight: bold;
+}

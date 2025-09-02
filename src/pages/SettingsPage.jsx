@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { usersAPI, authAPI } from '../services/api'
-import { useAuth } from '../context/AuthContext'
+import { usersAPI, authAPI, supplierAPI } from '../services/api' 
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import UserAnalytics from '../components/analytics/UserAnalytics'
+// Add this import:
+import { useAuth } from '../context/AuthContext'
 
 import './SettingsPage.css'
 
@@ -148,19 +149,35 @@ const SettingsPage = () => {
   )
 
   // Data export mutation
-  const dataExportMutation = useMutation(
-    () => usersAPI.exportData(),
-    {
-      onSuccess: () => {
-        toast.success('Data export initiated! You will receive an email when ready.')
-      },
-      onError: (error) => {
-        console.error('Data export error:', error)
-        toast.error('Failed to export data')
-      }
+  // Data export mutation
+// Update the dataExportMutation in SettingsPage.jsx:
+// Replace the entire dataExportMutation around lines 152-184
+const dataExportMutation = useMutation(
+  () => {
+    return user?.role === 'supplier' 
+      ? supplierAPI.exportData()
+      : usersAPI.exportUserData()
+  },
+  {
+    onSuccess: (blob) => {
+      // Handle PDF blob response
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${user?.role === 'supplier' ? 'supplier' : 'user'}-data-${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Data exported and downloaded successfully!');
+    },
+    onError: (error) => {
+      console.error('Data export error:', error);
+      toast.error('Failed to export data');
     }
-  )
-
+  }
+)
   const handleAccountSubmit = (e) => {
     e.preventDefault()
     

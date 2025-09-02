@@ -8,20 +8,22 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.swiggy-container {
+.product-management-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
 /* Page Header */
-.swiggy-page-header {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e8e8e8;
+.product-management-header {
+  position: relative;
+  /* background: linear-gradient(135deg, #ff6d00 0%, #ff8f00 100%); */
+  color: white;
+  padding: 40px 32px;
+  margin: 0 -20px 32px;
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(255, 109, 0, 0.25);
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -45,30 +47,39 @@
   box-shadow: 0 4px 16px rgba(252, 128, 25, 0.3);
 }
 
-.header-content h1 {
-  font-size: 24px;
+/* .product-header-content {
+  border: 2px solid black;
+} */
+
+.product-header-content h1 {
+  font-size: 2.2rem;
   font-weight: 700;
   color: #282c3f;
   margin: 0 0 4px 0;
   line-height: 1.2;
 }
 
-.header-content p {
+.product-header-content p {
   font-size: 14px;
   color: #7e808c;
   margin: 0;
 }
 
-.header-stats {
+.product-header-stats {
   display: flex;
   gap: 24px;
 }
 
-.stat-item {
+.product-stat-item {
   text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+
 }
 
-.stat-number {
+.product-stat-number {
   font-size: 20px;
   font-weight: 700;
   color: #fc8019;
@@ -85,11 +96,11 @@
 }
 
 /* Tab Navigation */
-.swiggy-tabs-container {
+.product-tabs-container {
   margin-bottom: 24px;
 }
 
-.swiggy-tabs {
+.product-tabs {
   display: flex;
   background: white;
   border-radius: 12px;
@@ -118,8 +129,7 @@
 }
 
 .swiggy-tab.active {
-  background: linear-gradient(135deg, #fc8019 0%, #ff6b35 100%);
-  color: white;
+  color: black;
   box-shadow: 0 4px 12px rgba(252, 128, 25, 0.3);
   transform: translateY(-2px);
 }
@@ -129,21 +139,28 @@
   flex-shrink: 0;
 }
 
-.tab-content {
+.product-tab-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .tab-title {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  color: black;
+  font-size: 20px;
+  text-align: center;
+  padding-top: 0.3rem;
   margin-bottom: 2px;
 }
 
 .tab-count {
+  width: 100%;
   display: block;
   font-size: 12px;
   opacity: 0.8;
+  padding: 0.5rem 0;
 }
 
 /* Tab Content */
@@ -206,6 +223,42 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  .product-management-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .product-management-header {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 30px 15px;
+  }
+  .header-main {
+    align-items: flex-start;
+  }
+  .product-header-content h1 {
+    font-size: 1.4rem;
+  }
+  .product-header-stats {
+    width: 100%;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .product-stat-item {
+    width: 100%;
+  }
+  .product-stat-number {
+    font-size: 1.4rem;
+  }
+  .product-tabs-container {
+    width: 100%;
+  }
+  .product-tabs {
+    flex-direction: column;
+  }
 }
 
 .swiggy-loading-section h3 {
@@ -351,7 +404,7 @@
 .swiggy-filters-section {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 34px;
   margin-bottom: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e8e8e8;
@@ -374,7 +427,7 @@
   margin: 0;
 }
 
-.filters-grid {
+.filters-grids {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 20px;
@@ -393,19 +446,21 @@
 }
 
 .search-input-container {
+
   position: relative;
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 52px;
+  
+  
   font-size: 16px;
   color: #7e808c;
 }
 
 .swiggy-input {
+  height: 100%;
   width: 100%;
   padding: 12px 16px;
   padding-left: 40px;
@@ -499,7 +554,7 @@
   letter-spacing: 0.5px;
 }
 
-.status-badge {
+.status-badge{
   position: absolute;
   top: 12px;
   right: 12px;
@@ -515,16 +570,23 @@
 }
 
 .status-badge.active {
+  position: relative;
+  
+  margin-left: -140px;
   background: linear-gradient(135deg, #00d4aa 0%, #00a652 100%);
   color: white;
 }
 
-.status-badge.pending {
+.status-badge.pending{
+
+  position: relative;
+  margin-left: -140px;
   background: linear-gradient(135deg, #ffd700 0%, #ffb400 100%);
   color: #8b6914;
 }
 
 .status-badge.inactive {
+  margin-left: -140px;
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
 }
@@ -669,9 +731,8 @@
 }
 
 .product-actions {
-  display: flex;
-  gap: 8px;
-  margin: 16px 0;
+  margin-top: 20px;
+  
 }
 
 .product-footer {
@@ -726,6 +787,7 @@
 }
 
 .swiggy-btn-outline {
+  margin-right: 10px;
   background: white;
   color: #fc8019;
   border: 1px solid #fc8019;
@@ -737,6 +799,7 @@
 }
 
 .swiggy-btn-secondary {
+  margin-top: 25px;
   background: #f8f9fa;
   color: #282c3f;
   border: 1px solid #e8e8e8;
@@ -1117,6 +1180,12 @@
     height: 36px;
     font-size: 20px;
   }
+  .product-actions{
+
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+  }
 }
 
 /* Animation for spinner */
@@ -1127,4 +1196,58 @@
   to {
     transform: rotate(360deg);
   }
+}
+/* Add after the status-badge styles (around line 532) */
+
+.stock-badge {
+  
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.stock-badge.in-stock {
+  background: linear-gradient(135deg, #00d4aa 0%, #00a652 100%);
+  color: white;
+}
+
+.stock-badge.out-of-stock {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+}
+
+/* Update existing button styles or add these after swiggy-btn styles */
+.swiggy-btn.swiggy-btn-success {
+  background: linear-gradient(135deg, #00d4aa 0%, #00a652 100%);
+  color: white;
+  border: none;
+}
+
+.swiggy-btn.swiggy-btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #00a652 0%, #008f3a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
+}
+
+.swiggy-btn.swiggy-btn-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+}
+
+.swiggy-btn.swiggy-btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+}
+
+.swiggy-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }

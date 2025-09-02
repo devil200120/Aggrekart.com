@@ -3,42 +3,63 @@ FILE: c:\Users\KIIT0001\Desktop\builder_website using mern\front-end\app\src\pag
 LINES: 1-300
 PURPOSE: Complete styling for admin dashboard page
 */
-
+.buttons_primary{
+  position: relative;
+  left: 40px;
+  top: 20px;
+}
 .admin-dashboard {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
 }
-
+.header-contents{
+  background: white;
+  padding-top: 40px;
+}
 /* Dashboard Header */
 .dashboard-header {
+
+  margin-top: 60px;
+  
+  background: white ;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+  
+  flex-direction: column;
 }
 
-.header-content h1 {
+
+.header-contents h1 {
+  letter-spacing: 1px;
+  position: relative;
+  left: 320px;
+  top: -50px;
   font-size: 2rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 0.5rem;
 }
 
-.header-content p {
-  color: #6b7280;
-  font-size: 1rem;
+.header-contents p {
+  margin-top: 10px;
+  position: relative;
+  left: -80px;
+  letter-spacing: 2px;
 }
 
-.header-actions {
+.header-actionss {
+  
   display: flex;
   gap: 0.75rem;
 }
 
-.header-actions .btn {
+.header-actionss .btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -102,12 +123,15 @@ PURPOSE: Complete styling for admin dashboard page
 }
 
 .tab-badge {
-  background: #ef4444;
+  background: #dc3545;
   color: white;
-  font-size: 0.75rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  margin-left: 0.25rem;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  min-width: 18px;
+  text-align: center;
 }
 
 /* Dashboard Content */
@@ -198,6 +222,29 @@ PURPOSE: Complete styling for admin dashboard page
 .action-icon.products {
   background: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
+}
+
+/* Support Ticket Specific Styles */
+.action-icon.support {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.support-card .urgent-indicator {
+  display: block;
+  color: #dc3545;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.tab.active .tab-badge {
+  background: rgba(255, 255, 255, 0.8);
+  color: #007bff;
+}
+
+/* Activity summary support metrics */
+.activity-item:nth-child(4) .activity-label::before {
+  content: "🎧 ";
 }
 
 .action-content {
@@ -405,7 +452,7 @@ PURPOSE: Complete styling for admin dashboard page
     align-items: flex-start;
   }
   
-  .header-actions {
+  .header-actionss {
     width: 100%;
     justify-content: flex-start;
   }
@@ -450,10 +497,28 @@ PURPOSE: Complete styling for admin dashboard page
 }
 
 @media (max-width: 480px) {
-  .header-content h1 {
-    font-size: 1.5rem;
+  .dashboard-header{
+    margin-top: 80px;
+    padding: 50px 2px 50px;
   }
-  
+  .header-contents h1 {
+    position: relative;
+    top:-70px;
+    left: 120px;
+    font-size: 1.3rem;
+    
+    margin-bottom: 10px;
+  }
+  .header-contents p {
+    
+    position: relative;
+    left: -50px;
+    top:3px;
+  }
+  .header-actionss{
+
+  }
+
   .action-icon {
     width: 2.5rem;
     height: 2.5rem;
@@ -467,6 +532,7 @@ PURPOSE: Complete styling for admin dashboard page
     font-size: 0.8rem;
   }
 }
+
 /* Add these styles for the approvals section: */
 
 .approvals-tab {
@@ -630,6 +696,8 @@ PURPOSE: Complete styling for admin dashboard page
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  
+  transition: all .3s ;
 }
 
 .btn-success {
@@ -656,7 +724,7 @@ PURPOSE: Complete styling for admin dashboard page
   border: 1px solid #d1d5db;
 }
 
-.btn-outline:hover {
+.btn-outlines:hover {
   background: #f9fafb;
   color: #374151;
   border-color: #9ca3af;
@@ -722,4 +790,31 @@ PURPOSE: Complete styling for admin dashboard page
   .btn {
     justify-content: center;
   }
+}
+/* ADD TO CSS FILE: */
+.approval-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
 }

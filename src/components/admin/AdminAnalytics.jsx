@@ -264,7 +264,7 @@ const AdminAnalytics = () => {
           </select>
           
           <button 
-            className="btn btn-outline btn-sm"
+            className="btn btn-outlines btn-sm"
             onClick={() => refetch()}
             disabled={isLoading}
           >

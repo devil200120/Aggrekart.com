@@ -1,4 +1,4 @@
-// Replace the entire CSS file with this Swiggy-style version:
+/* Replace the entire CSS file with this Swiggy-style version: */
 
 /* Swiggy-Style Settings Page */
 
@@ -482,6 +482,10 @@ input:checked + .slider:before {
 @media (max-width: 480px) {
   .swiggy-container {
     padding: 0 0.75rem;
+  }
+
+  .swiggy-sidebar {
+    width: 355px;
   }
   
   .swiggy-section {
