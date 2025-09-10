@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useMutation } from 'react-query'
 import toast from 'react-hot-toast'
 import { authAPI } from '../../services/api'
-import './AuthPages.css'
+import "./ForgotPasswordPage.css"
 
 const ForgotPasswordPage = () => {
   const [formData, setFormData] = useState({
@@ -101,19 +101,19 @@ const ForgotPasswordPage = () => {
 
   if (step === 'success') {
     return (
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
+      <div className="auth-container-forgot">
+        <div className="auth-card-forgot">
+          <div className="auth-header-forgot">
             <h1>Password Reset Successful</h1>
             <p>Your password has been reset successfully!</p>
           </div>
           
-          <div className="success-message">
-            <div className="success-icon">✓</div>
+          <div className="success-message-forgot">
+            <div className="success-icon-forgot">✓</div>
             <p>You can now login with your new password.</p>
           </div>
           
-          <div className="auth-footer">
+          <div className="auth-footer-forgot">
             <Link to="/auth/login" className="btn btn-primary">
               Go to Login
             </Link>
@@ -124,9 +124,9 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
+    <div className="auth-container-forgot">
+      <div className="authentication-card-forgot">
+        <div className="auth-header-forgot">
           <h1>
             {step === 'request' ? 'Forgot Password' : 'Reset Password'}
           </h1>
@@ -140,7 +140,7 @@ const ForgotPasswordPage = () => {
 
         {step === 'request' ? (
           <form onSubmit={handleRequestSubmit} className="auth-form">
-            <div className="form-group">
+            <div className="form-group-forgot">
               <label htmlFor="identifier">Email or Phone Number</label>
               <input
                 type="text"
@@ -155,7 +155,7 @@ const ForgotPasswordPage = () => {
 
             <button 
               type="submit" 
-              className="btn btn-primary btn-full"
+              className="btn-forgot btn-primary-forgot btn-full-forgot"
               disabled={forgotPasswordMutation.isLoading}
             >
               {forgotPasswordMutation.isLoading ? 'Sending...' : 'Send Reset OTP'}
@@ -163,7 +163,7 @@ const ForgotPasswordPage = () => {
           </form>
         ) : (
           <form onSubmit={handleResetSubmit} className="auth-form">
-            <div className="form-group">
+            <div className="form-group-forgot">
               <label htmlFor="otp">Reset OTP</label>
               <input
                 type="text"
@@ -177,7 +177,7 @@ const ForgotPasswordPage = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-forgot">
               <label htmlFor="newPassword">New Password</label>
               <input
                 type="password"
@@ -191,7 +191,7 @@ const ForgotPasswordPage = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-forgot">
               <label htmlFor="confirmPassword">Confirm New Password</label>
               <input
                 type="password"
@@ -207,7 +207,7 @@ const ForgotPasswordPage = () => {
 
             <button 
               type="submit" 
-              className="btn btn-primary btn-full"
+              className="btn-forgot btn-primary-forgot btn-full-forgot"
               disabled={resetPasswordMutation.isLoading}
             >
               {resetPasswordMutation.isLoading ? 'Resetting...' : 'Reset Password'}
@@ -215,7 +215,7 @@ const ForgotPasswordPage = () => {
 
             <button 
               type="button" 
-              className="btn btn-secondary btn-full"
+              className="btn-forgot btn-secondary-forgot btn-full-forgot"
               onClick={() => setStep('request')}
               disabled={resetPasswordMutation.isLoading}
             >
@@ -224,10 +224,10 @@ const ForgotPasswordPage = () => {
           </form>
         )}
 
-        <div className="auth-footer">
+        <div className="auth-footer-forgot">
           <p>
             Remember your password?{' '}
-            <Link to="/auth/login" className="auth-link">
+            <Link to="/auth/login" className="auth-link-forgot">
               Back to Login
             </Link>
           </p>

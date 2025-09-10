@@ -115,9 +115,34 @@ const SupplierOrdersPage = () => {
   };
 
   // Get total amount from order (handle different data structures)
-  const getOrderTotal = (order) => {
-    return order.pricing?.totalAmount || order.totalAmount || 0;
-  };
+  // Replace lines 118-120:
+
+const getOrderTotal = (order) => {
+  // Calculate items total first
+  const itemsTotal = order.items?.reduce((sum, item) => {
+    return sum + (item.totalPrice || (item.unitPrice * item.quantity) || 0);
+  }, 0) || 0;
+
+  // Get individual pricing components
+  const transportCost = order.pricing?.transportCost || 0;
+  const gstAmount = order.pricing?.gstAmount || 0;
+  const commission = order.pricing?.commission || 0;
+  const paymentGatewayCharges = order.pricing?.paymentGatewayCharges || 0;
+
+  // Calculate total manually to ensure accuracy
+  const calculatedTotal = itemsTotal + transportCost + gstAmount + commission + paymentGatewayCharges;
+  
+  // Use stored total if it seems reasonable, otherwise use calculated
+  const storedTotal = order.pricing?.totalAmount || order.totalAmount || 0;
+  
+  // If stored total is suspiciously low (like in your case), use calculated
+  if (storedTotal < calculatedTotal * 0.5) {
+    console.log('⚠️ Using calculated total instead of stored:', calculatedTotal);
+    return calculatedTotal;
+  }
+  
+  return storedTotal;
+};
 
   // Get item price (handle different data structures)
   const getItemPrice = (item) => {
@@ -212,14 +237,15 @@ const SupplierOrdersPage = () => {
     updateStatusMutation.mutate({ orderId, status: newStatus });
   };
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-      page: 1, // Reset to first page when filters change
-    }));
-  };
+  // Verify this function is at line 215 (should already be correct):
 
+const handleFilterChange = (key, value) => {
+  setFilters((prev) => ({
+    ...prev,
+    [key]: value,
+    ...(key !== 'page' && { page: 1 }), // Reset to first page only when other filters change
+  }));
+};
   const getStats = () => {
     if (!ordersData?.data?.orders)
       return {
@@ -484,6 +510,14 @@ const SupplierOrdersPage = () => {
                                     </span>
                                   </div>
                                 )}
+                                {order.pricing.commission > 0 && (
+                                  <div className="pricing-row">
+                                    <span>Platform Commission: </span>
+                                    <span>
+                                      {formatCurrency(order.pricing.commission)}
+                                    </span>
+                                  </div>
+                                )}
                                 {order.pricing.gstAmount > 0 && (
                                   <div className="pricing-row">
                                     <span>GST: </span>
@@ -673,6 +707,8 @@ const SupplierOrdersPage = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

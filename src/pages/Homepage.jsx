@@ -298,7 +298,7 @@ const HomePage = () => {
 
       // Test 1: Check if backend is reachable
       const testResponse = await fetch(
-        "http://localhost:5000/api/newsletter/test-email"
+        "https://aggrekart-com-backend.onrender.com/api/newsletter/test-email"
       );
       const testResult = await testResponse.json();
 
@@ -859,7 +859,7 @@ const HomePage = () => {
                   <span className="swiggy-btn-icon">→</span>
                 </Link>
 
-                <Link to="/suppliers" className="swiggy-secondary-btn">
+                <Link to="auth/supplier-register" className="swiggy-secondary-btn">
                   <span className="swiggy-btn-text">Become a Supplier</span>
                   <span className="swiggy-btn-icon">🏢</span>
                 </Link>

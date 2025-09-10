@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://aggrekart-com-backend.onrender.com/api';
 
 // Create axios instance with proper configuration
 const api = axios.create({

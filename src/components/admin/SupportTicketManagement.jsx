@@ -227,7 +227,7 @@ const SupportTicketManagement = () => {
     const color = statusColors[status] || '#6c757d';
     return (
       <span 
-        className="status-badge" 
+        className="original-status-badge" 
         style={{ backgroundColor: color }}
       >
         {status.replace('_', ' ').toUpperCase()}
@@ -239,7 +239,7 @@ const SupportTicketManagement = () => {
     const color = priorityColors[priority] || '#6c757d';
     return (
       <span 
-        className="priority-badge" 
+        className="priority-badge-original" 
         style={{ backgroundColor: color }}
       >
         {priority.toUpperCase()}
@@ -277,7 +277,7 @@ const renderTicket = (ticket) => {
             </div>
           )}
           {ticket.daysSinceCreated > 3 && (
-            <div className="customer-badge old-ticket">
+            <div className="customer-badge-original old-ticket-original">
               {ticket.daysSinceCreated}d old
             </div>
           )}
@@ -371,23 +371,23 @@ const renderTicket = (ticket) => {
       <div className="management-header">
         <h2>Support Ticket Management</h2>
         <div className="ticket-stats">
-          <div className="stat-item">
+          <div className="stat-item-original">
             <span className="stat-number">{tickets.length}</span>
             <span className="stat-label">Total Tickets</span>
           </div>
-          <div className="stat-item">
+          <div className="stat-item-original">
             <span className="stat-number">
               {tickets.filter(t => t.status === 'open').length}
             </span>
             <span className="stat-label">Open</span>
           </div>
-          <div className="stat-item">
+          <div className="stat-item-original">
             <span className="stat-number">
               {tickets.filter(t => t.status === 'in-progress').length}
             </span>
             <span className="stat-label">In Progress</span>
           </div>
-          <div className="stat-item">
+          <div className="stat-item-original">
             <span className="stat-number">
               {tickets.filter(t => t.priority === 'urgent').length}
             </span>
@@ -529,7 +529,7 @@ const renderTicket = (ticket) => {
                   <div className="info-section customer-section">
                     <h4>👤 Customer Information</h4>
                     <div className="info-grid">
-                      <div className="info-item">
+                      <div className="info-item-original">
                         <label>Name:</label>
                         <span>{selectedTicket.customerInfo?.name || selectedTicket.user?.name || 'Unknown'}</span>
                       </div>
@@ -567,7 +567,7 @@ const renderTicket = (ticket) => {
                           <label>Order ID:</label>
                           <span className="order-id">#{selectedTicket.orderInfo.orderId}</span>
                         </div>
-                        <div className="info-item">
+                        <div className="info-item-orignal">
                           <label>Order Status:</label>
                           <span className={`order-status-badge status-${selectedTicket.orderInfo.status}`}>
                             {selectedTicket.orderInfo.status}
@@ -600,7 +600,7 @@ const renderTicket = (ticket) => {
                     <div className="info-section supplier-section">
                       <h4>🏢 Supplier Information</h4>
                       <div className="info-grid">
-                        <div className="info-item">
+                        <div className="info-item-original">
                           <label>Company:</label>
                           <span className="supplier-name">{selectedTicket.supplierInfo.name}</span>
                         </div>
@@ -640,7 +640,7 @@ const renderTicket = (ticket) => {
                         <label>Category:</label>
                         <span>{categoryLabels[selectedTicket.category]}</span>
                       </div>
-                      <div className="info-item">
+                      <div className="info-item-original">
                         <label>Priority:</label>
                         {getPriorityBadge(selectedTicket.priority)}
                       </div>

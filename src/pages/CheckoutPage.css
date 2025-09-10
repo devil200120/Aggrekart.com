@@ -1116,7 +1116,81 @@
   color: #10b981;
   font-weight: 500;
 }
+/* Add this CSS for the advance payment options */
 
+.advance-options-section {
+  padding: 16px 0;
+  border-top: 1px solid #f0f3f7;
+}
+
+.advance-options-section h5 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #282c3f;
+}
+
+.advance-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.advance-option {
+  padding: 12px;
+  border: 2px solid #e0e6ed;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.advance-option:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+}
+
+.advance-option.selected {
+  border-color: #007bff;
+  background: #e3f2fd;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.option-percentage {
+  font-size: 18px;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+.option-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.option-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #282c3f;
+}
+
+.selected-option-summary {
+  padding: 12px;
+  background: #f0f8ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.selected-option-summary p {
+  margin: 0;
+  font-size: 14px;
+  color: #0066cc;
+  line-height: 1.4;
+}
 .bill-details .bill-row.subtotal {
   border-top: 1px dashed #e5e7eb;
   padding-top: 8px;
@@ -1227,4 +1301,107 @@
   .sub-methods-grid {
     grid-template-columns: 1fr;
   }
+}
+/* Add this CSS at the end of your file: */
+
+/* Advance Payment Selection */
+.advance-payment-options {
+  padding: 20px;
+}
+
+.advance-payment-options h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #282c3f;
+  margin: 0 0 16px 0;
+}
+
+.loading-state, .error-state {
+  padding: 16px;
+  text-align: center;
+  color: #93959f;
+  font-size: 14px;
+}
+
+.error-state {
+  color: #e74c3c;
+  background: #fdf2f2;
+  border-radius: 8px;
+}
+
+.advance-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.advance-option {
+  border: 2px solid #e9e9eb;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  background: white;
+}
+
+.advance-option:hover {
+  border-color: #fc8019;
+  box-shadow: 0 4px 12px rgba(252, 128, 25, 0.1);
+}
+
+.advance-option.selected {
+  border-color: #fc8019;
+  background: #fff5f0;
+  box-shadow: 0 4px 12px rgba(252, 128, 25, 0.2);
+}
+
+.advance-percentage {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fc8019;
+  margin-bottom: 8px;
+}
+
+.advance-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: #282c3f;
+  margin-bottom: 8px;
+}
+
+.advance-description {
+  font-size: 12px;
+  color: #93959f;
+  line-height: 1.4;
+}
+
+.payment-breakdown-preview {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #e9e9eb;
+}
+
+.breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.breakdown-row.advance {
+  color: #fc8019;
+  font-weight: 600;
+}
+
+.breakdown-row.remaining {
+  color: #93959f;
 }

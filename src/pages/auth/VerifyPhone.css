@@ -16,7 +16,9 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue",
+    sans-serif;
 }
 
 /* Main Container Card */
@@ -130,7 +132,7 @@
   border: 1px solid #e5e7eb;
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-family: "SF Mono", "Monaco", "Consolas", monospace;
   font-weight: 500;
   margin-top: 0.5rem;
 }
@@ -255,7 +257,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: #92400e;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-family: "SF Mono", "Monaco", "Consolas", monospace;
 }
 
 .timer-progress {
@@ -341,10 +343,12 @@
   cursor: not-allowed;
 }
 
-.back-btn {
+.varify-back-btn {
+  width: 100%;
+  border: 2px solid black;
   background: white;
   color: #6b7280;
-  border: 1px solid #d1d5db;
+  /* border: 1px solid #d1d5db; */
   padding: 0.5rem 1rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -357,7 +361,7 @@
   font-weight: 500;
 }
 
-.back-btn:hover {
+.varify-back-btn:hover {
   background: #f9fafb;
   border-color: #9ca3af;
   color: #374151;
@@ -384,7 +388,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Help Section */
@@ -501,7 +507,7 @@
 
 @media (max-width: 480px) {
   .verify-phone-container {
-    padding: 1rem 0.75rem;
+    padding: 3rem 0.75rem;
     margin: 0.5rem;
   }
 
@@ -531,12 +537,21 @@
   .action-buttons {
     gap: 0.5rem;
   }
+  .varify-back-btn {
+    width: 50% !important;
+    border: 1px solid black;
+  }
+  .varify-back-btn span {
+    width: 90% !important;
+    
+    position: relative;
+  }
 }
 
 /* Focus States for Accessibility */
 .otp-input:focus,
 .verify-btn:focus,
-.back-btn:focus,
+.varify-back-btn:focus,
 .resend-btn:focus,
 .edit-phone-btn:focus {
   outline: 2px solid #fc8019;
@@ -557,11 +572,11 @@
   .verify-phone-container {
     border: 2px solid #000;
   }
-  
+
   .otp-input {
     border: 2px solid #000;
   }
-  
+
   .verify-btn {
     border: 2px solid #000;
   }

@@ -13,7 +13,7 @@ const VerifyPhonePage = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isResending, setIsResending] = useState(false)
-  const [timer, setTimer] = useState(300) // 5 minutes
+  const [timer, setTimer] = useState(60) // 1 minutes
   const [canResend, setCanResend] = useState(false)
   
   const otpRefs = useRef([])
@@ -151,7 +151,7 @@ const VerifyPhonePage = () => {
       
       if (response.success) {
         toast.success('New OTP sent successfully!')
-        setTimer(300)
+        setTimer(60)
         setCanResend(false)
         setOtp(['', '', '', '', '', ''])
         otpRefs.current[0]?.focus()
@@ -318,7 +318,7 @@ const VerifyPhonePage = () => {
             <button
               type="button"
               onClick={() => navigate('/auth/register')}
-              className="back-btn secondary-btn"
+              className="varify-back-btn varify-secondary-btn"
             >
               <span className="btn-arrow">←</span>
               <span>Back to Registration</span>

@@ -54,9 +54,11 @@ PURPOSE: Complete styling for admin dashboard page
 }
 
 .header-actionss {
-  
+  margin-top: 20px;
   display: flex;
   gap: 0.75rem;
+  flex-direction: row;
+  
 }
 
 .header-actionss .btn {
@@ -516,7 +518,11 @@ PURPOSE: Complete styling for admin dashboard page
     top:3px;
   }
   .header-actionss{
-
+    flex-direction: column;
+      margin-top: 10px;
+      padding-left: 70px;
+      padding-right: 70px;
+      
   }
 
   .action-icon {
@@ -532,7 +538,22 @@ PURPOSE: Complete styling for admin dashboard page
     font-size: 0.8rem;
   }
 }
+.button{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+.settings-button{
+  padding: 10px 20px ;
+  text-align: center;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap:9px
 
+}
 /* Add these styles for the approvals section: */
 
 .approvals-tab {
@@ -700,12 +721,13 @@ PURPOSE: Complete styling for admin dashboard page
   transition: all .3s ;
 }
 
-.btn-success {
+.btn-success-approval {
+  
   background: #10b981;
   color: white;
 }
 
-.btn-success:hover {
+.btn-success-approval:hover {
   background: #059669;
 }
 
@@ -803,7 +825,7 @@ PURPOSE: Complete styling for admin dashboard page
   font-size: 12px;
 }
 
-.btn-success {
+.btn-success-approval {
   background: #10b981;
   color: white;
 }

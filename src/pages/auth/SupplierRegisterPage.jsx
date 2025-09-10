@@ -4,7 +4,7 @@ import { supplierAPI } from "../../services/api";
 import GSTAutoFill from "../../components/supplier/GSTAutoFill";
 import toast from "react-hot-toast";
 import "./SupplierRegisterPage.css";
-
+import PasswordStrengthChecker from "./PasswordStrengthChecker.jsx";
 const SupplierRegisterPage = () => {
   const navigate = useNavigate();
 
@@ -52,6 +52,10 @@ const SupplierRegisterPage = () => {
     agreeToCommission: false,
   });
   const [errors, setErrors] = useState({});
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(null);
 
   const businessTypes = [
     { value: "manufacturer", label: "Manufacturer" },
@@ -292,10 +296,26 @@ const SupplierRegisterPage = () => {
     }
 
     // Password
+    // Password - REPLACE LINES 289-293
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least one uppercase letter";
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least one lowercase letter";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one number";
+    } else if (
+      !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)
+    ) {
+      newErrors.password =
+        "Password must contain at least one special character";
+    } else if (passwordStrength && !passwordStrength.isValid) {
+      newErrors.password = "Password strength must be 'Good' or 'Strong'";
     }
 
     if (!formData.confirmPassword) {
@@ -414,12 +434,12 @@ const SupplierRegisterPage = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="container">
-        <div className="row justify-content-center">
+    <div className="register-auth-page">
+      <div className="auth-page-container">
+        <div className="auth-dir">
           <div className="col-lg-8">
-            <div className="auth-card">
-              <div className="auth-header">
+            <div className="register-auth-card">
+              <div className="register-auth-header">
                 <h2>🏢 Supplier Registration</h2>
                 <p>
                   Join Aggrekart as a supplier partner and grow your business
@@ -427,674 +447,760 @@ const SupplierRegisterPage = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="auth-form">
+              <form onSubmit={handleSubmit}>
                 {/* GST Auto-fill Section - FIXED PROPS */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-file-invoice me-2"></i>
-                      GST Verification & Auto-Fill
-                    </h4>
-                    <p className="text-muted">
-                      Enter your GST number to automatically verify and fill
-                      business details
-                    </p>
-                  </div>
-
-                  <GSTAutoFill
-                    onDataFill={handleGSTAutoFill}
-                    formData={formData}
-                  />
-                </div>
-
-                {/* Business Information */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-building me-2"></i>
-                      Business Information
-                    </h4>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Business Name
-                        </label>
-                        <input
-                          type="text"
-                          name="businessName"
-                          className={`form-control ${errors.businessName ? "is-invalid" : ""}`}
-                          value={formData.businessName}
-                          onChange={handleInputChange}
-                          placeholder="Enter your business name"
-                        />
-                        {errors.businessName && (
-                          <div className="invalid-feedback">
-                            {errors.businessName}
-                          </div>
-                        )}
-                      </div>
+                <div className="gst-auth-form">
+                  <div className="gst-form-section grid-1">
+                    <div className="register-section-header">
+                      <h4>
+                        <i className="fas fa-file-invoice me-2"></i>
+                        GST Verification & Auto-Fill
+                      </h4>
+                      <p className="text-muted">
+                        Enter your GST number to automatically verify and fill
+                        business details
+                      </p>
                     </div>
 
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Business Type
-                        </label>
-                        <select
-                          name="businessType"
-                          className="form-control"
-                          value={formData.businessType}
-                          onChange={handleInputChange}
-                        >
-                          {businessTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                              {type.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* GST Number Display (Read-only if auto-filled) */}
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          GST Number
-                        </label>
-                        <input
-                          type="text"
-                          name="gstNumber"
-                          className={`form-control ${errors.gstNumber ? "is-invalid" : ""}`}
-                          value={formData.gstNumber}
-                          onChange={handleInputChange}
-                          placeholder="GST Number (auto-filled from verification)"
-                          maxLength="15"
-                        />
-                        {errors.gstNumber && (
-                          <div className="invalid-feedback">
-                            {errors.gstNumber}
-                          </div>
-                        )}
-                        {formData.gstNumber && (
-                          <small className="text-muted">
-                            ✅ This GST number was verified and auto-filled
-                          </small>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label">PAN Number</label>
-                        <input
-                          type="text"
-                          name="panNumber"
-                          className="form-control"
-                          value={formData.panNumber}
-                          onChange={handleInputChange}
-                          placeholder="ABCDE1234F"
-                          maxLength="10"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="form-group">
-                        <label className="form-label">
-                          Business Registration Number
-                        </label>
-                        <input
-                          type="text"
-                          name="businessRegistrationNumber"
-                          className="form-control"
-                          value={formData.businessRegistrationNumber}
-                          onChange={handleInputChange}
-                          placeholder="Enter business registration number"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Information */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-user me-2"></i>
-                      Contact Information
-                    </h4>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Contact Person Name
-                        </label>
-                        <input
-                          type="text"
-                          name="contactPersonName"
-                          className={`form-control ${errors.contactPersonName ? "is-invalid" : ""}`}
-                          value={formData.contactPersonName}
-                          onChange={handleInputChange}
-                          placeholder="Enter contact person name"
-                        />
-                        {errors.contactPersonName && (
-                          <div className="invalid-feedback">
-                            {errors.contactPersonName}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="Enter email address"
-                        />
-                        {errors.email && (
-                          <div className="invalid-feedback">{errors.email}</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          name="phoneNumber"
-                          className={`form-control ${errors.phoneNumber ? "is-invalid" : ""}`}
-                          value={formData.phoneNumber}
-                          onChange={handleInputChange}
-                          placeholder="10-digit phone number"
-                          maxLength="10"
-                        />
-                        {errors.phoneNumber && (
-                          <div className="invalid-feedback">
-                            {errors.phoneNumber}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label">Alternate Phone</label>
-                        <input
-                          type="tel"
-                          name="alternatePhone"
-                          className="form-control"
-                          value={formData.alternatePhone}
-                          onChange={handleInputChange}
-                          placeholder="Alternate phone number"
-                          maxLength="10"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Business Address */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-map-marker-alt me-2"></i>
-                      Business Address
-                    </h4>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label required">
-                      Business Address
-                    </label>
-                    <textarea
-                      name="businessAddress"
-                      className={`form-control ${errors.businessAddress ? "is-invalid" : ""}`}
-                      value={formData.businessAddress}
-                      onChange={handleInputChange}
-                      placeholder="Enter complete business address"
-                      rows={3}
+                    <GSTAutoFill
+                      onDataFill={handleGSTAutoFill}
+                      formData={formData}
                     />
-                    {errors.businessAddress && (
-                      <div className="invalid-feedback">
-                        {errors.businessAddress}
-                      </div>
-                    )}
-                    {formData.businessAddress && formData.gstNumber && (
-                      <small className="text-muted">
-                        ✅ Address auto-filled from GST records
-                      </small>
-                    )}
                   </div>
 
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label required">City</label>
-                        <input
-                          type="text"
-                          name="city"
-                          className={`form-control ${errors.city ? "is-invalid" : ""}`}
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          placeholder="Enter city"
-                        />
-                        {errors.city && (
-                          <div className="invalid-feedback">{errors.city}</div>
-                        )}
-                      </div>
+                  {/* Business Information */}
+                  <div className="gst-form-section grid-1">
+                    <div className="register-section-header">
+                      <h4>
+                        <i className="fas fa-building me-2"></i>
+                        Business Information
+                      </h4>
                     </div>
 
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label required">State</label>
-                        <select
-                          name="state"
-                          className={`form-control ${errors.state ? "is-invalid" : ""}`}
-                          value={formData.state}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select State</option>
-                          {indianStates.map((state) => (
-                            <option key={state.code} value={state.name}>
-                              {state.name} (GST: {state.gstCode})
-                            </option>
-                          ))}
-                        </select>
-                        {errors.state && (
-                          <div className="invalid-feedback">{errors.state}</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label required">Pincode</label>
-                        <input
-                          type="text"
-                          name="pincode"
-                          className={`form-control ${errors.pincode ? "is-invalid" : ""}`}
-                          value={formData.pincode}
-                          onChange={handleInputChange}
-                          placeholder="6-digit pincode"
-                          maxLength="6"
-                        />
-                        {errors.pincode && (
-                          <div className="invalid-feedback">
-                            {errors.pincode}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Account Information */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-lock me-2"></i>
-                      Account Information
-                    </h4>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">Password</label>
-                        <input
-                          type="password"
-                          name="password"
-                          className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="Enter password (min 6 characters)"
-                        />
-                        {errors.password && (
-                          <div className="invalid-feedback">
-                            {errors.password}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Confirm Password
-                        </label>
-                        <input
-                          type="password"
-                          name="confirmPassword"
-                          className={`form-control ${errors.confirmPassword ? "is-invalid" : ""}`}
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          placeholder="Confirm your password"
-                        />
-                        {errors.confirmPassword && (
-                          <div className="invalid-feedback">
-                            {errors.confirmPassword}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Product Categories */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-boxes me-2"></i>
-                      Product Categories
-                    </h4>
-                    <p className="text-muted">
-                      Select the product categories you will supply
-                    </p>
-                  </div>
-
-                  <div className="checkbox-grid">
-                    {productCategoriesOptions.map((category) => (
-                      <div key={category.value} className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id={category.value}
-                          checked={formData.productCategories.includes(
-                            category.value
+                    <div className="det-field">
+                      <div className="section-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Trade Name
+                          </label>
+                          <input
+                            type="text"
+                            name="businessName"
+                            className={`gst-form-control ${
+                              errors.businessName ? "is-invalid" : ""
+                            }`}
+                            value={formData.businessName}
+                            onChange={handleInputChange}
+                            placeholder="Enter your business name"
+                          />
+                          {errors.businessName && (
+                            <div className="invalid-feedback">
+                              {errors.businessName}
+                            </div>
                           )}
-                          onChange={() => handleCategoryChange(category.value)}
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor={category.value}
-                        >
-                          {category.label}
-                        </label>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  {errors.productCategories && (
-                    <div className="text-danger small mt-2">
-                      {errors.productCategories}
-                    </div>
-                  )}
-                </div>
 
-                {/* Business Details */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-chart-line me-2"></i>
-                      Business Details
-                    </h4>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">Year Established</label>
-                        <input
-                          type="number"
-                          name="yearEstablished"
-                          className="form-control"
-                          value={formData.yearEstablished}
-                          onChange={handleInputChange}
-                          placeholder="e.g., 2015"
-                          min="1900"
-                          max={new Date().getFullYear()}
-                        />
+                      <div className="section-2">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Business Type
+                          </label>
+                          <select
+                            name="businessType"
+                            className="gst-form-control"
+                            value={formData.businessType}
+                            onChange={handleInputChange}
+                          >
+                            {businessTypes.map((type) => (
+                              <option key={type.value} value={type.value}>
+                                {type.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">
-                          Number of Employees
-                        </label>
-                        <select
-                          name="numberOfEmployees"
-                          className="form-control"
-                          value={formData.numberOfEmployees}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select Range</option>
-                          {employeeRanges.map((range) => (
-                            <option key={range.value} value={range.value}>
-                              {range.label}
-                            </option>
-                          ))}
-                        </select>
+                    {/* GST Number Display (Read-only if auto-filled) */}
+                    <div className="det-field">
+                      <div className="section-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            GST Number
+                          </label>
+                          <input
+                            type="text"
+                            name="gstNumber"
+                            className={`gst-form-control ${
+                              errors.gstNumber ? "is-invalid" : ""
+                            }`}
+                            value={formData.gstNumber}
+                            onChange={handleInputChange}
+                            placeholder="GST Number (auto-filled from verification)"
+                            maxLength="15"
+                          />
+                          {errors.gstNumber && (
+                            <div className="invalid-feedback">
+                              {errors.gstNumber}
+                            </div>
+                          )}
+                          {formData.gstNumber && (
+                            <small className="text-muted">
+                              ✅ This GST number was verified and auto-filled
+                            </small>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="section-2">
+                        <div className="det-form-group">
+                          <label className="form-label">PAN Number</label>
+                          <input
+                            type="text"
+                            name="panNumber"
+                            className="gst-form-control"
+                            value={formData.panNumber}
+                            onChange={handleInputChange}
+                            placeholder="ABCDE1234F"
+                            maxLength="10"
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">Annual Turnover</label>
-                        <select
-                          name="annualTurnover"
-                          className="form-control"
-                          value={formData.annualTurnover}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select Range</option>
-                          {turnoverRanges.map((range) => (
-                            <option key={range.value} value={range.value}>
-                              {range.label}
-                            </option>
-                          ))}
-                        </select>
+                    {/* <div className="det-field">
+                      <div className="section-3">
+                        <div className="det-form-group">
+                          <label className="form-label">
+                            Business Registration Number
+                          </label>
+                          <input
+                            type="text"
+                            name="businessRegistrationNumber"
+                            className="gst-form-control"
+                            value={formData.businessRegistrationNumber}
+                            onChange={handleInputChange}
+                            placeholder="Enter business registration number"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Banking Information */}
-                <div className="form-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-university me-2"></i>
-                      Banking Information
-                    </h4>
+                    </div> */}
                   </div>
 
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Bank Account Number
-                        </label>
-                        <input
-                          type="text"
-                          name="bankAccountNumber"
-                          className={`form-control ${errors.bankAccountNumber ? "is-invalid" : ""}`}
-                          value={formData.bankAccountNumber}
-                          onChange={handleInputChange}
-                          placeholder="Enter bank account number"
-                        />
-                        {errors.bankAccountNumber && (
-                          <div className="invalid-feedback">
-                            {errors.bankAccountNumber}
-                          </div>
-                        )}
-                      </div>
+                  {/* Contact Information */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-user me-2"></i>
+                        Contact Information
+                      </h4>
                     </div>
 
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">Bank Name</label>
-                        <input
-                          type="text"
-                          name="bankName"
-                          className={`form-control ${errors.bankName ? "is-invalid" : ""}`}
-                          value={formData.bankName}
-                          onChange={handleInputChange}
-                          placeholder="Enter bank name"
-                        />
-                        {errors.bankName && (
-                          <div className="invalid-feedback">
-                            {errors.bankName}
-                          </div>
-                        )}
+                    <div className="det-field">
+                      <div className="field-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Contact Person Name
+                          </label>
+                          <input
+                            type="text"
+                            name="contactPersonName"
+                            className={`gst-form-control ${
+                              errors.contactPersonName ? "is-invalid" : ""
+                            }`}
+                            value={formData.contactPersonName}
+                            onChange={handleInputChange}
+                            placeholder="Enter contact person name"
+                          />
+                          {errors.contactPersonName && (
+                            <div className="invalid-feedback">
+                              {errors.contactPersonName}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">IFSC Code</label>
-                        <input
-                          type="text"
-                          name="ifscCode"
-                          className={`form-control ${errors.ifscCode ? "is-invalid" : ""}`}
-                          value={formData.ifscCode}
-                          onChange={handleInputChange}
-                          placeholder="ABCD0123456"
-                          maxLength="11"
-                        />
-                        {errors.ifscCode && (
-                          <div className="invalid-feedback">
-                            {errors.ifscCode}
-                          </div>
-                        )}
+                      <div className="field-2">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            className={`gst-form-control ${
+                              errors.email ? "is-invalid" : ""
+                            }`}
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="Enter email address"
+                          />
+                          {errors.email && (
+                            <div className="invalid-feedback">
+                              {errors.email}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label required">
-                          Account Holder Name
-                        </label>
-                        <input
-                          type="text"
-                          name="accountHolderName"
-                          className={`form-control ${errors.accountHolderName ? "is-invalid" : ""}`}
-                          value={formData.accountHolderName}
-                          onChange={handleInputChange}
-                          placeholder="Enter account holder name"
-                        />
-                        {errors.accountHolderName && (
-                          <div className="invalid-feedback">
-                            {errors.accountHolderName}
-                          </div>
-                        )}
+                    <div className="det-field">
+                      <div className="field-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Mobile Number
+                          </label>
+                          <input
+                            type="tel"
+                            name="phoneNumber"
+                            className={`gst-form-control ${
+                              errors.phoneNumber ? "is-invalid" : ""
+                            }`}
+                            value={formData.phoneNumber}
+                            onChange={handleInputChange}
+                            placeholder="10-digit phone number"
+                            maxLength="10"
+                          />
+                          {errors.phoneNumber && (
+                            <div className="invalid-feedback">
+                              {errors.phoneNumber}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="field-2">
+                        <div className="det-form-group">
+                          <label className="form-label">
+                            Alternate Mobile Number
+                          </label>
+                          <input
+                            type="tel"
+                            name="alternatePhone"
+                            className="gst-form-control"
+                            value={formData.alternatePhone}
+                            onChange={handleInputChange}
+                            placeholder="Alternate phone number"
+                            maxLength="10"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Terms and Agreements */}
-                <div className="form-section terms-agreements-section">
-                  <div className="section-header">
-                    <h4>
-                      <i className="fas fa-handshake me-2"></i>
-                      Terms and Agreements
-                    </h4>
-                  </div>
+                  {/* Business Address */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-map-marker-alt me-2"></i>
+                        Business Address
+                      </h4>
+                    </div>
 
-                  <div className="form-check mb-3">
-                    <input
-                      type="checkbox"
-                      className={`form-check-input ${errors.agreeToTerms ? "is-invalid" : ""}`}
-                      id="agreeToTerms"
-                      name="agreeToTerms"
-                      checked={formData.agreeToTerms}
-                      onChange={handleInputChange}
-                    />
-                    <label className="form-check-label" htmlFor="agreeToTerms">
-                      I agree to the{" "}
-                      <Link
-                        to="/terms"
-                        target="_blank"
-                        className="text-primary"
-                      >
-                        Terms and Conditions
-                      </Link>{" "}
-                      and{" "}
-                      <Link
-                        to="/privacy"
-                        target="_blank"
-                        className="text-primary"
-                      >
-                        Privacy Policy
-                      </Link>
-                    </label>
-                    {errors.agreeToTerms && (
-                      <div className="invalid-feedback d-block">
-                        {errors.agreeToTerms}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="form-check mb-3">
-                    <input
-                      type="checkbox"
-                      className={`form-check-input ${errors.agreeToCommission ? "is-invalid" : ""}`}
-                      id="agreeToCommission"
-                      name="agreeToCommission"
-                      checked={formData.agreeToCommission}
-                      onChange={handleInputChange}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="agreeToCommission"
-                    >
-                      I agree to the commission structure and payment terms as
-                      outlined in the supplier agreement
-                    </label>
-                    {errors.agreeToCommission && (
-                      <div className="invalid-feedback d-block">
-                        {errors.agreeToCommission}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="form-section">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <Link to="/auth/login" className="text-primary">
-                      Already have an account? Login here
-                    </Link>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="btn btn-primary btn-lg px-5"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                          Registering...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-user-plus me-2"></i>
-                          Register as Supplier
-                        </>
+                    <div className="det-form-group">
+                      <label className="form-label required">
+                        Business Address
+                      </label>
+                      <textarea
+                        name="businessAddress"
+                        className={`gst-form-control ${
+                          errors.businessAddress ? "is-invalid" : ""
+                        }`}
+                        value={formData.businessAddress}
+                        onChange={handleInputChange}
+                        placeholder="Enter complete business address"
+                      />
+                      {errors.businessAddress && (
+                        <div className="invalid-feedback">
+                          {errors.businessAddress}
+                        </div>
                       )}
-                    </button>
+                      {formData.businessAddress && formData.gstNumber && (
+                        <small className="text-muted">
+                          ✅ Address auto-filled from GST records
+                        </small>
+                      )}
+                    </div>
+
+                    <div className="det-field">
+                      <div className="section-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">City</label>
+                          <input
+                            type="text"
+                            name="city"
+                            className={`gst-form-control ${
+                              errors.city ? "is-invalid" : ""
+                            }`}
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            placeholder="Enter city"
+                          />
+                          {errors.city && (
+                            <div className="invalid-feedback">
+                              {errors.city}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="section-2">
+                        <div className="det-form-group">
+                          <label className="form-label required">State</label>
+                          <select
+                            name="state"
+                            className={`gst-form-control ${
+                              errors.state ? "is-invalid" : ""
+                            }`}
+                            value={formData.state}
+                            onChange={handleInputChange}
+                          >
+                            <option value="">Select State</option>
+                            {indianStates.map((state) => (
+                              <option key={state.code} value={state.name}>
+                                {state.name} (GST: {state.gstCode})
+                              </option>
+                            ))}
+                          </select>
+                          {errors.state && (
+                            <div className="invalid-feedback">
+                              {errors.state}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="section-3">
+                        <div className="det-form-group">
+                          <label className="form-label required">Pincode</label>
+                          <input
+                            type="text"
+                            name="pincode"
+                            className={`gst-form-control ${
+                              errors.pincode ? "is-invalid" : ""
+                            }`}
+                            value={formData.pincode}
+                            onChange={handleInputChange}
+                            placeholder="6-digit pincode"
+                            maxLength="6"
+                          />
+                          {errors.pincode && (
+                            <div className="invalid-feedback">
+                              {errors.pincode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Information */}
+                                    {/* Account Information */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header register-section-header-2">
+                      <h4>
+                        <i className="fas fa-lock me-2"></i>
+                        Account Information
+                      </h4>
+                    </div>
+
+                    <div className="det-field">
+                      <div className="field-1">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Create Password
+                          </label>
+                          <div className="password-input-container">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              name="password"
+                              className={`gst-form-control ${
+                                errors.password ? "is-invalid" : ""
+                              }`}
+                              value={formData.password}
+                              onChange={handleInputChange}
+                              placeholder="Enter password (min 8 characters)"
+                              style={{ paddingRight: '45px' }}
+                            />
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowPassword(!showPassword)}
+                              title={showPassword ? "Hide password" : "Show password"}
+                            >
+                              {showPassword ? "🙈" : "👁️"}
+                            </button>
+                          </div>
+                          {errors.password && (
+                            <div className="invalid-feedback">
+                              {errors.password}
+                            </div>
+                          )}
+                          <PasswordStrengthChecker
+                            password={formData.password}
+                            onStrengthChange={setPasswordStrength}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="field-2">
+                        <div className="det-form-group">
+                          <label className="form-label required">
+                            Confirm Password
+                          </label>
+                          <div className="password-input-container">
+                            <input
+                              type={showConfirmPassword ? "text" : "password"}
+                              name="confirmPassword"
+                              className={`gst-form-control ${
+                                errors.confirmPassword ? "is-invalid" : ""
+                              }`}
+                              value={formData.confirmPassword}
+                              onChange={handleInputChange}
+                              placeholder="Confirm your password"
+                              style={{ paddingRight: '45px' }}
+                            />
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              title={showConfirmPassword ? "Hide password" : "Show password"}
+                            >
+                              {showConfirmPassword ? "🙈" : "👁️"}
+                            </button>
+                          </div>
+                          {errors.confirmPassword && (
+                            <div className="invalid-feedback">
+                              {errors.confirmPassword}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product Categories */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-boxes me-2"></i>
+                        Product Categories
+                      </h4>
+                      <p className="text-muted">
+                        Select the product categories you will supply
+                      </p>
+                    </div>
+
+                    <div className="gst-checkbox-grid">
+                      {productCategoriesOptions.map((category) => (
+                        <div
+                          key={category.value}
+                          className="form-check-catagory"
+                        >
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id={category.value}
+                            checked={formData.productCategories.includes(
+                              category.value
+                            )}
+                            onChange={() =>
+                              handleCategoryChange(category.value)
+                            }
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor={category.value}
+                          >
+                            {category.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.productCategories && (
+                      <div className="text-danger small mt-2">
+                        {errors.productCategories}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Business Details */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-chart-line me-2"></i>
+                        Business Details
+                      </h4>
+                    </div>
+
+                    <div className="det-field">
+                      <div className="section-1">
+                        <div className="gst-form-group">
+                          <label className="form-label">Year Established</label>
+                          <input
+                            type="number"
+                            name="yearEstablished"
+                            className="gst-form-control"
+                            value={formData.yearEstablished}
+                            onChange={handleInputChange}
+                            placeholder="e.g., 2015"
+                            min="1900"
+                            max={new Date().getFullYear()}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="section-2">
+                        <div className="gst-form-group">
+                          <label className="form-label">
+                            Number of Employees
+                          </label>
+                          <select
+                            name="numberOfEmployees"
+                            className="gst-form-control"
+                            value={formData.numberOfEmployees}
+                            onChange={handleInputChange}
+                          >
+                            <option value="">Select Range</option>
+                            {employeeRanges.map((range) => (
+                              <option key={range.value} value={range.value}>
+                                {range.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="section-3">
+                        <div className="gst-form-group">
+                          <label className="form-label">Annual Turnover</label>
+                          <select
+                            name="annualTurnover"
+                            className="gst-form-control"
+                            value={formData.annualTurnover}
+                            onChange={handleInputChange}
+                          >
+                            <option value="">Select Range</option>
+                            {turnoverRanges.map((range) => (
+                              <option key={range.value} value={range.value}>
+                                {range.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banking Information */}
+                  <div className="gst-form-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-university me-2"></i>
+                        Banking Information
+                      </h4>
+                    </div>
+
+                    <div className="det-field bank-field">
+                      <div className="section-1">
+                        <div className="gst-form-group">
+                          <label className="form-label required">
+                            Bank Account Number
+                          </label>
+                          <input
+                            type="text"
+                            name="bankAccountNumber"
+                            className={`gst-form-control ${
+                              errors.bankAccountNumber ? "is-invalid" : ""
+                            }`}
+                            value={formData.bankAccountNumber}
+                            onChange={handleInputChange}
+                            placeholder="Enter bank account number"
+                          />
+                          {errors.bankAccountNumber && (
+                            <div className="invalid-feedback">
+                              {errors.bankAccountNumber}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="section-2">
+                        <div className="gst-form-group">
+                          <label className="form-label required">
+                            Bank Name
+                          </label>
+                          <input
+                            type="text"
+                            name="bankName"
+                            className={`gst-form-control ${
+                              errors.bankName ? "is-invalid" : ""
+                            }`}
+                            value={formData.bankName}
+                            onChange={handleInputChange}
+                            placeholder="Enter bank name"
+                          />
+                          {errors.bankName && (
+                            <div className="invalid-feedback">
+                              {errors.bankName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="det-field">
+                      <div className="section-1">
+                        <div className="gst-form-group">
+                          <label className="form-label required">
+                            IFSC Code
+                          </label>
+                          <input
+                            type="text"
+                            name="ifscCode"
+                            className={`gst-form-control ${
+                              errors.ifscCode ? "is-invalid" : ""
+                            }`}
+                            value={formData.ifscCode}
+                            onChange={handleInputChange}
+                            placeholder="ABCD0123456"
+                            maxLength="11"
+                          />
+                          {errors.ifscCode && (
+                            <div className="invalid-feedback">
+                              {errors.ifscCode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="section-2">
+                        <div className="gst-form-group">
+                          <label className="form-label required">
+                            Account Name
+                          </label>
+                          <input
+                            type="text"
+                            name="accountHolderName"
+                            className={`gst-form-control ${
+                              errors.accountHolderName ? "is-invalid" : ""
+                            }`}
+                            value={formData.accountHolderName}
+                            onChange={handleInputChange}
+                            placeholder="Enter account holder name"
+                          />
+                          {errors.accountHolderName && (
+                            <div className="invalid-feedback">
+                              {errors.accountHolderName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="last-field">
+                  {/* Terms and Agreements */}
+                  <div className="gst-form-section terms-agreements-section">
+                    <div className="gst-section-header">
+                      <h4>
+                        <i className="fas fa-handshake me-2"></i>
+                        Terms and Agreements
+                      </h4>
+                    </div>
+
+                    <div className="form-check mb-3">
+                      <input
+                        type="checkbox"
+                        className={`form-check-input ${
+                          errors.agreeToTerms ? "is-invalid" : ""
+                        }`}
+                        id="agreeToTerms"
+                        name="agreeToTerms"
+                        checked={formData.agreeToTerms}
+                        onChange={handleInputChange}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="agreeToTerms"
+                      >
+                        I agree to the{" "}
+                        <Link
+                          to="/terms"
+                          target="_blank"
+                          className="text-primary"
+                        >
+                          Terms and Conditions
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          to="/privacy-policy"
+                          target="_blank"
+                          className="text-primary"
+                        >
+                          Privacy Policy
+                        </Link>
+                      </label>
+                      {errors.agreeToTerms && (
+                        <div className="invalid-feedback d-block">
+                          {errors.agreeToTerms}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="form-check mb-3">
+                      <input
+                        type="checkbox"
+                        className={`form-check-input ${
+                          errors.agreeToCommission ? "is-invalid" : ""
+                        }`}
+                        id="agreeToCommission"
+                        name="agreeToCommission"
+                        checked={formData.agreeToCommission}
+                        onChange={handleInputChange}
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="agreeToCommission"
+                      >
+                        I agree to the commission structure and payment terms as
+                        outlined in the supplier agreement
+                      </label>
+                      {errors.agreeToCommission && (
+                        <div className="invalid-feedback d-block">
+                          {errors.agreeToCommission}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="existAcc-form-section">
+                    <div className="isAccExist">
+                      <Link to="/auth/login" className="text-primary">
+                        Already have an account? Login here
+                      </Link>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="existAcc-btn existAcc-btn-primary btn-lg px-5"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-2"></span>
+                            Registering...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-user-plus me-2"></i>
+                            Register as Supplier
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>

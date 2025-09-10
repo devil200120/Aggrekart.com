@@ -338,16 +338,6 @@ const SupplierProductsPage = () => {
                         <span className="badge-icon">👑</span>
                         Admin Created
                       </div>
-                      <div className="product-overlay">
-                        <button
-                          className="swiggy-btn swiggy-btn-primary"
-                          onClick={() => handleSetPricing(product)}
-                          disabled={setPricingMutation.isLoading}
-                        >
-                          <span className="btn-icon">💰</span>
-                          Set Pricing
-                        </button>
-                      </div>
                     </div>
 
                     <div className="product-content">
@@ -377,6 +367,14 @@ const SupplierProductsPage = () => {
                         <div className="footer-text">
                           Ready to add your pricing and start selling?
                         </div>
+                        <button
+                          className="simple-pricing-btn"
+                          onClick={() => handleSetPricing(product)}
+                          disabled={setPricingMutation.isLoading}
+                        >
+                          <span className="btn-icon">💰</span>
+                          Set Pricing
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -536,7 +534,7 @@ const SupplierProductsPage = () => {
                             e.target.src = "/placeholder-product.jpg";
                           }}
                         />
-                        
+
                         <div className={`status-badge ${product.status}`}>
                           <span className="status-icon">
                             {product.status === "active"
@@ -559,6 +557,16 @@ const SupplierProductsPage = () => {
                           </span>
                           {product.isActive ? "In Stock" : "Out of Stock"}
                         </div>
+
+                        <div
+                          className={`stock-badge ${product.isActive ? "in-stock" : "out-of-stock"}`}
+                        >
+                          <span className="stock-icon">
+                            {product.isActive ? "📦" : "❌"}
+                          </span>
+                          {product.isActive ? "In Stock" : "Out of Stock"}
+                        </div>
+
                         <div className="pricing-badge">
                           <span className="badge-icon">💰</span>
                           Pricing Set
@@ -1072,7 +1080,6 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
             <h4>🧱 Bricks & Blocks Specifications</h4>
             <p>Required specifications for Bricks & Blocks</p>
           </div>
-
           <div className="form-grid">
             <div className="form-group">
               <label>Size *</label>
@@ -1095,7 +1102,6 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               </select>
             </div>
           </div>
-
           <div className="form-group">
             <label>Brand *</label>
             <input
@@ -1117,7 +1123,6 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
             <h4>🏗️ Cement Specifications</h4>
             <p>Required specifications for Cement</p>
           </div>
-
           <div className="form-grid">
             <div className="form-group">
               <label>Cement Grade *</label>
@@ -1138,7 +1143,6 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
                 <option value="53_grade">53 Grade</option>
               </select>
             </div>
-
             <div className="form-group">
               <label>Cement Type *</label>
               <select
@@ -1155,7 +1159,6 @@ const PricingForm = ({ baseProduct, onSubmit, onCancel, isLoading }) => {
               </select>
             </div>
           </div>
-
           <div className="form-group">
             <label>Brand *</label>
             <input
@@ -1224,7 +1227,7 @@ const EditPricingForm = ({ product, onSubmit, onCancel, isLoading }) => {
 
     const submissionData = {
       pricing: {
-        unit: formData.pricing.unit,  // ADD THIS LINE
+        unit: formData.pricing.unit, // ADD THIS LINE
         basePrice: parseFloat(formData.pricing.basePrice),
         minimumQuantity: parseFloat(formData.pricing.minimumQuantity),
         includesGST: formData.pricing.includesGST,

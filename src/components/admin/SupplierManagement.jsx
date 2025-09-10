@@ -55,12 +55,12 @@ const SupplierManagement = ({
 
     // Check rejection first
     if (supplier.rejectedAt) {
-      return <span className="status-badge rejected">Rejected</span>
+      return <span className="status-badge-admin rejected">Rejected</span>
     }
     
     // Check if not approved yet
     if (!supplier.isApproved) {
-      return <span className="status-badge pending">Pending</span>
+      return <span className="status-badge-admin pending">Pending</span>
     }
     
     // Check if suspended (approved but not active)
@@ -70,11 +70,11 @@ const SupplierManagement = ({
     
     // Active and approved
     if (supplier.isApproved && supplier.isActive) {
-      return <span className="status-badge approved">Active</span>
+      return <span className="status-badge-admin approved">Active</span>
     }
 
     // Default fallback
-    return <span className="status-badge pending">Unknown</span>
+    return <span className="status-badge-admin pending">Unknown</span>
   }
 
   return (

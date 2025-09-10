@@ -44,7 +44,7 @@ const MembershipProgress = () => {
       console.log("🔍 Fetching REAL membership progress...");
 
       const response = await fetch(
-        "http://localhost:5000/api/loyalty/membership/progress",
+        "https://aggrekart-com-backend.onrender.com/api/loyalty/membership/progress",
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -2,80 +2,184 @@
 /* This maintains your existing design while adding polish */
 
 /* Container and Layout */
-.auth-page {
+.register-auth-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 20px 0;
+  padding-top: 5rem;
 }
 
-.auth-card {
+.auth-dir {
+  max-width: 900px;
+}
+
+.register-auth-card {
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   border: 1px solid rgba(245, 158, 11, 0.1);
+  padding: 1.5rem;
 }
 
 /* Header Section */
-.auth-header {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  padding: 32px;
+.register-auth-header {
+  border-bottom: 4px solid #f59e0b;
+  border-radius: 0.5rem;
   text-align: center;
-  border-bottom: 2px solid #f59e0b;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  padding: 20px 32px;
+  margin-bottom: 1rem;
 }
 
-.auth-header h1 {
+.register-auth-header h2 {
   color: #1f2937;
   margin: 0 0 8px 0;
   font-size: 28px;
   font-weight: 700;
 }
 
-.auth-header p {
+.register-auth-header p {
   color: #6b7280;
   margin: 0;
   font-size: 16px;
 }
 
+.gst-auth-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.grid-1 {
+  margin-bottom: 1rem;
+}
+
 /* Form Sections */
-.form-section {
+.register-section-header {
+  height: 130px;
+  border-bottom: 4px solid #f59e0b;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 20px 24px;
+  margin-bottom: 1rem;
+}
+
+.register-section-header h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #d97706;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.register-section-header p {
+  width: 100%;
+  font-size: 14px;
+  text-align: center;
+  color: #92400e;
+  margin: 8px 0 0 0;
+}
+
+.register-section-header-2 {
+  height: 105px;
+}
+
+.gst-section-header {
+  border-bottom: 4px solid #f59e0b;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 20px 24px;
+  margin-bottom: 0.5rem;
+}
+
+.gst-section-header h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #d97706;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.gst-section-header p {
+  width: 100%;
+  font-size: 14px;
+  text-align: center;
+  color: #92400e;
+  margin: 8px 0 0 0;
+}
+
+.existAcc-form-section {
   background: white;
-  border: 2px solid #f59e0b;
-  border-radius: 12px;
-  margin-bottom: 24px;
+  /* border: 2px solid #f59e0b; */
+  border-radius: 12px !important;
+  margin-bottom: 0 !important;
   overflow: hidden;
   transition: all 0.2s ease;
 }
 
-.form-section:hover {
+.existAcc-form-section:hover {
   box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
 }
 
-.section-header {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  padding: 20px 24px;
-  border-bottom: 1px solid #fed7aa;
-}
-
-.section-header h3 {
-  margin: 0;
-  color: #d97706;
-  font-size: 18px;
-  font-weight: 600;
+.isAccExist {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-}
-
-.section-header p {
-  margin: 8px 0 0 0;
-  color: #92400e;
-  font-size: 14px;
+  gap: 0.5rem;
 }
 
 /* Form Groups and Controls */
-.form-group {
-  margin-bottom: 20px;
+.det-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bank-field {
+  margin-bottom: 7px;
+}
+
+.gst-select {
+  width: 49%;
+}
+
+.section-1, .section-2 {
+  flex: 1 1 49%;
+  width: 49%;
+}
+
+.section-3 {
+  flex: 1;
+  width: 100%;
+}
+
+.field-1, .field-2 {
+  width: 100%;
+}
+
+.det-form-group {
+  margin-bottom: 5px;
 }
 
 .form-label {
@@ -86,62 +190,68 @@
   font-size: 14px;
 }
 
-.form-control {
+.gst-form-control {
   width: 100%;
-  padding: 12px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 16px;
+  font-family: inherit;
   transition: all 0.2s ease;
   background: white;
+  padding: 8px 12px;
   box-sizing: border-box;
 }
 
-.form-control:focus {
+.gst-form-control:focus {
   outline: none;
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
-.form-control:hover {
+.gst-form-control:hover {
   border-color: #d1d5db;
 }
 
+textarea.gst-form-control {
+  height: 120px;
+}
+
+input[name="city"], select[name="state"] {
+  padding: 5px 10px;
+}
+
 /* Primary Button */
-.btn-primary {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
+.existAcc-btn-primary {
+  width: 100%;
   border: none;
-  padding: 16px 32px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 16px 15px;
   transition: all 0.2s ease;
-  width: 100%;
+  cursor: pointer;
 }
 
-.btn-primary:hover {
+.existAcc-btn-primary:hover {
   background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
-.btn-primary:disabled {
+.existAcc-btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-/* GST COMPONENT SPECIFIC STYLING */
-
-/* GST Container */
-.form-section .space-y-4 {
-  padding: 24px;
-}
-
 /* GST Label */
-.form-section .space-y-4 label[for="gstNumber"] {
+.form-section .gst-container label[for="gstNumber"] {
   display: block;
   font-size: 14px;
   font-weight: 600;
@@ -150,13 +260,13 @@
 }
 
 /* GST Input Container */
-.form-section .space-y-4 .relative {
+.form-section .gst-container .gst-input-field {
   position: relative;
   margin-bottom: 16px;
 }
 
 /* GST Input Field - Target the actual input element */
-.form-section .space-y-4 input[id="gstNumber"] {
+.gst-form-section .gst-container input[id="gstNumber"] {
   width: 100%;
   padding: 12px 50px 12px 16px;
   border: 2px solid #e5e7eb;
@@ -171,16 +281,16 @@
   box-sizing: border-box;
 }
 
-.form-section .space-y-4 input[id="gstNumber"]:focus {
+.gst-form-section .gst-container input[id="gstNumber"]:focus {
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
-.form-section .space-y-4 input[id="gstNumber"]:hover {
+.gst-form-section .gst-container input[id="gstNumber"]:hover {
   border-color: #d1d5db;
 }
 
-.form-section .space-y-4 input[id="gstNumber"]::placeholder {
+.gst-form-section .gst-container input[id="gstNumber"]::placeholder {
   color: #9ca3af;
   text-transform: none;
   letter-spacing: normal;
@@ -188,20 +298,20 @@
 }
 
 /* GST Input State Colors */
-.form-section .space-y-4 input[id="gstNumber"].border-red-300 {
+.gst-form-section .gst-container input[id="gstNumber"].border-red-300 {
   border-color: #dc2626;
 }
 
-.form-section .space-y-4 input[id="gstNumber"].border-green-300 {
+.gst-form-section .gst-container input[id="gstNumber"].border-green-300 {
   border-color: #10b981;
 }
 
-.form-section .space-y-4 input[id="gstNumber"].border-gray-300 {
+.gst-form-section .gst-container input[id="gstNumber"].border-gray-300 {
   border-color: #e5e7eb;
 }
 
 /* GST Icon Container */
-.form-section .space-y-4 .relative .absolute {
+.gst-form-section .gst-container .gst-input-field .absolute {
   position: absolute;
   top: 0;
   right: 0;
@@ -213,56 +323,56 @@
 }
 
 /* GST Icons */
-.form-section .space-y-4 .relative .absolute svg {
+.gst-form-section .gst-container .gst-input-field .absolute svg {
   width: 20px;
   height: 20px;
   color: #6b7280;
   transition: color 0.2s ease;
 }
 
-.form-section .space-y-4 .relative .absolute svg.text-blue-500 {
+.gst-form-section .gst-container .gst-input-field .absolute svg.text-blue-500 {
   color: #3b82f6;
 }
 
-.form-section .space-y-4 .relative .absolute svg.text-green-500 {
+.gst-form-section .gst-container .gst-input-field .absolute svg.text-green-500 {
   color: #10b981;
 }
 
-.form-section .space-y-4 .relative .absolute svg.text-red-500 {
+.gst-form-section .gst-container .gst-input-field .absolute svg.text-red-500 {
   color: #dc2626;
 }
 
-.form-section .space-y-4 .relative .absolute svg.text-gray-400 {
+.gst-form-section .gst-container .gst-input-field .absolute svg.text-gray-400 {
   color: #9ca3af;
 }
 
-.form-section .space-y-4 .relative .absolute svg.animate-spin {
+.gst-form-section .gst-container .gst-input-field .absolute svg.animate-spin {
   animation: spin 1s linear infinite;
 }
 
 /* GST Validation Messages */
-.form-section .space-y-4 p.mt-1.text-sm.text-green-600 {
+.gst-form-section .gst-container p.mt-1.text-sm.text-green-600 {
   margin-top: 8px;
   font-size: 14px;
   color: #16a34a;
   font-weight: 500;
 }
 
-.form-section .space-y-4 p.mt-1.text-sm.text-red-600 {
+.gst-form-section .gst-container p.mt-1.text-sm.text-red-600 {
   margin-top: 8px;
   font-size: 14px;
   color: #dc2626;
   font-weight: 500;
 }
 
-.form-section .space-y-4 p.mt-1.text-sm.text-gray-500 {
+.gst-form-section .gst-container p.mt-1.text-sm.text-gray-500 {
   margin-top: 8px;
   font-size: 14px;
   color: #6b7280;
 }
 
 /* GST Verify Button */
-.form-section .space-y-4 button[type="button"] {
+.gst-form-section .gst-container button[type="button"] {
   width: 100%;
   padding: 14px 24px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -282,32 +392,32 @@
   font-family: inherit;
 }
 
-.form-section .space-y-4 button[type="button"]:hover:not(:disabled) {
+.gst-form-section .gst-container button[type="button"]:hover:not(:disabled) {
   background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
-.form-section .space-y-4 button[type="button"]:disabled {
+.gst-form-section .gst-container button[type="button"]:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.form-section .space-y-4 button[type="button"]:focus {
+.gst-form-section .gst-container button[type="button"]:focus {
   outline: 2px solid #f59e0b;
   outline-offset: 2px;
 }
 
 /* Button Loading State */
-.form-section .space-y-4 button[type="button"] svg {
+.gst-form-section .gst-container button[type="button"] svg {
   width: 16px;
   height: 16px;
   color: white;
 }
 
 /* GST Success Message */
-.form-section .space-y-4 .p-4.bg-green-50 {
+.gst-form-section .gst-container .p-4.bg-green-50 {
   background: #f0fdf4;
   border: 2px solid #16a34a;
   border-radius: 8px;
@@ -315,21 +425,21 @@
   margin-top: 16px;
 }
 
-.form-section .space-y-4 .p-4.bg-green-50 .flex.items-center {
+.gst-form-section .gst-container .p-4.bg-green-50 .flex.items-center {
   display: flex;
   align-items: center;
 }
 
-.form-section .space-y-4 .p-4.bg-green-50 .text-green-800 {
+.gst-form-section .gst-container .p-4.bg-green-50 .text-green-800 {
   color: #166534;
   font-weight: 600;
 }
 
-.form-section .space-y-4 .p-4.bg-green-50 .text-green-700 {
+.gst-form-section .gst-container .p-4.bg-green-50 .text-green-700 {
   color: #15803d;
 }
 
-.form-section .space-y-4 .p-4.bg-green-50 svg {
+.gst-form-section .gst-container .p-4.bg-green-50 svg {
   width: 20px;
   height: 20px;
   color: #16a34a;
@@ -337,11 +447,29 @@
 }
 
 /* Checkbox Grid */
-.checkbox-grid {
+.gst-checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.form-check-catagory {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 10px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.form-check-catagory .form-check-input::after {
+  display: none;
 }
 
 .checkbox-item {
@@ -364,6 +492,10 @@
   margin-right: 12px;
   accent-color: #f59e0b;
   transform: scale(1.2);
+}
+
+.form-check-catagory input[type="checkbox"]:checked {
+  appearance: auto;
 }
 
 .checkbox-item label {
@@ -403,7 +535,7 @@
 }
 
 /* Enhanced Terms and Agreements Section */
-.form-section:has(.section-header h4 .fa-handshake) {
+.gst-form-section:has(.section-header h4 .fa-handshake) {
   background: linear-gradient(135deg, #fff5e6 0%, #fffbf5 100%);
   border: 1px solid #ffd6a5;
   border-radius: 16px;
@@ -412,12 +544,12 @@
   box-shadow: 0 4px 12px rgba(255, 165, 0, 0.08);
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .section-header {
+.gst-form-section:has(.section-header h4 .fa-handshake) .section-header {
   margin-bottom: 1.5rem;
   text-align: center;
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .section-header h4 {
+.gst-form-section:has(.section-header h4 .fa-handshake) .section-header h4 {
   color: #d97706;
   font-size: 1.5rem;
   font-weight: 700;
@@ -428,13 +560,13 @@
   gap: 0.75rem;
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .section-header h4 i {
+.gst-form-section:has(.section-header h4 .fa-handshake) .section-header h4 i {
   font-size: 1.75rem;
   color: #f59e0b;
 }
 
 /* Enhanced checkbox styling */
-.form-section:has(.section-header h4 .fa-handshake) .form-check {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check {
   background: white;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
@@ -445,20 +577,20 @@
   overflow: hidden;
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .form-check:hover {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check:hover {
   border-color: #f59e0b;
   box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);
   transform: translateY(-2px);
 }
 
-.form-section:has(.section-header h4 .fa-handshake)
+.gst-form-section:has(.section-header h4 .fa-handshake)
   .form-check:has(input:checked) {
   border-color: #10b981;
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
 }
 
-.form-section:has(.section-header h4 .fa-handshake)
+.gst-form-section:has(.section-header h4 .fa-handshake)
   .form-check:has(input:checked)::before {
   content: "";
   position: absolute;
@@ -470,7 +602,7 @@
 }
 
 /* Enhanced checkbox input */
-.form-section:has(.section-header h4 .fa-handshake) .form-check-input {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-input {
   width: 1.5rem;
   height: 1.5rem;
   margin-right: 1rem;
@@ -483,18 +615,18 @@
   flex-shrink: 0;
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .form-check-input:hover {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-input:hover {
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .form-check-input:checked {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-input:checked {
   background: #10b981;
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-.form-section:has(.section-header h4 .fa-handshake)
+.gst-form-section:has(.section-header h4 .fa-handshake)
   .form-check-input:checked::after {
   content: "✓";
   position: absolute;
@@ -507,19 +639,18 @@
 }
 
 /* Enhanced checkbox label */
-.form-section:has(.section-header h4 .fa-handshake) .form-check-label {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-label {
   font-size: 1rem;
-  
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .form-check {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
 }
 
 /* Enhanced link styling within checkboxes */
-.form-section:has(.section-header h4 .fa-handshake) .form-check-label a {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-label a {
   color: #3b82f6;
   font-weight: 600;
   text-decoration: none;
@@ -528,20 +659,20 @@
   transition: all 0.2s ease;
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .form-check-label a:hover {
+.gst-form-section:has(.section-header h4 .fa-handshake) .form-check-label a:hover {
   background: #dbeafe;
   text-decoration: underline;
 }
 
 /* Error state enhancement */
-.form-section:has(.section-header h4 .fa-handshake)
+.gst-form-section:has(.section-header h4 .fa-handshake)
   .form-check:has(input.is-invalid) {
   border-color: #ef4444;
   background: linear-gradient(135deg, #fef2f2 0%, #fef1f1 100%);
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
 }
 
-.form-section:has(.section-header h4 .fa-handshake) .invalid-feedback {
+.gst-form-section:has(.section-header h4 .fa-handshake) .invalid-feedback {
   color: #ef4444;
   font-size: 0.875rem;
   font-weight: 500;
@@ -562,8 +693,8 @@
     font-size: 24px;
   }
 
-  .form-section {
-    margin-bottom: 16px;
+  .gst-form-section {
+    margin-bottom: 120px;
   }
 
   .section-header {
@@ -574,58 +705,79 @@
     grid-template-columns: 1fr;
   }
 
-  .form-section .space-y-4 {
+  
+
+  .gst-form-section .gst-container {
     padding: 20px 16px;
   }
 
-  .form-section:has(.section-header h4 .fa-handshake) {
+  .gst-form-section:has(.section-header h4 .fa-handshake) {
     padding: 1.5rem;
   }
 
-  .form-section:has(.section-header h4 .fa-handshake) .section-header h4 {
+  .gst-form-section:has(.section-header h4 .fa-handshake) .section-header h4 {
     font-size: 1.25rem;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .form-section:has(.section-header h4 .fa-handshake) .form-check {
+  .gst-form-section:has(.section-header h4 .fa-handshake) .form-check {
     padding: 1rem;
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .form-section:has(.section-header h4 .fa-handshake) .form-check-input {
+  .gst-form-section:has(.section-header h4 .fa-handshake) .form-check-input {
     align-self: flex-start;
   }
 
-  .form-section:has(.section-header h4 .fa-handshake) .form-check-label {
+  .gst-form-section:has(.section-header h4 .fa-handshake) .form-check-label {
     font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
+  .auth-dir {
+    width: 100% !important;
+  }
   .auth-page {
-    padding: 10px;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .register-auth-card {
+    padding: 1rem;
+    padding-top: 1.5rem;
   }
 
   .auth-card {
     border-radius: 12px;
   }
 
-  .auth-header {
+  .register-auth-header {
+    border-radius: 0.5rem;
     padding: 20px 16px;
   }
 
-  .auth-header h1 {
-    font-size: 22px;
+  .register-auth-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
   }
 
-  .section-header {
-    padding: 14px 16px;
+  .register-auth-header p {
+    font-size: 14px;
   }
 
-  .form-section .space-y-4 {
-    padding: 16px 12px;
+  .gst-form-section .gst-container {
+    padding: 0;
+  }
+
+  .register-section-header,
+  .gst-section-header {
+    height: max-content;
+    gap: 0;
+    padding: 0.9rem;
   }
 
   .form-control {
@@ -636,11 +788,71 @@
     padding: 14px 24px;
   }
 
-  .form-section .space-y-4 input[id="gstNumber"] {
+  .det-field {
+    flex-direction: column;
+  }
+
+  .section-1, .section-2, .section-3 {
+    width: 100%;
+  }
+
+  textarea.gst-form-control {
+    height: 80px;
+  }
+
+  .form-check-catagory {
+    font-size: 0.95rem;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  input[type="checkbox"] {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  .gst-form-section:nth-child(1) {
+    height: 280px !important;
+  }
+
+  .gst-form-section:nth-child(2) {
+    height: 460px !important;
+  }
+
+  .gst-form-section:nth-child(3) {
+    height: 375px !important;
+  }
+
+  .gst-form-section:nth-child(4) {
+    height: 410px !important;
+  }
+
+  .gst-form-section:nth-child(5) {
+    height: 320px !important;
+  }
+
+  .gst-form-section:nth-child(6) {
+    height: 340px !important;
+  }
+
+  .gst-form-section:nth-child(7) {
+    height: 290px !important;
+  }
+
+  .gst-form-section:nth-child(8) {
+    height: 360px !important;
+  }
+
+  .last-field .gst-form-section {
+    height: max-content !important;
+    margin: 0 !important;
+  }
+
+  .gst-form-section .gst-container input[id="gstNumber"] {
     padding: 12px 40px 12px 12px;
   }
 
-  .form-section .space-y-4 .relative .absolute {
+  .gst-form-section .gst-container .gst-input-field .absolute {
     padding-right: 8px;
   }
 }
@@ -656,11 +868,28 @@
 * {
   transition: all 0.2s ease;
 }
-/* Enhanced Submit Button and Footer Section */
-.form-section:last-child {
-  margin-top: 40px;
-  padding-top: 40px;
-  border-top: 1px solid #e9ecef;
+
+.gst-form-section:nth-child(1),
+.gst-form-section:nth-child(2) {
+  height: 360px;
+  padding: 0;
+}
+
+.gst-form-section:nth-child(3), 
+.gst-form-section:nth-child(4) {
+  height: 390px;
+  padding: 0;
+}
+
+.gst-form-section:nth-child(5), 
+.gst-form-section:nth-child(6) {
+  height: 410px;
+  padding: 0;
+}
+
+.gst-form-section:nth-child(7), 
+.gst-form-section:nth-child(8) {
+  padding: 0;
 }
 
 /* Submit Button Container */
@@ -742,7 +971,6 @@
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;
-  padding: 12px 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
   display: inline-flex;
@@ -796,11 +1024,6 @@
 }
 
 @media (max-width: 480px) {
-  .form-section:last-child {
-    margin-top: 30px;
-    padding-top: 30px;
-  }
-  
   .d-flex.justify-content-between.align-items-center {
     padding: 20px 0;
     gap: 20px;
@@ -850,10 +1073,16 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
 /* Terms and Agreements Section */
+.last-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .terms-agreements-section {
-  background: linear-gradient(145deg, #f8fffe, #f0f9ff);
-  border: 2px solid #e0f2fe;
+  flex-wrap: nowrap;
   border-radius: 16px;
   padding: 24px;
   margin-top: 24px;
@@ -867,14 +1096,8 @@
   box-shadow: 0 8px 25px rgba(14, 165, 233, 0.1);
 }
 
-.terms-agreements-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #0ea5e9, #3b82f6);
+.last-field .gst-form-section {
+  height: max-content !important;
 }
 
 .terms-agreements-section .section-header h4 {
@@ -895,6 +1118,9 @@
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid #e2e8f0;
   border-radius: 12px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   padding: 16px;
   margin-bottom: 12px;
   transition: all 0.2s ease;
@@ -993,6 +1219,10 @@
 }
 
 @media (max-width: 480px) {
+  .gst-auth-form {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
   .terms-agreements-section {
     padding: 16px 12px;
     border-radius: 10px;
@@ -1011,7 +1241,6 @@
 
   .terms-agreements-section .form-check {
     padding: 12px;
-    flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }

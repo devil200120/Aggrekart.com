@@ -158,10 +158,10 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <Link to="/" className="auth-logo">
+    <div className="auth-page-login-container">
+      <div className="auth-container-login">
+        <div className="auth-header-login">
+          <Link to="/" className="auth-logo-login">
             <span className="logo-icon">🏗️</span>
             <span className="logo-text"></span>
           </Link>
@@ -171,9 +171,9 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <div className="auth-card">
+        <div className="auth-login-card-container">
           {/* Login Type Toggle */}
-          <div className="login-type-toggle">
+          <div className="login-type-toggle-container">
             <button
               type="button"
               className={`toggle-btn ${loginType === 'email' ? 'active' : ''}`}
@@ -190,7 +190,7 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form-login">
             {/* Identifier Input */}
             <div className="form-group">
               <label className="form-label">

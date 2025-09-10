@@ -4,7 +4,7 @@ import Cookies from 'js-cookie'
 // Create axios instance
 const api = axios.create({
 
-  baseURL: 'http://localhost:5000/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
+  baseURL: 'https://aggrekart-com-backend.onrender.com/api', // Make sure this matches your backend port', // Proxy configured in vite.config.js
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -312,6 +312,7 @@ export const paymentsAPI = {
 
 // Users API - Enhanced for Settings functionality
 export const usersAPI = {
+  geocodeAddress: (addressId) => api.put(`/users/addresses/${addressId}/geocode`),
   // GET /api/users/profile
   getProfile: () => api.get('/users/profile'),
   
@@ -461,7 +462,6 @@ getExportStatus: () => api.get('/users/data-export-status'),
   // Profile Management (from routes/suppliers.js)
   getProfile: () => api.get('/suppliers/profile'),
   updateProfile: (data) => api.put('/suppliers/profile', data),
-  updateTransportRates: (data) => api.put('/suppliers/transport-rates', data),
 
   // Dashboard (from routes/suppliers.js)
   getDashboardData: (params = {}) => api.get('/suppliers/dashboard', { params }),
@@ -537,8 +537,13 @@ uploadProductImages: (productId, formData) => api.post(`/products/${productId}/i
 }
 // Admin API - Administrative functions and dashboard
 export const adminAPI = {
-  // Add this function to the adminAPI object (around line 450):
-// Add this function to the adminAPI object (around line 520)
+  getAllPilots: (params) => api.get('/admin/pilots', { params }),
+  
+  getPilotDetails: (pilotId) => api.get(`/admin/pilots/${pilotId}`),
+  
+  approvePilot: (pilotId, data) => api.post(`/admin/pilots/${pilotId}/approve`, data),
+  
+  rejectPilot: (pilotId, data) => api.post(`/admin/pilots/${pilotId}/reject`, data),
 getProductAnalytics: (params) => api.get('/admin/analytics/products', { params }),
 // Analytics Export
 exportAnalytics: (params) => api.post('/admin/analytics/export', params, { responseType: 'blob' }),
@@ -654,8 +659,23 @@ deleteProduct: (productId, data) => api.delete(`/admin/products/${productId}`, {
   
   // Performance Monitoring
   getPerformanceMetrics: (params) => api.get('/admin/performance/metrics', { params }),
+  // getAdvancePaymentConfigs: () => api.get('/admin/advance-payment-config'),
   
+  
+  // Add this method for public access without admin auth:
+  
+  // Find the adminAPI section (around line 653) and add this method:
+
+// Add this after the existing advance payment methods
+getAdvancePaymentConfigs: () => api.get('/admin/advance-payment-config'),
+updateAdvancePaymentConfig: (category, data) => 
+  api.put(`/admin/advance-payment-config/${category}`, data),
+bulkUpdateAdvancePaymentConfigs: (configs) => 
+  api.post('/admin/advance-payment-config/bulk-update', configs),
+getAdvancePaymentOptionsForCategory: (category) => 
+  api.get(`/admin/advance-payment-config/${category}/options`),
 // Replace the createBaseProduct function (around line 553) with this:
+// Add this at line 657 (complete the getAdvancePaymentConfigs function):
 
 createBaseProduct: (formData) => {
   return api.post('/admin/products/create-base', formData, {

@@ -39,6 +39,10 @@ const AutoCartDistancePricing = ({ cartItems, onCostsCalculated }) => {
         if (defaultAddress) {
           console.log("🏠 Auto-selecting default address:", defaultAddress._id);
           setSelectedAddress(defaultAddress);
+          setTimeout(() => {
+            console.log("🧮 Auto-calculating delivery for default address...");
+            handleCalculate();
+          }, 1500);
         }
 
         if (addresses.length > 0) {
@@ -68,6 +72,25 @@ const AutoCartDistancePricing = ({ cartItems, onCostsCalculated }) => {
       setIsLoadingAddresses(false);
     }
   }, []);
+
+  // After line 74: }, [fetchSavedAddresses]);
+
+  // Auto-calculate delivery costs when default address is available
+  useEffect(() => {
+    if (
+      selectedAddress?.isDefault && 
+      selectedAddress?.coordinates?.latitude && 
+      selectedAddress?.coordinates?.longitude && 
+      cartItems?.length > 0 && 
+      !hasCalculated &&
+      !isCalculating
+    ) {
+      console.log("🚀 Auto-calculating for default address on component mount...");
+      setTimeout(() => {
+        handleCalculate();
+      }, 2000);
+    }
+  }, [selectedAddress, cartItems, hasCalculated, isCalculating]);
 
   useEffect(() => {
     fetchSavedAddresses();

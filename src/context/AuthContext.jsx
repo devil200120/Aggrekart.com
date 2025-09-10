@@ -43,7 +43,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
     }
   }
-
+const setAuthState = (token, userData) => {
+    Cookies.set('aggrekart_token', token, { expires: 30 })
+    setUser(userData)
+    setIsAuthenticated(true)
+  }
   const login = async (credentials) => {
     try {
       setLoading(true)
@@ -196,7 +200,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     checkAuth,
     verifyPhone,
-    verifyEmail
+    verifyEmail,
+        setAuthState  // ADD THIS LINE
+
   }
 
   return (

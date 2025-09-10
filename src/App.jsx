@@ -1,4 +1,6 @@
 import { React, useEffect } from "react";
+import { useGoogleTranslate } from "./hooks/useGoogleTranslate";
+
 import SupplierDetailPage from "./pages/SupplierDetailPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -52,7 +54,9 @@ import ReferralSystem from "./components/loyalty/ReferralSystem";
 import MembershipProgress from "./components/loyalty/MembershipProgress";
 import AdminLoyaltyManagement from "./components/admin/AdminLoyaltyManagement";
 //
-import SupplierStatusBanner from './components/common/SupplierStatusBanner';
+// Add this import with other admin imports
+import AdminSupplierDetailPage from "./pages/admin/AdminSupplierDetailPage";
+import SupplierStatusBanner from "./components/common/SupplierStatusBanner";
 
 // CORRECT:
 import WhatsAppRegister from "./pages/auth/WhatsAppRegister";
@@ -99,8 +103,9 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  
   const supplierStatusCheck = useSupplierSuspensionCheck(); // RENAMED
-
+  useGoogleTranslate();
   useEffect(() => {
     if (supplierStatusCheck.showStatusDialog) {
       document.body.classList.add("supplier-account-notification-active"); // UPDATED CLASS
@@ -403,6 +408,15 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  // Add this route with other admin routes
+                  <Route
+                    path="/admin/suppliers/:supplierId"
+                    element={
+                      <ProtectedRoute allowedRoles={["admin"]}>
+                        <AdminSupplierDetailPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route
                     path="/admin/reports"
                     element={
@@ -538,6 +552,7 @@ function App() {
                 position="top-right"
                 toastOptions={{
                   duration: 4000,
+
                   style: {
                     background: "#363636",
                     color: "#fff",

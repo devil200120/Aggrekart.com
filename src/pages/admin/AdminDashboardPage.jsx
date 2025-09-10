@@ -152,6 +152,11 @@ const handleApproval = async (approvalId, type, action) => {
       result = action === 'approve'
         ? await adminAPI.approveProduct(approvalId, { reason: 'Approved from dashboard' })
         : await adminAPI.rejectProduct(approvalId, { reason: 'Rejected from dashboard' });
+    }else if (type === 'pilot') {
+      // Add pilot handling
+      result = action === 'approve'
+        ? await adminAPI.approvePilot(approvalId, { notes: 'Approved from dashboard' })
+        : await adminAPI.rejectPilot(approvalId, { reason: 'Rejected from dashboard' });
     }
 
     toast.dismiss(loadingToast);
@@ -265,11 +270,11 @@ const handleApproval = async (approvalId, type, action) => {
         </div>
 
         <div className="header-actionss">
-          <Link to="/admin/settings" className="btn btn-outline">
-            <Settings size={16} />
+          <Link to="/admin/settings" className="settings-button btn-outline">
+            <Settings size={14} />
             Settings
           </Link>
-          <Link to="/admin/reports" className="btn btn-primary">
+          <Link to="/admin/reports" className="button btn-primary">
             <FileText size={16} />
             Reports
           </Link>
@@ -577,7 +582,7 @@ const handleApproval = async (approvalId, type, action) => {
                     </div>
                     <div className="approval-actions">
   <button 
-    className="btn btn-success btn-sm"
+    className="button btn-success-approval btn-sm"
     onClick={() => handleApproval(approval._id, approval.type, 'approve')}
   >
     ✅ Approve
@@ -590,7 +595,7 @@ const handleApproval = async (approvalId, type, action) => {
   </button>
   <Link 
     to={`/admin/${approval.type === 'supplier' ? 'suppliers' : 'products'}/${approval._id}`}
-    className="btn btn-outline btn-sm"
+    className="button btn-outline btn-sm"
   >
     📄 View Details
   </Link>

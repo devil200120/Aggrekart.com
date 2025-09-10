@@ -51,7 +51,9 @@ const CashfreePayment = ({ orderData, onSuccess, onError, onCancel }) => {
       // Create payment order with your backend
       const response = await paymentsAPI.createCashfreeOrder({
         orderId: orderData.orderId,
-        amount: orderData.payment?.advanceAmount || orderData.totalAmount,
+        amount: parseFloat(
+          (orderData.payment?.advanceAmount || orderData.totalAmount).toFixed(2)
+        ), // Ensure proper decimal formatting
       });
 
       console.log("🔒 Cashfree order response:", response);

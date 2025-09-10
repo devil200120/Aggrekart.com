@@ -6,7 +6,15 @@
 }
 .top-rated-products-section .container .section-header .header-contents{
   font-size: 11px;
+  width: 100%;
   background:white;
+  display: flex;
+  flex-direction: column;
+  
+  
+  padding-bottom: 50px;
+  border-radius: 10px;
+  
 }
 /* ...existing code... */
 
@@ -25,7 +33,7 @@
 }
 
 /* Header Section */
-.section-header {
+.section-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -44,15 +52,19 @@
 .section-subtitle {
   font-size: 0.95rem;
   color: #7e808c;
-  margin: 0;
+  
+
   font-weight: 400;
 }
 
 .view-all-btn-header {
+  position: relative;
+  left: -152px;
   background: none;
   border: 1px solid #fc8019;
   color: #fc8019;
-  padding: 8px 16px;
+  height: 50px;
+  width: 120px;
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -390,7 +402,7 @@
   }
   
   .section-header {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     gap: 15px;
     margin-bottom: 30px;
@@ -415,6 +427,9 @@
 }
 
 @media (max-width: 480px) {
+  .section-subtitle{
+    padding-left: 70px;
+  }
   .productss-grid {
     height: 1500px;
     grid-template-columns: 1fr;
@@ -425,7 +440,15 @@
     
     height: 280px;
   }
-  
+  .view-all-btn-header{
+    position: absolute;
+    left: 150px;
+    height: 30px;
+    width: 80px;
+    margin-top: 190px;
+    
+    
+  }
   .section-titles {
     background:#7e808c;
     font-size: 1.3rem !important;

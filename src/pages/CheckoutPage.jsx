@@ -4,11 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { ordersAPI, usersAPI } from "../services/api";
+import { ordersAPI, usersAPI, adminAPI } from "../services/api";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import RazorpayPayment from "../components/payment/RazorpayPayment";
 import { toast } from "react-hot-toast";
 import "./CheckoutPage.css";
+// Add these imports after line 14:
+import { useDistancePricing } from "../hooks/useDistancePricing";
+import distancePricingService from "../services/distancePricingService";
 import OrderPlacementOverlay from "../components/common/OrderPlacementOverlay";
 import CashfreePayment from "../components/payment/CashfreePayment";
 import GSTBreakdown from "../components/cart/GSTBreakdown";
@@ -39,7 +42,14 @@ const CheckoutPage = () => {
   const [estimatedDelivery, setEstimatedDelivery] = useState("45-60 mins");
   const [showOrderAnimation, setShowOrderAnimation] = useState(false);
   const [orderAnimationData, setOrderAnimationData] = useState(null);
+  // Add these state variables after line 48 where you have other useState declarations:
+  const [deliveryCost, setDeliveryCost] = useState(null);
+  const [isCalculatingDelivery, setIsCalculatingDelivery] = useState(false);
+  const [deliveryCalculationError, setDeliveryCalculationError] =
+    useState(null);
 
+  // Add this hook after your other hooks:
+  const { getCurrentLocation, calculateCartDelivery } = useDistancePricing();
   // Address management state
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
@@ -49,6 +59,9 @@ const CheckoutPage = () => {
   // ADD this line after your existing state declarations (around line 48):
   const [customerDeliveryState, setCustomerDeliveryState] = useState("");
   // Form setup
+  const [selectedAdvancePercentage, setSelectedAdvancePercentage] =
+    useState(25);
+
   const {
     register,
     handleSubmit,
@@ -103,7 +116,192 @@ const CheckoutPage = () => {
   );
 
   const savedAddresses = addressesResponse?.data?.addresses || [];
+  // Add this useEffect after your existing useEffects around line 100:
+  useEffect(() => {
+    // ...existing code...
 
+    // Replace the calculateDeliveryForSelectedAddress function (around line 120):
+    const calculateDeliveryForSelectedAddress = async () => {
+      if (!selectedAddressId || !savedAddresses.length) {
+        console.log("⚠️ No address selected for delivery calculation");
+        return;
+      }
+
+      const selectedAddress = savedAddresses.find(
+        (addr) => addr._id === selectedAddressId
+      );
+      if (!selectedAddress) {
+        console.log("⚠️ Selected address not found");
+        return;
+      }
+
+      // FIXED: Check for coordinates - correct structure from backend
+      const hasCoords =
+        selectedAddress.coordinates &&
+        typeof selectedAddress.coordinates.latitude === "number" &&
+        typeof selectedAddress.coordinates.longitude === "number" &&
+        selectedAddress.coordinates.latitude !== 0 &&
+        selectedAddress.coordinates.longitude !== 0;
+
+      if (!hasCoords) {
+        console.log(
+          "⚠️ Address has no valid coordinates, skipping calculation"
+        );
+        console.log("Address coordinates:", selectedAddress.coordinates);
+        return;
+      }
+
+      console.log(
+        "✅ Valid address with coordinates found:",
+        selectedAddress.coordinates
+      );
+
+      try {
+        // Group cart items by supplier
+        const supplierGroups = {};
+        items.forEach((item) => {
+          const supplierId =
+            item.product?.supplier?._id || item.product?.supplier;
+          if (!supplierGroups[supplierId]) {
+            supplierGroups[supplierId] = {
+              supplier: item.product.supplier,
+              items: [],
+              totalWeight: 0,
+            };
+          }
+          supplierGroups[supplierId].items.push(item);
+          supplierGroups[supplierId].totalWeight +=
+            item.quantity * (item.product.weight || 1);
+        });
+
+        let totalTransportCost = 0;
+        const supplierDeliveryDetails = [];
+
+        // Calculate delivery cost for each supplier
+        for (const [supplierId, supplierData] of Object.entries(
+          supplierGroups
+        )) {
+          const supplier = supplierData.supplier;
+
+          // Check if supplier has location and transport rates
+          if (
+            !supplier.dispatchLocation?.coordinates ||
+            !supplier.transportRates
+          ) {
+            console.log(
+              `⚠️ Supplier ${supplier.companyName || supplierId} missing location or transport rates`
+            );
+            continue;
+          }
+
+          // Get supplier coordinates (GeoJSON format: [longitude, latitude])
+          const supplierLng = supplier.dispatchLocation.coordinates[0];
+          const supplierLat = supplier.dispatchLocation.coordinates[1];
+
+          // Get customer coordinates
+          const customerLat = selectedAddress.coordinates.latitude;
+          const customerLng = selectedAddress.coordinates.longitude;
+
+          // Calculate distance using Haversine formula
+          const distance = calculateHaversineDistance(
+            customerLat,
+            customerLng,
+            supplierLat,
+            supplierLng
+          );
+
+          // Calculate delivery cost based on distance and transport rates
+          const deliveryCost = calculateDeliveryDetails(
+            distance,
+            supplier.transportRates,
+            supplierData.totalWeight
+          );
+
+          totalTransportCost += deliveryCost.cost;
+          supplierDeliveryDetails.push({
+            supplierId,
+            supplierName: supplier.companyName,
+            distance,
+            cost: deliveryCost.cost,
+            deliveryTime: deliveryCost.deliveryTime,
+            zone: deliveryCost.zone,
+          });
+
+          console.log(
+            `🚚 ${supplier.companyName}: ${distance.toFixed(2)}km, ₹${deliveryCost.cost}`
+          );
+        }
+
+        // Set the calculated delivery cost
+        setDeliveryCost({
+          totalTransportCost,
+          supplierDetails: supplierDeliveryDetails,
+          calculatedAt: new Date().toISOString(),
+        });
+
+        console.log("✅ Total delivery cost calculated:", totalTransportCost);
+      } catch (error) {
+        console.error("❌ Error calculating delivery cost:", error);
+      }
+    };
+
+    // Add these helper functions after calculateDeliveryForSelectedAddress:
+
+    // Haversine distance calculation
+    const calculateHaversineDistance = (lat1, lng1, lat2, lng2) => {
+      const R = 6371; // Earth's radius in kilometers
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    // Calculate delivery details based on distance and transport rates
+    const calculateDeliveryDetails = (
+      distance,
+      transportRates,
+      totalWeight = 1
+    ) => {
+      let zone, rates;
+
+      if (distance <= 5) {
+        zone = "upTo5km";
+        rates = transportRates.upTo5km;
+      } else if (distance <= 10) {
+        zone = "upTo10km";
+        rates = transportRates.upTo10km;
+      } else if (distance <= 20) {
+        zone = "upTo20km";
+        rates = transportRates.upTo20km;
+      } else {
+        zone = "above20km";
+        rates = transportRates.above20km;
+      }
+
+      // Calculate cost: base cost + (distance * cost per km) + weight factor
+      const baseCost = rates?.baseCost || 0;
+      const costPerKm = rates?.costPerKm || 0;
+      const weightFactor = Math.max(1, Math.ceil(totalWeight / 10)); // Every 10kg adds to cost
+
+      const cost = Math.round(baseCost + distance * costPerKm);
+      const deliveryTime = rates?.estimatedDeliveryTime || "Contact supplier";
+
+      return {
+        cost,
+        deliveryTime,
+        zone,
+        distance: distance.toFixed(2),
+      };
+    };
+
+    calculateDeliveryForSelectedAddress();
+  }, [selectedAddressId, items, addressesResponse]);
   // Redirect if cart is empty
   useEffect(() => {
     if (!items || items.length === 0) {
@@ -454,7 +652,17 @@ const CheckoutPage = () => {
 
     // REPLACE LINES 438-448 WITH:
 
-    const deliveryFee = subtotal > 10000 ? 0 : 500;
+    // Dynamic delivery calculation
+    let deliveryFee = 0;
+    if (isCalculatingDelivery) {
+      deliveryFee = 0; // Show 0 while calculating
+    } else if (deliveryCost?.totalTransportCost !== undefined) {
+      deliveryFee = deliveryCost.totalTransportCost; // Use calculated cost
+    } else if (subtotal > 10000) {
+      deliveryFee = 0; // Free delivery for orders above ₹10,000
+    } else {
+      deliveryFee = 500; // Fallback
+    }
     const commission = Math.round(subtotal * 0.05);
     const packagingCharges = 25;
     const gst =
@@ -522,8 +730,70 @@ const CheckoutPage = () => {
   } = calculatedValues;
 
   // Calculate advance and remaining amounts based on payment method
-  const calculatePaymentAmounts = () => {
-    const advancePercentage = paymentData?.method === "cod" ? 100 : 25;
+  // Replace the calculatePaymentAmounts function around line 510:
+
+  // Calculate advance and remaining amounts based on payment method and dynamic config
+  const [paymentAmounts, setPaymentAmounts] = useState({
+    advancePercentage: 100,
+    advanceAmount: finalTotal,
+    remainingAmount: 0,
+    isAdvancePayment: false,
+    percentageOptions: [], // Add this for storing available options
+  });
+
+  const calculatePaymentAmounts = async () => {
+    console.log(
+      "🧮 Calculating payment amounts for method:",
+      paymentData?.method
+    );
+
+    if (paymentData?.method === "cod") {
+      return {
+        advancePercentage: 100,
+        advanceAmount: finalTotal,
+        remainingAmount: 0,
+        isAdvancePayment: false,
+        percentageOptions: [],
+      };
+    }
+
+    // Default fallback percentage
+    let advancePercentage = 25;
+    let percentageOptions = [];
+
+    try {
+      // Get primary category from cart items
+      if (items && items.length > 0) {
+        const primaryCategory = items[0]?.product?.category || "aggregate";
+        console.log(
+          "🎯 Fetching advance config for category:",
+          primaryCategory
+        );
+
+        // Fetch dynamic advance payment configuration
+        const response =
+          await adminAPI.getAdvancePaymentOptionsForCategory(primaryCategory);
+        console.log("📊 Advance payment config response:", response);
+
+        if (response.success && response.data) {
+          advancePercentage = response.data.defaultPercentage || 25;
+          percentageOptions = response.data.percentageOptions || [];
+          console.log(
+            `✅ Using dynamic advance percentage: ${advancePercentage}% for category: ${primaryCategory}`
+          );
+          console.log(`📋 Available options:`, percentageOptions);
+        } else {
+          console.warn("⚠️ Invalid response structure:", response);
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "⚠️ Failed to fetch advance payment config, using default 25%:",
+        error
+      );
+      // Continue with default percentage
+    }
+
     const advanceAmount = Math.round((finalTotal * advancePercentage) / 100);
     const remainingAmount = finalTotal - advanceAmount;
 
@@ -531,20 +801,20 @@ const CheckoutPage = () => {
       advancePercentage,
       advanceAmount,
       remainingAmount,
-      isAdvancePayment:
-        paymentData?.method !== "cod" && advancePercentage < 100,
+      isAdvancePayment: advancePercentage < 100,
+      percentageOptions, // Include options for UI
     };
   };
 
+  // Update useEffect to recalculate when payment method or items change
+  useEffect(() => {
+    if (paymentData) {
+      calculatePaymentAmounts().then(setPaymentAmounts);
+    }
+  }, [paymentData, finalTotal, items]);
   // Get payment amounts
-  const paymentAmounts = paymentData
-    ? calculatePaymentAmounts()
-    : {
-        advancePercentage: 100,
-        advanceAmount: finalTotal,
-        remainingAmount: 0,
-        isAdvancePayment: false,
-      };
+
+  // Add useEffect to calculate payment amounts when dependencies change
 
   // Replace handlePlaceOrder method (around line 433):
 
@@ -591,7 +861,7 @@ const CheckoutPage = () => {
       const orderData = {
         deliveryAddressId: addressId,
         paymentMethod: paymentData.method,
-        advancePercentage: paymentData.method === "cod" ? 100 : 25,
+        advancePercentage: paymentAmounts.advancePercentage,
         notes: shippingData.deliveryInstructions || "",
       };
 
@@ -1361,80 +1631,6 @@ const CheckoutPage = () => {
                 ))}
               </div>
 
-              {/* TEMPORARY DEBUG SECTION - Remove after fixing */}
-              <div
-                style={{
-                  padding: "20px",
-                  background: "#ffe6e6",
-                  margin: "10px 0",
-                  border: "1px solid #ff9999",
-                }}
-              >
-                <h4>🔧 Debug: Clear Stale Discount Data</h4>
-                <p>Current discount data:</p>
-                <pre
-                  style={{
-                    fontSize: "12px",
-                    background: "#f5f5f5",
-                    padding: "10px",
-                  }}
-                >
-                  {JSON.stringify({ appliedCoupon, appliedCoins }, null, 2)}
-                </pre>
-
-                <button
-                  onClick={async () => {
-                    try {
-                      // Clear coupon
-                      if (appliedCoupon) {
-                        await fetch(
-                          "http://localhost:5000/api/cart/remove-coupon",
-                          {
-                            method: "POST",
-                            headers: {
-                              Authorization: `Bearer ${document.cookie.split("aggrekart_token=")[1]?.split(";")[0]}`,
-                              "Content-Type": "application/json",
-                            },
-                          }
-                        );
-                      }
-
-                      // Clear coins
-                      if (appliedCoins) {
-                        await fetch(
-                          "http://localhost:5000/api/cart/remove-coins",
-                          {
-                            method: "POST",
-                            headers: {
-                              Authorization: `Bearer ${document.cookie.split("aggrekart_token=")[1]?.split(";")[0]}`,
-                              "Content-Type": "application/json",
-                            },
-                          }
-                        );
-                      }
-
-                      alert("Discount data cleared! Please refresh the page.");
-                      window.location.reload();
-                    } catch (error) {
-                      console.error("Error clearing discounts:", error);
-                      alert(
-                        "Error clearing discounts. Check console for details."
-                      );
-                    }
-                  }}
-                  style={{
-                    padding: "10px 20px",
-                    background: "#ff4444",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                  }}
-                >
-                  🧹 Clear All Discount Data
-                </button>
-              </div>
-
               <div className="bill-details">
                 <h4>Bill Details</h4>
 
@@ -1473,8 +1669,31 @@ const CheckoutPage = () => {
                   <span>₹{commission.toLocaleString()}</span>
                 </div>
                 <div className="bill-row">
-                  <span>Delivery Fee</span>
-                  <span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span>
+                  <span>
+                    Delivery Fee
+                    {isCalculatingDelivery && (
+                      <span style={{ color: "#007bff", marginLeft: "8px" }}>
+                        (Calculating...)
+                      </span>
+                    )}
+                    {deliveryCalculationError && (
+                      <span
+                        style={{ color: "#dc3545", marginLeft: "8px" }}
+                        title={deliveryCalculationError}
+                      >
+                        ⚠️
+                      </span>
+                    )}
+                  </span>
+                  <span>
+                    {isCalculatingDelivery ? (
+                      <span style={{ color: "#007bff" }}>...</span>
+                    ) : deliveryFee === 0 ? (
+                      "FREE"
+                    ) : (
+                      `₹${deliveryFee}`
+                    )}
+                  </span>
                 </div>
                 <div className="bill-row">
                   <span>Packaging Charges</span>
@@ -1529,6 +1748,67 @@ const CheckoutPage = () => {
                   </>
                 )}
 
+                {paymentAmounts.isAdvancePayment &&
+                  paymentAmounts.percentageOptions.length > 1 && (
+                    <>
+                      <div className="bill-separator"></div>
+                      <div className="advance-options-section">
+                        <h5>Choose Advance Payment Amount</h5>
+                        <div className="advance-options-grid">
+                          {paymentAmounts.percentageOptions
+                            .filter((option) => option.isActive)
+                            .map((option) => (
+                              <div
+                                key={option.percentage}
+                                className={`advance-option ${
+                                  paymentAmounts.advancePercentage ===
+                                  option.percentage
+                                    ? "selected"
+                                    : ""
+                                }`}
+                                onClick={() => {
+                                  const newAdvanceAmount = Math.round(
+                                    (finalTotal * option.percentage) / 100
+                                  );
+                                  const newRemainingAmount =
+                                    finalTotal - newAdvanceAmount;
+
+                                  setPaymentAmounts((prev) => ({
+                                    ...prev,
+                                    advancePercentage: option.percentage,
+                                    advanceAmount: newAdvanceAmount,
+                                    remainingAmount: newRemainingAmount,
+                                  }));
+                                }}
+                              >
+                                <div className="option-percentage">
+                                  {option.percentage}%
+                                </div>
+                                <div className="option-label">
+                                  {option.label}
+                                </div>
+                                <div className="option-amount">
+                                  ₹
+                                  {Math.round(
+                                    (finalTotal * option.percentage) / 100
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+
+                        <div className="selected-option-summary">
+                          <p>
+                            💡 You'll pay ₹
+                            {paymentAmounts.advanceAmount.toLocaleString()} now.
+                            Remaining ₹
+                            {paymentAmounts.remainingAmount.toLocaleString()}{" "}
+                            will be collected on delivery.
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 {/* Show COD note */}
                 {paymentData?.method === "cod" && (
                   <div className="payment-note cod-note">

@@ -201,6 +201,7 @@ const Navbar = () => {
                 <AuthDropdown />
               </div>
             )}
+        {/* Google Translate for Desktop Only */}
 
             {/* Hamburger Menu Toggle */}
             <button

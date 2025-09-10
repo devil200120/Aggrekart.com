@@ -13,7 +13,7 @@ const VerifyEmailPage = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isResending, setIsResending] = useState(false)
-  const [timer, setTimer] = useState(300) // 5 minutes
+  const [timer, setTimer] = useState(60) // 5 minutes
   const [canResend, setCanResend] = useState(false)
   
   const otpRefs = useRef([])
@@ -143,7 +143,7 @@ const handleVerifyOtp = async () => {
 
       if (response.success) {
         toast.success('New OTP sent to your email!')
-        setTimer(300)
+        setTimer(60)
         setCanResend(false)
         
         // Auto-fill in development

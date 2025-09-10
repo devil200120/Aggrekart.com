@@ -5,7 +5,7 @@ import { supplierAPI } from "../../services/api";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import DashboardStats from "../../components/supplier/DashboardStats";
-import SalesChart from "../../components/supplier/SalesChart";
+import SalesChart from "../../pages/supplier/SalesChart";
 import QuickActions from "../../components/supplier/QuickActions";
 import "./SupplierDashboardPage.css";
 import { useSupplierSuspensionCheck } from "../../hooks/useSupplierSuspensionCheck";
@@ -14,8 +14,8 @@ const SupplierDashboardPage = () => {
   const { user } = useAuth();
   const [dateRange, setDateRange] = useState("30");
   const [greeting, setGreeting] = useState("");
-// Add supplier status check hook
-const supplierStatusCheck = useSupplierSuspensionCheck();
+  // Add supplier status check hook
+  const supplierStatusCheck = useSupplierSuspensionCheck();
   // Set dynamic greeting based on time
   useEffect(() => {
     const hour = new Date().getHours();
@@ -77,12 +77,12 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
   }
 
   // Error state
-    // FIXED: Better error handling based on error type
+  // FIXED: Better error handling based on error type
   if (error) {
     const errorType = error.response?.data?.error;
     const errorData = error.response?.data?.data;
-    
-    if (errorType === 'SUPPLIER_SUSPENDED') {
+
+    if (errorType === "SUPPLIER_SUSPENDED") {
       return (
         <div className="supplier-dashboard-page">
           <div className="swiggy-container">
@@ -91,11 +91,20 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
               <h2>Account Suspended</h2>
               <p>Your supplier account has been suspended.</p>
               {errorData?.suspensionReason && (
-                <p><strong>Reason:</strong> {errorData.suspensionReason}</p>
+                <p>
+                  <strong>Reason:</strong> {errorData.suspensionReason}
+                </p>
               )}
-              <p>Please contact our <a href="mailto:support@aggrekart.com">help desk</a> for assistance.</p>
+              <p>
+                Please contact our{" "}
+                <a href="mailto:support@aggrekart.com">help desk</a> for
+                assistance.
+              </p>
               <div className="swiggy-error-actions">
-                <button onClick={refetch} className="swiggy-btn swiggy-btn-primary">
+                <button
+                  onClick={refetch}
+                  className="swiggy-btn swiggy-btn-primary"
+                >
                   <span className="btn-icon">🔄</span>
                   Try Again
                 </button>
@@ -104,28 +113,42 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
           </div>
         </div>
       );
-    } else if (errorType === 'SUPPLIER_PENDING_APPROVAL') {
+    } else if (errorType === "SUPPLIER_PENDING_APPROVAL") {
       return (
         <div className="supplier-dashboard-page">
           <div className="swiggy-container">
             <div className="swiggy-error">
               <div className="swiggy-empty-icon">⏳</div>
               <h2>Account Pending Approval</h2>
-              <p>Your supplier account is currently being reviewed by our admin team.</p>
+              <p>
+                Your supplier account is currently being reviewed by our admin
+                team.
+              </p>
               <div className="approval-info">
                 <ul className="banned_list_groups">
-                  <span >Your application is being reviewed</span>
-                  <span>You will receive an email notification once approved</span>
+                  <span>Your application is being reviewed</span>
+                  <span>
+                    You will receive an email notification once approved
+                  </span>
                   <span>Approval typically takes 2-3 business days</span>
                 </ul>
               </div>
-              <p>Need help? Contact our <a href="mailto:support@aggrekart.com">support team</a>.</p>
+              <p>
+                Need help? Contact our{" "}
+                <a href="mailto:support@aggrekart.com">support team</a>.
+              </p>
               <div className="swiggy-error-actions">
-                <button onClick={refetch} className="swiggy-btn swiggy-btn-primary">
+                <button
+                  onClick={refetch}
+                  className="swiggy-btn swiggy-btn-primary"
+                >
                   <span className="btn-icon">🔄</span>
                   Check Status
                 </button>
-                <Link to="/supplier/profile" className="swiggy-btn swiggy-btn-outline">
+                <Link
+                  to="/supplier/profile"
+                  className="swiggy-btn swiggy-btn-outline"
+                >
                   Complete Profile
                 </Link>
               </div>
@@ -143,11 +166,17 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
               <h2>Unable to Load Dashboard</h2>
               <p>We're having trouble loading your dashboard data.</p>
               <div className="swiggy-error-actions">
-                <button onClick={refetch} className="swiggy-btn swiggy-btn-primary">
+                <button
+                  onClick={refetch}
+                  className="swiggy-btn swiggy-btn-primary"
+                >
                   <span className="btn-icon">🔄</span>
                   Try Again
                 </button>
-                <Link to="/supplier/products" className="swiggy-btn swiggy-btn-outline">
+                <Link
+                  to="/supplier/products"
+                  className="swiggy-btn swiggy-btn-outline"
+                >
                   View Products
                 </Link>
               </div>
@@ -166,6 +195,14 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
     approvalStatus,
     notifications,
   } = dashboardData.data;
+  // Add this after the destructuring around line 175
+  console.log("🔍 Dashboard Data Debug:", {
+    fullResponse: dashboardData,
+    stats: stats,
+    salesData: salesData,
+    salesDataType: typeof salesData,
+    salesDataLength: salesData?.length,
+  });
   // Handle loading state
   if (isLoading) {
     return (
@@ -182,13 +219,13 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
 
   // Handle error state
   if (error) {
-    console.error('Sales data fetch error:', error);
+    console.error("Sales data fetch error:", error);
     // Continue with sample data as fallback
   }
   return (
     <div className="supplier-dashboard-page">
       <div className="swiggy-container">
-                {/* Status banner */}
+        {/* Status banner */}
         {supplierStatusCheck.showStatusDialog && (
           <SupplierStatusBanner
             statusType={supplierStatusCheck.statusType}
@@ -359,11 +396,7 @@ const supplierStatusCheck = useSupplierSuspensionCheck();
                 </div>
               </div>
               <div className="swiggy-card-body">
-                <SalesChart
-                  supplierId={supplier?.supplierId || supplier?._id}
-                  data={salesData}
-                  dateRange={dateRange}
-                />
+                <SalesChart data={salesData} dateRange={dateRange} />
               </div>
             </div>
 

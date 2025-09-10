@@ -608,24 +608,24 @@
   letter-spacing: 0.5px;
 }
 
-.product-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+.simple-pricing-btn {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #fc8019, #ff6b35);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(252, 128, 25, 0.2);
 }
-
-.available-product:hover .product-overlay {
-  opacity: 1;
-}
-
 .product-content {
   padding: 20px;
 }

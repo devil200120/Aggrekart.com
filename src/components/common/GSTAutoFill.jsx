@@ -1,8 +1,7 @@
-import './GSTAutoFill.css'
-
 import React, { useState, useCallback } from 'react';
 import { Search, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import './GSTAutoFill.css';
 
 const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => {
   const [gstNumber, setGstNumber] = useState(formData?.gstNumber || '');
@@ -16,7 +15,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
     if (window.location.hostname.includes('onrender.com')) {
       return 'https://aggrekart-com-backend.onrender.com/api';
     }
-    return 'https://aggrekart-com-backend.onrender.com/api';
+    return 'http://localhost:5000/api';
   };
 
   // Format GST number as user types
@@ -113,7 +112,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
           // FIXED: Map to correct field names for supplier registration
           businessName: gstData.legalName || gstData.companyName, // Form expects 'businessName'
           tradeName: gstData.tradeName || gstData.legalName,
-          
+          panNumber: gstData.panNumber,
           // FIXED: Map address correctly
           businessAddress: gstData.address, // Form expects 'businessAddress'
           city: gstData.city,
@@ -193,29 +192,29 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
 
   // Get status icon
   const getStatusIcon = () => {
-    if (loading) return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
-    if (verificationStatus === 'verified') return <CheckCircle className="w-5 h-5 text-green-500" />;
-    if (verificationStatus === 'failed') return <XCircle className="w-5 h-5 text-red-500" />;
-    if (error) return <AlertCircle className="w-5 h-5 text-red-500" />;
-    return <Search className="w-5 h-5 text-gray-400" />;
+    if (loading) return <Loader2 className=" text-blue-500 animate-spin" />;
+    if (verificationStatus === 'verified') return <CheckCircle />;
+    if (verificationStatus === 'failed') return <XCircle />;
+    if (error) return <AlertCircle />;
+    return <Search />;
   };
 
   return (
-    <div className="space-y-4">
+    <div className="gst-container">
       <div>
-        <label htmlFor="gstNumber" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="gstNumber" className="gst-label">
           GST Number *
         </label>
         
-        <div className="gst-inp relative">
+        <div className="gst-input-field">
           <input
             type="text"
             id="gstNumber"
             value={gstNumber}
             onChange={handleGSTChange}
             onKeyPress={handleKeyPress}
-            placeholder="(e.g., 21AAGCL2673M1ZD)"
-            className={`gst-inp-field ${
+            placeholder="Enter 15-digit GST number (e.g., 21AAGCL2673M1ZD)"
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12 ${
               error ? 'border-red-300' : 
               verificationStatus === 'verified' ? 'border-green-300' : 
               'border-gray-300'
@@ -224,7 +223,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
             disabled={loading}
           />
           
-          <div style={{cursor: 'pointer'}} className="gst-search-icon">
+          <div className="gst-search-icon">
             {getStatusIcon()}
           </div>
         </div>
@@ -253,7 +252,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
         type="button"
         onClick={verifyGST}
         disabled={!gstNumber || gstNumber.length !== 15 || loading || !validateGSTFormat(gstNumber)}
-        className={`gst-submit ${
+        className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
           !gstNumber || gstNumber.length !== 15 || loading || !validateGSTFormat(gstNumber)
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
             : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500'
@@ -271,15 +270,13 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
 
       {/* Success message */}
       {verificationStatus === 'verified' && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+        
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
             <span className="text-green-800 font-medium">GST Verified Successfully!</span>
           </div>
-          <p className="text-green-700 text-sm mt-1">
-            Business details have been automatically filled from government records.
-          </p>
-        </div>
+          
+        
       )}
     </div>
   );

@@ -284,20 +284,7 @@ const AdminProductsPage = () => {
               inventory
             </p>
           </div>
-          <div className="header-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => setActiveTab("analytics")}
-            >
-              📊 Analytics
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setActiveTab("create")}
-            >
-              ➕ Add Base Product
-            </button>
-          </div>
+         
         </div>
       </div>
 

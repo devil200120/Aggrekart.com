@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import { supplierAPI } from "../../services/api";
 import "./SalesChart.css";
 
-const SalesChart = ({ supplierId, initialDateRange = "30" }) => {
+const SalesChart = ({ supplierId, initialDateRange = "30", data = [] }) => {
   const [dateRange, setDateRange] = useState(initialDateRange);
   const [chartType, setChartType] = useState("combined");
   const [viewMode, setViewMode] = useState("daily");
@@ -36,31 +36,21 @@ const SalesChart = ({ supplierId, initialDateRange = "30" }) => {
 
   // Always use sample data for now
   // Fetch real sales data
-  const {
-    data: salesData,
-    isLoading,
-    error,
-  } = useQuery(
-    ["supplier-sales", supplierId, dateRange, viewMode],
-    () =>
-      supplierAPI.getSalesAnalytics({
-        period: dateRange,
-        view: viewMode,
-      }),
-    {
-      enabled: !!supplierId,
-      refetchOnWindowFocus: false,
-      retry: 2,
-    }
-  );
-
   const processedData = React.useMemo(() => {
-    if (salesData?.success && salesData.data) {
-      return salesData.data;
-    }
-    return generateSampleData(); // Fallback to sample data
-  }, [salesData, dateRange, viewMode]);
-
+  // If data prop is passed from dashboard, use it
+  if (data && data.length > 0) {
+    return data.map(item => ({
+      date: item.date,
+      sales:  item.totalSales || 0,
+      orders: item.orders || 0,
+      customers: item.uniqueCustomers || 0,
+      avgOrderValue: item.avgOrderValue || 0
+    }));
+  }
+  
+  // Otherwise, return empty array (no fallback to sample data)
+  return [];
+}, [data]);
   // Calculate chart dimensions
   const maxSales = Math.max(...processedData.map((d) => d.sales), 1000);
   const maxOrders = Math.max(...processedData.map((d) => d.orders), 10);

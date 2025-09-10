@@ -114,7 +114,7 @@
 }
 
 /* Status Badge Styles - Enhanced */
-.status-badge {
+.status-badge-admin {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
@@ -128,7 +128,7 @@
   overflow: hidden;
 }
 
-.status-badge::before {
+.status-badge-admin::before {
   content: '';
   position: absolute;
   top: 0;
@@ -139,29 +139,29 @@
   transition: left 0.5s;
 }
 
-.status-badge:hover::before {
+.status-badge-admin:hover::before {
   left: 100%;
 }
 
-.status-badge.pending {
+.status-badge-admin.pending {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   color: #92400e;
   border: 1px solid #f59e0b;
 }
 
-.status-badge.approved {
+.status-badge-admin.approved {
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
   color: #166534;
   border: 1px solid #22c55e;
 }
 
-.status-badge.rejected {
+.status-badge-admin.rejected {
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   color: #991b1b;
   border: 1px solid #ef4444;
 }
 
-.status-badge.suspended {
+.status-badge-admin.suspended {
   background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
   color: #4b5563;
   border: 1px solid #9ca3af;

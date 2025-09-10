@@ -12,22 +12,6 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-<style type="text/css">
-  /* Hide the Google top frame */
-  iframe.goog-te-banner-frame {
-    display: none !important;
-  }
-
-  /* Prevent body shifting down when banner is hidden */
-  body {
-    position: static !important;
-    top: 0px !important;
-  }
-  .VIpgJd-ZVi9od-l4eHX-hSRGPd{
-    display: none;
-  }
-</style>
-
     <title>Aggrekart</title>
     
 
@@ -35,18 +19,7 @@
   <body>
     <div id="root"></div> 
     <script type="module" src="/src/main.jsx"></script>
-    <script type="text/javascript">
-      function hideGoogleTranslate() {
-        let frame = document.querySelector(".goog-te-banner-frame");
-        if (frame) {
-          frame.style.display = "none";
-        }
-        document.body.style.top = "0px"; // Reset body margin caused by banner
-      }
-
-      // Run after translation loads
-      setInterval(hideGoogleTranslate, 500);
-    </script>
+    
 
     
   </body>

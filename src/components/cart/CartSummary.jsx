@@ -66,7 +66,7 @@ const [totalAutoDeliveryCost, setTotalAutoDeliveryCost] = useState(0);
   // ADD THESE LINES AFTER LINE 48:
 
   // Use finalAmount from cart if available (includes supplier promotion discount)
-  const subtotal = cart?.finalAmount ?? total;
+  const subtotal = (cart?.totalAmount || cart?.total || total) - (cart?.commission || 0);
   const couponDiscount =
     promoApplied && promoApplied.discountAmount > 0
       ? promoApplied.discountAmount
@@ -190,14 +190,19 @@ const [totalAutoDeliveryCost, setTotalAutoDeliveryCost] = useState(0);
     }
   };
 
-const handleAutoDistanceCostsCalculated = (costs) => {
-  console.log("🚚 Auto delivery costs calculated:", costs);
-  setAutoDeliveryCosts(costs);
+// Replace lines 193-202:
+
+const handleAutoDistanceCostsCalculated = (costsData) => {
+  console.log("🚚 Auto delivery costs calculated:", costsData);
   
-  const total = Object.values(costs).reduce((sum, supplierCost) => {
-    return sum + (supplierCost?.totalCost || 0);
-  }, 0);
+  // costsData structure: { supplierCosts: {...}, totalCost: number, hasValidCosts: boolean }
+  const supplierCosts = costsData?.supplierCosts || {};
+  setAutoDeliveryCosts(supplierCosts);
   
+  // Use the pre-calculated totalCost from AutoCartDistancePricing
+  const total = costsData?.totalCost || 0;
+  
+  console.log("💰 Setting total auto delivery cost to:", total);
   setTotalAutoDeliveryCost(total);
 };
 

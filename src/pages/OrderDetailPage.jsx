@@ -595,7 +595,7 @@ const OrderDetailPage = () => {
 
             {/* Supplier Information */}
             {/* Supplier Information */}
-                        {/* Supplier Information */}
+            {/* Supplier Information */}
             {order.supplier && (
               <div className="aggre-supplier-info">
                 <h4 className="aggre-section-title">
@@ -604,9 +604,12 @@ const OrderDetailPage = () => {
                 </h4>
                 <div className="aggre-supplier-details">
                   <div className="aggre-supplier-name">
-                    <strong>{order.supplier.companyName || "Supplier Name Not Available"}</strong>
+                    <strong>
+                      {order.supplier.companyName ||
+                        "Supplier Name Not Available"}
+                    </strong>
                   </div>
-                  
+
                   {order.supplier.contactPersonName && (
                     <div className="aggre-supplier-contact">
                       <FaUser />
@@ -696,7 +699,29 @@ const OrderDetailPage = () => {
                   <span>Total Amount</span>
                   <span>
                     {formatPrice(
-                      order.pricing?.totalAmount || order.totalAmount
+                      // Check if totalAmount seems too small (likely divided by 100)
+                      (() => {
+                        const storedTotal =
+                          order.pricing?.totalAmount || order.totalAmount || 0;
+                        const calculatedTotal =
+                          (order.items?.reduce(
+                            (sum, item) =>
+                              sum +
+                              (item.totalPrice ||
+                                item.unitPrice * item.quantity),
+                            0
+                          ) || 0) +
+                          (order.pricing?.transportCost || 0) +
+                          (order.pricing?.gstAmount || 0) +
+                          (order.pricing?.commission || 0) +
+                          (order.pricing?.paymentGatewayCharges || 0);
+
+                        // If stored total is much smaller than calculated, it's likely divided by 100
+                        if (storedTotal < calculatedTotal * 0.1) {
+                          return calculatedTotal;
+                        }
+                        return storedTotal;
+                      })()
                     )}
                   </span>
                 </div>

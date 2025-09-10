@@ -201,7 +201,7 @@ const TopRatedProducts = () => {
     return (
       <section className="top-rated-products-section">
         <div className="feature-container">
-          <div className="section-headers">
+          <div className="section-heading">
             <div className="header-contents">
               <h2 className="section-titles">⭐ Featured Products</h2>
               <p className="section-subtitle">
@@ -225,9 +225,9 @@ const TopRatedProducts = () => {
           <div className="section-header">
             <div className="header-content">
               <h2 className="section-title">⭐ Featured Products</h2>
-              <p className="section-subtitle">
+              <span className="section-subtitle">
                 Quality construction materials from verified suppliers
-              </p>
+              </span>
             </div>
           </div>
           <div className="error-container">

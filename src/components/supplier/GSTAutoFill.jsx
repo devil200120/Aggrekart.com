@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Search, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import './GSTAutoFill.css';
 
 const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => {
   const [gstNumber, setGstNumber] = useState(formData?.gstNumber || '');
@@ -191,21 +192,21 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
 
   // Get status icon
   const getStatusIcon = () => {
-    if (loading) return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
-    if (verificationStatus === 'verified') return <CheckCircle className="w-5 h-5 text-green-500" />;
-    if (verificationStatus === 'failed') return <XCircle className="w-5 h-5 text-red-500" />;
-    if (error) return <AlertCircle className="w-5 h-5 text-red-500" />;
-    return <Search className="w-5 h-5 text-gray-400" />;
+    if (loading) return <Loader2 className=" text-blue-500 animate-spin" />;
+    if (verificationStatus === 'verified') return <CheckCircle />;
+    if (verificationStatus === 'failed') return <XCircle />;
+    if (error) return <AlertCircle />;
+    return <Search />;
   };
 
   return (
-    <div className="space-y-4">
+    <div className="gst-container">
       <div>
-        <label htmlFor="gstNumber" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="gstNumber" className="gst-label">
           GST Number *
         </label>
         
-        <div className="relative">
+        <div className="gst-input-field">
           <input
             type="text"
             id="gstNumber"
@@ -222,7 +223,7 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
             disabled={loading}
           />
           
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div className="gst-search-icon">
             {getStatusIcon()}
           </div>
         </div>
@@ -269,15 +270,11 @@ const GSTAutoFill = ({ onDataFill, onGSTDataFilled, formData, setFormData }) => 
 
       {/* Success message */}
       {verificationStatus === 'verified' && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-            <span className="text-green-800 font-medium">GST Verified Successfully!</span>
-          </div>
-          <p className="text-green-700 text-sm mt-1">
-            Business details have been automatically filled from government records.
-          </p>
-        </div>
+        
+          <>
+          </>
+         
+
       )}
     </div>
   );
